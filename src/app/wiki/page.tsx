@@ -1,12 +1,9 @@
 import Link from "next/link";
 import { PageBackground } from "@/components/ui/page-background";
 import { GlassCard } from "@/components/ui/glass-card";
-import { BookOpen, Clock, User, ArrowRight, Trash2 } from "lucide-react";
-
-const fallbackPosts: any[] = [];
-
+import { BookOpen, Clock, User, ArrowRight } from "lucide-react";
+import { DeleteButton } from "@/components/wiki/delete-button";
 import { isAdminAuthenticated } from "@/lib/auth";
-
 import { supabase } from "@/lib/supabase";
 
 export const revalidate = 60; // Tự động cập nhật dữ liệu sau mỗi 60 giây
@@ -27,12 +24,12 @@ export default async function WikiPage() {
     } catch (e) {
         console.error("Failed to fetch wiki posts:", e);
     }
+
     return (
         <main className="min-h-screen pt-32 pb-20 px-4 relative z-10">
             {/* Gentle Neon Aura */}
             <div className="absolute top-[10%] left-[-10%] w-[500px] h-[500px] bg-accent-secondary/5 rounded-full blur-[160px] -z-10 animate-pulse" style={{ animationDuration: '8s' }} />
             <div className="absolute bottom-[20%] right-[-5%] w-[600px] h-[600px] bg-accent-secondary/3 rounded-full blur-[180px] -z-10" />
-
 
             <div className="container mx-auto max-w-6xl">
                 <header className="mb-20 text-center space-y-8">
@@ -107,28 +104,5 @@ export default async function WikiPage() {
                 </div>
             </div>
         </main>
-    );
-}
-
-function DeleteButton({ slug }: { slug: string }) {
-    return (
-        <button
-            onClick={async (e: React.MouseEvent) => {
-                e.preventDefault();
-                if (confirm("Bạn có chắc chắn muốn xoá bài viết này không? Hành động này không thể hoàn tác.")) {
-                    const res = await fetch(`/api/wiki?slug=${slug}`, { method: 'DELETE' });
-                    const data = await res.json();
-                    if (data.success) {
-                        window.location.reload();
-                    } else {
-                        alert("Lỗi: " + data.error);
-                    }
-                }
-            }}
-            className="absolute top-4 right-4 z-20 p-2 rounded-lg bg-red-500/10 border border-red-500/20 text-red-500 hover:bg-red-500 hover:text-white transition-all opacity-0 group-hover:opacity-100 shadow-lg backdrop-blur-md"
-            title="Xoá bài viết"
-        >
-            <Trash2 size={16} />
-        </button>
     );
 }
