@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { PageBackground } from "@/components/ui/page-background";
 import { GlassCard } from "@/components/ui/glass-card";
-import { BookOpen, Clock, User, ArrowRight } from "lucide-react";
+import { BookOpen, Clock, User, ArrowRight, Trash2 } from "lucide-react";
 
 const fallbackPosts: any[] = [];
 
@@ -59,32 +59,76 @@ export default async function WikiPage() {
 
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {posts.map((post: any) => (
-                        <Link key={post.slug} href={`/wiki/${post.slug}`}>
-                            <GlassCard className="h-full flex flex-col group hover:border-accent-secondary/50 transition-all duration-300">
-                                <div className="space-y-4 flex-1">
-                                    <div className="inline-block px-3 py-1 rounded-full bg-accent-secondary/10 border border-accent-secondary/20 text-accent-secondary text-xs font-semibold">
-                                        {post.category}
+                        <div key={post.slug} className="relative group">
+                            <Link href={`/wiki/${post.slug}`} className="block h-full">
+                                <GlassCard className="h-full flex flex-col group hover:border-accent-secondary/50 transition-all duration-300 overflow-hidden p-0">
+                                    {/* Article Thumbnail */}
+                                    <div className="relative w-full h-48 bg-white/5 border-b border-white/10 overflow-hidden">
+                                        {post.image_url ? (
+                                            <img
+                                                src={post.image_url}
+                                                alt={post.title}
+                                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center text-white/20">
+                                                <BookOpen size={48} />
+                                            </div>
+                                        )}
+                                        <div className="absolute top-4 left-4 inline-block px-3 py-1 rounded-full bg-deep-space/80 backdrop-blur-md border border-accent-secondary/20 text-accent-secondary text-[10px] font-bold uppercase tracking-wider">
+                                            {post.category}
+                                        </div>
                                     </div>
-                                    <h2 className="text-2xl font-bold text-white group-hover:text-accent-secondary transition-colors line-clamp-2">
-                                        {post.title}
-                                    </h2>
-                                    <p className="text-white text-sm leading-relaxed line-clamp-3">
-                                        {post.excerpt}
-                                    </p>
-                                </div>
 
-                                <div className="mt-8 pt-6 border-t border-white/10 flex items-center justify-between text-xs text-white">
-                                    <div className="flex items-center gap-4">
-                                        <span className="flex items-center gap-1 text-white"><User size={14} /> {post.author}</span>
-                                        <span className="flex items-center gap-1 text-white"><Clock size={14} /> {post.read_time}</span>
+                                    <div className="p-6 space-y-4 flex-1">
+                                        <h2 className="text-xl font-bold text-white group-hover:text-accent-secondary transition-colors line-clamp-2 leading-tight">
+                                            {post.title}
+                                        </h2>
+                                        <p className="text-white/60 text-sm leading-relaxed line-clamp-2">
+                                            {post.excerpt}
+                                        </p>
                                     </div>
-                                    <ArrowRight size={16} className="text-accent-secondary group-hover:translate-x-1 transition-transform" />
-                                </div>
-                            </GlassCard>
-                        </Link>
+
+                                    <div className="px-6 py-4 border-t border-white/5 flex items-center justify-between text-[10px] text-white/40 font-bold uppercase tracking-widest">
+                                        <div className="flex items-center gap-4">
+                                            <span className="flex items-center gap-1.5"><User size={12} className="text-accent-primary" /> {post.author}</span>
+                                            <span className="flex items-center gap-1.5"><Clock size={12} className="text-accent-secondary" /> {post.read_time}</span>
+                                        </div>
+                                        <ArrowRight size={14} className="text-accent-secondary group-hover:translate-x-1 transition-transform" />
+                                    </div>
+                                </GlassCard>
+                            </Link>
+
+                            {isAdmin && (
+                                <DeleteButton slug={post.slug} />
+                            )}
+                        </div>
                     ))}
                 </div>
             </div>
         </main>
+    );
+}
+
+function DeleteButton({ slug }: { slug: string }) {
+    return (
+        <button
+            onClick={async (e: React.MouseEvent) => {
+                e.preventDefault();
+                if (confirm("Bạn có chắc chắn muốn xoá bài viết này không? Hành động này không thể hoàn tác.")) {
+                    const res = await fetch(`/api/wiki?slug=${slug}`, { method: 'DELETE' });
+                    const data = await res.json();
+                    if (data.success) {
+                        window.location.reload();
+                    } else {
+                        alert("Lỗi: " + data.error);
+                    }
+                }
+            }}
+            className="absolute top-4 right-4 z-20 p-2 rounded-lg bg-red-500/10 border border-red-500/20 text-red-500 hover:bg-red-500 hover:text-white transition-all opacity-0 group-hover:opacity-100 shadow-lg backdrop-blur-md"
+            title="Xoá bài viết"
+        >
+            <Trash2 size={16} />
+        </button>
     );
 }

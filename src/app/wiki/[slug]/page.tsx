@@ -82,12 +82,20 @@ export default async function WikiDetailPage({ params }: { params: { slug: strin
                         <div className="prose prose-invert prose-slate max-w-none">
                             <div className="relative w-full aspect-video rounded-2xl overflow-hidden border border-white/10 mb-12">
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10" />
-                                <Image
-                                    src="/bgt2.jpg"
-                                    alt="Hero Image"
-                                    fill
-                                    className="object-cover opacity-80"
-                                />
+                                {post.image_url ? (
+                                    <img
+                                        src={post.image_url}
+                                        alt={post.title}
+                                        className="w-full h-full object-cover opacity-90"
+                                    />
+                                ) : (
+                                    <Image
+                                        src="/bgt2.jpg"
+                                        alt="Hero Image"
+                                        fill
+                                        className="object-cover opacity-80"
+                                    />
+                                )}
                             </div>
 
                             <div className="markdown-content text-white mb-12">

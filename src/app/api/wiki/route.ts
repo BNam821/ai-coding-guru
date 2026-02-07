@@ -53,6 +53,7 @@ export async function POST(req: Request) {
                 content: newPost.content,
                 author: newPost.author,
                 category: newPost.category,
+                image_url: newPost.image_url,
                 date: date,
                 read_time: readTime
             }])
@@ -66,6 +67,35 @@ export async function POST(req: Request) {
         }
 
         return NextResponse.json({ success: true, post: data[0] });
+    } catch (error) {
+        return NextResponse.json({ success: false, error: "Internal Server Error" }, { status: 500 });
+    }
+}
+
+// DELETE: Xóa bài viết (Chỉ dành cho Admin)
+export async function DELETE(req: Request) {
+    if (!(await isAdminAuthenticated())) {
+        return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+    }
+
+    try {
+        const { searchParams } = new URL(req.url);
+        const slug = searchParams.get("slug");
+
+        if (!slug) {
+            return NextResponse.json({ success: false, error: "Thiếu Slug" }, { status: 400 });
+        }
+
+        const { error } = await supabase
+            .from("wiki_posts")
+            .delete()
+            .eq("slug", slug);
+
+        if (error) {
+            return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+        }
+
+        return NextResponse.json({ success: true, message: "Xóa bài thành công" });
     } catch (error) {
         return NextResponse.json({ success: false, error: "Internal Server Error" }, { status: 500 });
     }

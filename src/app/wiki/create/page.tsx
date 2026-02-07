@@ -15,6 +15,7 @@ export default function CreatePostPage() {
     const [tips, setTips] = useState("");
     const [author, setAuthor] = useState("CamPha8");
     const [category, setCategory] = useState("Hướng dẫn");
+    const [imageUrl, setImageUrl] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
     const router = useRouter();
@@ -28,7 +29,7 @@ export default function CreatePostPage() {
             const res = await fetch("/api/wiki", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ title, excerpt, content, tips, author, category }),
+                body: JSON.stringify({ title, excerpt, content, tips, author, category, image_url: imageUrl }),
             });
 
             const data = await res.json();
@@ -91,6 +92,20 @@ export default function CreatePostPage() {
                                     placeholder="Mô tả ngắn gọn nội dung bài viết..."
                                     className="w-full bg-transparent p-6 text-white focus:outline-none placeholder:text-white/20 min-h-[100px] resize-none"
                                     required
+                                />
+                            </GlassCard>
+
+                            <GlassCard className="p-1 border-white/10 overflow-hidden">
+                                <div className="flex items-center gap-3 px-4 py-3 border-b border-white/10 bg-white/5">
+                                    <Tag size={18} className="text-accent-primary" />
+                                    <span className="text-xs font-bold uppercase tracking-wider text-white/40">Link ảnh bìa (Thumbnail URL)</span>
+                                </div>
+                                <input
+                                    type="text"
+                                    value={imageUrl}
+                                    onChange={(e) => setImageUrl(e.target.value)}
+                                    placeholder="Dán link ảnh tại đây (Ví dụ: https://images.unsplash.com/...)"
+                                    className="w-full bg-transparent p-6 text-white focus:outline-none placeholder:text-white/20 text-sm"
                                 />
                             </GlassCard>
 
