@@ -6,17 +6,21 @@ import ReactMarkdown from "react-markdown";
 
 const relatedPosts: any[] = [];
 
+import { supabase } from "@/lib/supabase";
+
 export default async function WikiDetailPage({ params }: { params: { slug: string } }) {
     const { slug } = await params;
     let post: any = null;
 
     try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/wiki`, {
-            next: { revalidate: 0 }
-        });
-        if (res.ok) {
-            const posts = await res.json();
-            post = posts.find((p: any) => p.slug === slug);
+        const { data, error } = await supabase
+            .from("wiki_posts")
+            .select("*")
+            .eq("slug", slug)
+            .single();
+
+        if (!error && data) {
+            post = data;
         }
     } catch (e) {
         console.error("Failed to fetch wiki post:", e);
@@ -67,7 +71,7 @@ export default async function WikiDetailPage({ params }: { params: { slug: strin
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <Clock size={16} />
-                                    <span>{post.readTime} đọc</span>
+                                    <span>{post.read_time} đọc</span>
                                 </div>
                             </div>
                         </header>

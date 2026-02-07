@@ -7,16 +7,20 @@ const fallbackPosts: any[] = [];
 
 import { isAdminAuthenticated } from "@/lib/auth";
 
+import { supabase } from "@/lib/supabase";
+
 export default async function WikiPage() {
     const isAdmin = await isAdminAuthenticated();
-    let posts = fallbackPosts;
+    let posts: any[] = [];
 
     try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/wiki`, {
-            next: { revalidate: 0 }
-        });
-        if (res.ok) {
-            posts = await res.json();
+        const { data, error } = await supabase
+            .from("wiki_posts")
+            .select("*")
+            .order("created_at", { ascending: false });
+
+        if (!error && data) {
+            posts = data;
         }
     } catch (e) {
         console.error("Failed to fetch wiki posts:", e);
@@ -70,7 +74,7 @@ export default async function WikiPage() {
                                 <div className="mt-8 pt-6 border-t border-white/10 flex items-center justify-between text-xs text-white">
                                     <div className="flex items-center gap-4">
                                         <span className="flex items-center gap-1 text-white"><User size={14} /> {post.author}</span>
-                                        <span className="flex items-center gap-1 text-white"><Clock size={14} /> {post.readTime}</span>
+                                        <span className="flex items-center gap-1 text-white"><Clock size={14} /> {post.read_time}</span>
                                     </div>
                                     <ArrowRight size={16} className="text-accent-secondary group-hover:translate-x-1 transition-transform" />
                                 </div>
