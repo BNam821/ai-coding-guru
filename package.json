@@ -1,17 +1,39 @@
 {
-  "name": "BNam",
-  "version": "1.0.0",
-  "description": "AI Agent project powered by Google Antigravity",
-  "private": true,
-  "scripts": {
-    "dev": "echo \"No dev server configured\"",
-    "build": "echo \"No build script\""
-  },
-  "keywords": [
-    "ai",
-    "agent",
-    "google-antigravity"
-  ],
-  "author": "",
-  "license": "MIT"
+    "name": "ai-coding-guru",
+    "version": "0.1.0",
+    "private": true,
+    "scripts": {
+        "dev": "next dev",
+        "build": "next build",
+        "start": "next start",
+        "lint": "eslint"
+    },
+    "dependencies": {
+        "@supabase/supabase-js": "^2.95.2",
+        "@tailwindcss/typography": "^0.5.19",
+        "bcryptjs": "^3.0.3",
+        "clsx": "^2.1.1",
+        "framer-motion": "^12.31.0",
+        "lucide-react": "^0.563.0",
+        "mini-svg-data-uri": "^1.4.4",
+        "next": "16.1.6",
+        "react": "19.2.3",
+        "react-dom": "19.2.3",
+        "react-markdown": "^10.1.0",
+        "tailwind-merge": "^3.4.0"
+    },
+    "devDependencies": {
+        "@tailwindcss/postcss": "^4",
+        "@types/bcryptjs": "^2.4.6",
+        "@types/node": "^20.19.32",
+        "@types/react": "^19",
+        "@types/react-dom": "^19",
+        "dotenv": "^17.2.4",
+        "eslint": "^9",
+        "eslint-config-next": "16.1.6",
+        "tailwindcss": "^4",
+        "ts-node": "^10.9.2",
+        "tsx": "^4.21.0",
+        "typescript": "^5.9.3"
+    }
 }
