@@ -20,6 +20,7 @@ Mở Terminal và chạy lệnh:
 git clone https://github.com/BNam821/ai-coding-guru.git
 cd ai-coding-guru
 ```
+*(Lưu ý: Mã nguồn hiện tại đã nằm ngay thư mục gốc)*
 
 ### Bước 2: Cài đặt thư viện (Dependencies)
 ```bash
@@ -47,8 +48,9 @@ npm run dev
 Để dự án chạy 24/7 với tên miền riêng (ví dụ: `ai-coding-guru.vercel.app`):
 
 1. **Kết nối**: Vào [Vercel](https://vercel.com), import repo từ GitHub.
-2. **Biến môi trường**: Trong phần **Settings -> Environment Variables** trên Vercel, hãy nhập đầy đủ các Key như trong Bước 3 ở trên.
-3. **Tên miền**: Bạn có thể gắn tên miền cá nhân tại mục **Settings -> Domains**.
+2. **Root Directory**: Đảm bảo phần **Root Directory** để trống (hoặc là `.`).
+3. **Biến môi trường**: Trong phần **Settings -> Environment Variables** trên Vercel, hãy nhập đầy đủ các Key như trong Bước 3 ở trên.
+4. **Tên miền**: Bạn có thể gắn tên miền cá nhân tại mục **Settings -> Domains**.
 
 *Mỗi khi bạn `git push` lên GitHub, Vercel sẽ tự động build lại và cập nhật web của bạn.*
 
