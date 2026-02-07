@@ -4,11 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import ReactMarkdown from "react-markdown";
 
-const relatedPosts = [
-    { title: "Làm chủ Tailwind CSS v4", slug: "lam-chu-tailwind-v4" },
-    { title: "React 19: Có gì mới?", slug: "react-19-new-features" },
-    { title: "Xây dựng AI Chatbot đơn giản", slug: "build-ai-chatbot" },
-];
+const relatedPosts: any[] = [];
 
 export default async function WikiDetailPage({ params }: { params: { slug: string } }) {
     const { slug } = await params;

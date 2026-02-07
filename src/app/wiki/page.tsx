@@ -3,35 +3,7 @@ import { PageBackground } from "@/components/ui/page-background";
 import { GlassCard } from "@/components/ui/glass-card";
 import { BookOpen, Clock, User, ArrowRight } from "lucide-react";
 
-const fallbackPosts = [
-    {
-        title: "Hướng dẫn sử dụng AI Debugger",
-        slug: "huong-dan-ai-debugger",
-        excerpt: "Tìm hiểu cách tận dụng sức mạnh của AI để tìm và sửa lỗi logic trong mã nguồn của bạn một cách hiệu quả.",
-        author: "CamPha8",
-        date: "05/02/2026",
-        readTime: "5 phút",
-        category: "Hướng dẫn"
-    },
-    {
-        title: "Làm chủ Tailwind CSS v4",
-        slug: "lam-chu-tailwind-v4",
-        excerpt: "Những thay đổi quan trọng trong phiên bản Tailwind CSS v4 và cách áp dụng chúng vào dự án Next.js của bạn.",
-        author: "DevPro",
-        date: "04/02/2026",
-        readTime: "8 phút",
-        category: "Ngôn ngữ"
-    },
-    {
-        title: "React 19: Có gì mới?",
-        slug: "react-19-new-features",
-        excerpt: "Khám phá các tính năng mới như Actions, Use, và cải tiến về Server Components trong React 19.",
-        author: "AI Guru",
-        date: "03/02/2026",
-        readTime: "10 phút",
-        category: "Ngôn ngữ"
-    }
-];
+const fallbackPosts: any[] = [];
 
 import { isAdminAuthenticated } from "@/lib/auth";
 
