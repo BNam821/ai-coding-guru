@@ -54,6 +54,7 @@ export async function POST(req: Request) {
                 author: newPost.author,
                 category: newPost.category,
                 image_url: newPost.image_url,
+                tips: newPost.tips,
                 date: date,
                 read_time: readTime
             }])
