@@ -9,6 +9,8 @@ import { isAdminAuthenticated } from "@/lib/auth";
 
 import { supabase } from "@/lib/supabase";
 
+export const revalidate = 60; // Tự động cập nhật dữ liệu sau mỗi 60 giây
+
 export default async function WikiPage() {
     const isAdmin = await isAdminAuthenticated();
     let posts: any[] = [];

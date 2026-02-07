@@ -8,6 +8,8 @@ const relatedPosts: any[] = [];
 
 import { supabase } from "@/lib/supabase";
 
+export const revalidate = 60; // Tự động cập nhật dữ liệu sau mỗi 60 giây
+
 export default async function WikiDetailPage({ params }: { params: { slug: string } }) {
     const { slug } = await params;
     let post: any = null;
