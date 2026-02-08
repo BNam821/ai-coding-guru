@@ -180,8 +180,8 @@ export function WikiClientPage({ initialData }: WikiClientPageProps) {
                     <button
                         onClick={() => setShowSaved(!showSaved)}
                         className={`flex items-center gap-2 px-5 py-2.5 rounded-xl border text-sm font-bold transition-all shadow-lg ${showSaved
-                                ? "bg-accent-primary border-accent-primary text-black shadow-accent-primary/20"
-                                : "bg-white/5 border-white/10 text-white/80 hover:bg-white/10 hover:border-accent-primary/30"
+                            ? "bg-accent-primary border-accent-primary text-black shadow-accent-primary/20"
+                            : "bg-white/5 border-white/10 text-white/80 hover:bg-white/10 hover:border-accent-primary/30"
                             }`}
                     >
                         <Bookmark size={16} className={showSaved ? "fill-black" : ""} />
