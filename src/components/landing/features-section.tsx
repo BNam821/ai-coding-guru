@@ -85,7 +85,7 @@ const features = [
 
 export function FeaturesSection() {
     return (
-        <section className="py-20 px-4">
+        <section className="py-20 px-4 relative z-10">
             <div className="container mx-auto max-w-6xl">
                 {/* Section Title - Left aligned */}
                 <div className="mb-12">
