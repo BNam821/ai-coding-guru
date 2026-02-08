@@ -28,7 +28,7 @@ export function Hero() {
                     </p>
 
                     <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                        <Link href="/learn">
+                        <Link href="#features">
                             <NeonButton variant="primary" icon={<ArrowRight className="w-5 h-5" />}>
                                 Bắt đầu Khám phá ngay!
                             </NeonButton>
