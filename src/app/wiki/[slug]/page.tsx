@@ -4,6 +4,8 @@ import { ArticleActions } from "@/components/wiki/article-actions";
 import Link from "next/link";
 import Image from "next/image";
 import ReactMarkdown from "react-markdown";
+import rehypeHighlight from "rehype-highlight";
+import "highlight.js/styles/atom-one-dark.css";
 
 const relatedPosts: any[] = [];
 
@@ -100,7 +102,7 @@ export default async function WikiDetailPage({ params }: { params: { slug: strin
                             </div>
 
                             <div className="markdown-content text-white mb-12">
-                                <ReactMarkdown>{post.content.trim()}</ReactMarkdown>
+                                <ReactMarkdown rehypePlugins={[rehypeHighlight]}>{post.content.trim()}</ReactMarkdown>
                             </div>
 
                             {post.tips && (
