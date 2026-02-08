@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { isAdminAuthenticated, isUserAuthenticated, getSession } from "@/lib/auth";
+import { revalidatePath } from "next/cache";
 
 // GET: Lấy danh sách bài viết từ Supabase
 export async function GET() {
@@ -72,6 +73,9 @@ export async function POST(req: Request) {
             return NextResponse.json({ success: false, error: error.message }, { status: 500 });
         }
 
+        // Revalidate danh sách bài viết
+        revalidatePath('/wiki');
+
         return NextResponse.json({ success: true, post: data[0] });
     } catch (error) {
         return NextResponse.json({ success: false, error: "Internal Server Error" }, { status: 500 });
@@ -126,6 +130,10 @@ export async function PUT(req: Request) {
             return NextResponse.json({ success: false, error: updateError.message }, { status: 500 });
         }
 
+        // Revalidate danh sách và bài viết cụ thể
+        revalidatePath('/wiki');
+        revalidatePath(`/wiki/${slug}`);
+
         return NextResponse.json({ success: true });
     } catch (error) {
         return NextResponse.json({ success: false, error: "Internal Server Error" }, { status: 500 });
@@ -154,6 +162,10 @@ export async function DELETE(req: Request) {
         if (error) {
             return NextResponse.json({ success: false, error: error.message }, { status: 500 });
         }
+
+        // Revalidate danh sách và bài viết cụ thể (để xóa cache cũ của bài viết)
+        revalidatePath('/wiki');
+        revalidatePath(`/wiki/${slug}`);
 
         return NextResponse.json({ success: true, message: "Xóa bài thành công" });
     } catch (error) {
