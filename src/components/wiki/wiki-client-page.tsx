@@ -241,9 +241,9 @@ function WikiCard({ post, isAdmin }: { post: WikiPost, isAdmin: boolean }) {
     return (
         <div className="relative group">
             <Link href={`/wiki/${post.slug}`} className="block h-full">
-                <GlassCard className="h-full flex flex-col group hover:border-accent-secondary/50 transition-all duration-300 overflow-hidden p-0">
+                <GlassCard className="h-full flex flex-col group hover:border-accent-secondary/50 transition-all duration-300 overflow-hidden !p-0">
                     {/* Article Thumbnail */}
-                    <div className="relative w-full aspect-video bg-white/5 border-b border-white/10 overflow-hidden group-hover:opacity-90 transition-opacity">
+                    <div className="relative w-full h-48 bg-white/5 border-b border-white/10 overflow-hidden group-hover:opacity-90 transition-opacity">
                         {post.image_url ? (
                             <img
                                 src={post.image_url}
