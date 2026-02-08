@@ -5,24 +5,46 @@ import { BookOpen, Clock, User, ArrowRight } from "lucide-react";
 import { DeleteButton } from "@/components/wiki/delete-button";
 import { isAdminAuthenticated } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
+import { FilterBar } from "@/components/wiki/filter-bar";
 
 export const revalidate = 60; // Tự động cập nhật dữ liệu sau mỗi 60 giây
 
-export default async function WikiPage() {
+export default async function WikiPage({
+    searchParams
+}: {
+    searchParams: { category?: string; author?: string }
+}) {
     const isAdmin = await isAdminAuthenticated();
+    const params = await searchParams;
+    const categoryFilter = params.category;
+    const authorFilter = params.author;
+
     let posts: any[] = [];
+    let allCategories: string[] = [];
+    let allAuthors: string[] = [];
 
     try {
-        const { data, error } = await supabase
-            .from("wiki_posts")
-            .select("*")
-            .order("created_at", { ascending: false });
+        // 1. Lấy dữ liệu bài viết kèm bộ lọc
+        let query = supabase.from("wiki_posts").select("*");
 
-        if (!error && data) {
-            posts = data;
+        if (categoryFilter) {
+            query = query.eq("category", categoryFilter);
+        }
+        if (authorFilter) {
+            query = query.eq("author", authorFilter);
+        }
+
+        const { data: postsData } = await query.order("created_at", { ascending: false });
+        if (postsData) posts = postsData;
+
+        // 2. Lấy danh sách duy nhất phục vụ bộ lọc
+        const { data: filterData } = await supabase.from("wiki_posts").select("category, author");
+        if (filterData) {
+            allCategories = Array.from(new Set(filterData.map(d => d.category)));
+            allAuthors = Array.from(new Set(filterData.map(d => d.author)));
         }
     } catch (e) {
-        console.error("Failed to fetch wiki posts:", e);
+        console.error("Failed to fetch wiki data:", e);
     }
 
     return (
@@ -53,6 +75,8 @@ export default async function WikiPage() {
                         </div>
                     )}
                 </header>
+
+                <FilterBar categories={allCategories} authors={allAuthors} />
 
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {posts.map((post: any) => (

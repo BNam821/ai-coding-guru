@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { isAdminAuthenticated } from "@/lib/auth";
+import { isAdminAuthenticated, getSession } from "@/lib/auth";
 
 // GET: Lấy danh sách bài viết từ Supabase
 export async function GET() {
@@ -28,6 +28,11 @@ export async function POST(req: Request) {
     }
 
     try {
+        const session = await getSession();
+        if (!session) {
+            return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+        }
+
         const newPost = await req.json();
 
         // Tạo slug từ title nếu không có
@@ -51,7 +56,7 @@ export async function POST(req: Request) {
                 slug: newPost.slug,
                 excerpt: newPost.excerpt,
                 content: newPost.content,
-                author: newPost.author,
+                author: session.username, // Tự động lấy từ session
                 category: newPost.category,
                 image_url: newPost.image_url,
                 tips: newPost.tips,

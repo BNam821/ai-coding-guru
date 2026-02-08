@@ -13,12 +13,23 @@ export default function CreatePostPage() {
     const [excerpt, setExcerpt] = useState("");
     const [content, setContent] = useState("");
     const [tips, setTips] = useState("");
-    const [author, setAuthor] = useState("CamPha8");
     const [category, setCategory] = useState("Hướng dẫn");
+    const [author, setAuthor] = useState(""); // 
     const [imageUrl, setImageUrl] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
     const router = useRouter();
+
+    useEffect(() => {
+        const checkSession = async () => {
+            const res = await fetch("/api/auth/session");
+            const data = await res.json();
+            if (data.username) {
+                setAuthor(data.username);
+            }
+        };
+        checkSession();
+    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -29,7 +40,7 @@ export default function CreatePostPage() {
             const res = await fetch("/api/wiki", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ title, excerpt, content, tips, author, category, image_url: imageUrl }),
+                body: JSON.stringify({ title, excerpt, content, tips, category, image_url: imageUrl }),
             });
 
             const data = await res.json();
@@ -131,13 +142,11 @@ export default function CreatePostPage() {
                                     <label className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-white/40">
                                         <User size={14} /> Tác giả
                                     </label>
-                                    <input
-                                        type="text"
-                                        value={author}
-                                        onChange={(e) => setAuthor(e.target.value)}
-                                        className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white text-sm focus:outline-none focus:border-accent-secondary/50"
-                                        required
-                                    />
+                                    <div className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-accent-primary text-sm font-bold flex items-center gap-2">
+                                        <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                                        {author || "Đang xác thực..."}
+                                    </div>
+                                    <p className="text-[10px] text-white/30 italic">Tên tác giả được gắn tự động theo tài khoản của bạn.</p>
                                 </div>
 
                                 <div className="space-y-4">
