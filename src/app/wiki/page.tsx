@@ -49,10 +49,12 @@ export default async function WikiPage({
 
             if (savedData && savedData.length > 0) {
                 const slugs = savedData.map(d => d.post_slug);
-                const { data: filteredSaved } = await supabase
-                    .from("wiki_posts")
-                    .select("*")
-                    .in("slug", slugs);
+                let savedQuery = supabase.from("wiki_posts").select("*").in("slug", slugs);
+
+                if (categoryFilter) savedQuery = savedQuery.eq("category", categoryFilter);
+                if (authorFilter) savedQuery = savedQuery.eq("author", authorFilter);
+
+                const { data: filteredSaved } = await savedQuery.order("created_at", { ascending: false });
                 if (filteredSaved) savedPosts = filteredSaved;
             }
         }
@@ -67,7 +69,7 @@ export default async function WikiPage({
         console.error("Failed to fetch wiki data:", e);
     }
 
-    const showSaved = searchParams.showSaved === "true";
+    const showSaved = params.showSaved === "true";
 
     return (
         <main className="min-h-screen pt-32 pb-20 px-4 relative z-10">

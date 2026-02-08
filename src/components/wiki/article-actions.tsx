@@ -92,7 +92,7 @@ export function ArticleActions({ slug }: { slug: string }) {
                 )}
             >
                 <Bookmark size={16} className={isSaved ? "fill-current" : ""} />
-                {isSaved ? "Đã lưu kho" : "Lưu bài viết"}
+                {isSaved ? "Đã lưu" : "Lưu bài viết"}
             </button>
         </div>
     );
