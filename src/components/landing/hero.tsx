@@ -1,9 +1,18 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
 import { NeonButton } from "../ui/neon-button";
 import { ArrowRight, Code, Zap, Brain, Rocket } from "lucide-react";
 
 export function Hero() {
+    const scrollToFeatures = () => {
+        const element = document.getElementById('features');
+        if (element) {
+            element.scrollIntoView({ behavior: 'smooth' });
+        }
+    };
+
     return (
         <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
             {/* Background Elements */}
@@ -28,11 +37,11 @@ export function Hero() {
                     </p>
 
                     <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                        <Link href="#features">
+                        <div onClick={scrollToFeatures}>
                             <NeonButton variant="primary" icon={<ArrowRight className="w-5 h-5" />}>
                                 Bắt đầu Khám phá ngay!
                             </NeonButton>
-                        </Link>
+                        </div>
                         <NeonButton variant="outline" icon={<Code className="w-5 h-5" />}>
                             Xem hướng dẫn
                         </NeonButton>
