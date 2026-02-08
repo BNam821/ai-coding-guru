@@ -64,7 +64,7 @@ const features = [
 - Bài tập thực hành
 - Chứng nhận hoàn thành
 - Theo dõi tiến độ`,
-        href: "/lessons",
+        href: "/learn",
         buttonText: "Bắt đầu học",
         accentColor: "bg-accent-primary text-black"
     },
@@ -77,7 +77,7 @@ const features = [
 - Chấm điểm & phản hồi tức thì
 - Gợi ý cải thiện cá nhân hóa
 - Mô phỏng phỏng vấn thực tế`,
-        href: "/tests",
+        href: "/test",
         buttonText: "Làm bài kiểm tra",
         accentColor: "bg-purple-500 text-white"
     }
