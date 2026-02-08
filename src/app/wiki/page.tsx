@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { PageBackground } from "@/components/ui/page-background";
 import { GlassCard } from "@/components/ui/glass-card";
-import { BookOpen, Clock, User, ArrowRight } from "lucide-react";
+import { BookOpen, Clock, User, ArrowRight, Bookmark } from "lucide-react";
 import { DeleteButton } from "@/components/wiki/delete-button";
-import { isAdminAuthenticated } from "@/lib/auth";
+import { isAdminAuthenticated, getSession } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 import { FilterBar } from "@/components/wiki/filter-bar";
 
@@ -23,7 +23,10 @@ export default async function WikiPage({
     let allCategories: string[] = [];
     let allAuthors: string[] = [];
 
+    let savedPosts: any[] = [];
+
     try {
+        const session = await getSession();
         // 1. Lấy dữ liệu bài viết kèm bộ lọc
         let query = supabase.from("wiki_posts").select("*");
 
@@ -37,7 +40,24 @@ export default async function WikiPage({
         const { data: postsData } = await query.order("created_at", { ascending: false });
         if (postsData) posts = postsData;
 
-        // 2. Lấy danh sách duy nhất phục vụ bộ lọc
+        // 2. Lấy danh sách bài viết đã lưu nếu người dùng đã đăng nhập
+        if (session) {
+            const { data: savedData } = await supabase
+                .from("saved_posts")
+                .select("post_slug")
+                .eq("username", session.username);
+
+            if (savedData && savedData.length > 0) {
+                const slugs = savedData.map(d => d.post_slug);
+                const { data: filteredSaved } = await supabase
+                    .from("wiki_posts")
+                    .select("*")
+                    .in("slug", slugs);
+                if (filteredSaved) savedPosts = filteredSaved;
+            }
+        }
+
+        // 3. Lấy danh sách duy nhất phục vụ bộ lọc
         const { data: filterData } = await supabase.from("wiki_posts").select("category, author");
         if (filterData) {
             allCategories = Array.from(new Set(filterData.map(d => d.category)));
@@ -78,55 +98,88 @@ export default async function WikiPage({
 
                 <FilterBar categories={allCategories} authors={allAuthors} />
 
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {posts.map((post: any) => (
-                        <div key={post.slug} className="relative group">
-                            <Link href={`/wiki/${post.slug}`} className="block h-full">
-                                <GlassCard className="h-full flex flex-col group hover:border-accent-secondary/50 transition-all duration-300 overflow-hidden p-0">
-                                    {/* Article Thumbnail */}
-                                    <div className="relative w-full h-48 bg-white/5 border-b border-white/10 overflow-hidden">
-                                        {post.image_url ? (
-                                            <img
-                                                src={post.image_url}
-                                                alt={post.title}
-                                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                                            />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center text-white/20">
-                                                <BookOpen size={48} />
-                                            </div>
-                                        )}
-                                        <div className="absolute top-4 left-4 inline-block px-3 py-1 rounded-full bg-deep-space/80 backdrop-blur-md border border-accent-secondary/20 text-accent-secondary text-[10px] font-bold uppercase tracking-wider">
-                                            {post.category}
-                                        </div>
-                                    </div>
-
-                                    <div className="p-6 space-y-4 flex-1">
-                                        <h2 className="text-xl font-bold text-white group-hover:text-accent-secondary transition-colors line-clamp-2 leading-tight">
-                                            {post.title}
-                                        </h2>
-                                        <p className="text-white/60 text-sm leading-relaxed line-clamp-2">
-                                            {post.excerpt}
-                                        </p>
-                                    </div>
-
-                                    <div className="px-6 py-4 border-t border-white/5 flex items-center justify-between text-[10px] text-white/40 font-bold uppercase tracking-widest">
-                                        <div className="flex items-center gap-4">
-                                            <span className="flex items-center gap-1.5"><User size={12} className="text-accent-primary" /> {post.author}</span>
-                                            <span className="flex items-center gap-1.5"><Clock size={12} className="text-accent-secondary" /> {post.read_time}</span>
-                                        </div>
-                                        <ArrowRight size={14} className="text-accent-secondary group-hover:translate-x-1 transition-transform" />
-                                    </div>
-                                </GlassCard>
-                            </Link>
-
-                            {isAdmin && (
-                                <DeleteButton slug={post.slug} />
-                            )}
+                {/* Saved Posts Section */}
+                {savedPosts.length > 0 && (
+                    <div className="mb-20 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+                        <div className="flex items-center gap-4 mb-8">
+                            <div className="h-px flex-1 bg-gradient-to-r from-transparent via-accent-primary/50 to-transparent" />
+                            <h2 className="text-2xl font-bold text-white flex items-center gap-3">
+                                <Bookmark size={24} className="text-accent-primary fill-accent-primary" />
+                                Kho kiến thức của bạn
+                            </h2>
+                            <div className="h-px flex-1 bg-gradient-to-r from-transparent via-accent-primary/50 to-transparent" />
                         </div>
-                    ))}
+                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            {savedPosts.map((post: any) => (
+                                <WikiCard key={`saved-${post.slug}`} post={post} isAdmin={isAdmin} />
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                <div className="space-y-8">
+                    {savedPosts.length > 0 && (
+                        <h2 className="text-2xl font-bold text-white mb-8 flex items-center gap-3">
+                            <BookOpen size={24} className="text-accent-secondary" />
+                            Tất cả bài viết
+                        </h2>
+                    )}
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {posts.map((post: any) => (
+                            <WikiCard key={post.slug} post={post} isAdmin={isAdmin} />
+                        ))}
+                    </div>
                 </div>
             </div>
         </main>
+    );
+}
+
+function WikiCard({ post, isAdmin }: { post: any, isAdmin: boolean }) {
+    return (
+        <div className="relative group">
+            <Link href={`/wiki/${post.slug}`} className="block h-full">
+                <GlassCard className="h-full flex flex-col group hover:border-accent-secondary/50 transition-all duration-300 overflow-hidden p-0">
+                    {/* Article Thumbnail */}
+                    <div className="relative w-full h-48 bg-white/5 border-b border-white/10 overflow-hidden">
+                        {post.image_url ? (
+                            <img
+                                src={post.image_url}
+                                alt={post.title}
+                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                            />
+                        ) : (
+                            <div className="w-full h-full flex items-center justify-center text-white/20">
+                                <BookOpen size={48} />
+                            </div>
+                        )}
+                        <div className="absolute top-4 left-4 inline-block px-3 py-1 rounded-full bg-deep-space/80 backdrop-blur-md border border-accent-secondary/20 text-accent-secondary text-[10px] font-bold uppercase tracking-wider">
+                            {post.category}
+                        </div>
+                    </div>
+
+                    <div className="p-6 space-y-4 flex-1">
+                        <h2 className="text-xl font-bold text-white group-hover:text-accent-secondary transition-colors line-clamp-2 leading-tight">
+                            {post.title}
+                        </h2>
+                        <p className="text-white/60 text-sm leading-relaxed line-clamp-2">
+                            {post.excerpt}
+                        </p>
+                    </div>
+
+                    <div className="px-6 py-4 border-t border-white/5 flex items-center justify-between text-[10px] text-white/40 font-bold uppercase tracking-widest">
+                        <div className="flex items-center gap-4">
+                            <span className="flex items-center gap-1.5"><User size={12} className="text-accent-primary" /> {post.author}</span>
+                            <span className="flex items-center gap-1.5"><Clock size={12} className="text-accent-secondary" /> {post.read_time}</span>
+                        </div>
+                        <ArrowRight size={14} className="text-accent-secondary group-hover:translate-x-1 transition-transform" />
+                    </div>
+                </GlassCard>
+            </Link>
+
+            {isAdmin && (
+                <DeleteButton slug={post.slug} />
+            )}
+        </div>
     );
 }
