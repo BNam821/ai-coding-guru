@@ -118,10 +118,10 @@ export function WikiClientPage({ initialData }: WikiClientPageProps) {
             <header className="mb-14 text-center space-y-8">
                 <div className="space-y-4">
                     <h1 className="text-5xl lg:text-7xl font-bold text-white drop-shadow-[0_0_30px_rgba(255,255,255,0.4)] transition-all duration-500 hover:drop-shadow-[0_0_50px_rgba(255,255,255,0.6)]">
-                        Wiki Kiến thức
+                        Blog Kiến Thức
                     </h1>
                     <p className="text-white text-xl max-w-2xl mx-auto leading-relaxed font-bold border-b border-white/20 pb-6">
-                        Thư viện kiến thức lập trình nền tảng và nâng cao.
+                        Tổng hợp các bài viết về lập trình và AI.
                     </p>
                 </div>
 
