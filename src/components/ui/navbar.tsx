@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { Home, Book, GraduationCap, ClipboardCheck, User, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 const navItems = [
     { name: "Trang chủ", href: "/", icon: <Home className="w-4 h-4" /> },
@@ -22,9 +23,7 @@ export function Navbar() {
             <div className="glass-panel px-6 py-3 rounded-2xl border border-white/10 bg-black/40 backdrop-blur-xl flex items-center justify-between shadow-2xl">
                 {/* Logo */}
                 <Link href="/" className="flex items-center gap-2 group">
-                    <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-accent-secondary to-accent-primary flex items-center justify-center text-black group-hover:rotate-12 transition-transform duration-300">
-                        <Sparkles size={18} fill="currentColor" />
-                    </div>
+                    <Image src="/real_logo.png" alt="AI Coding Guru Logo" width={32} height={32} className="rounded-lg" />
                     <span className="font-heading font-bold text-starlight tracking-tight hidden sm:block">AI Coding Guru</span>
                 </Link>
 
