@@ -87,13 +87,14 @@ export function FeaturesSection() {
     return (
         <section className="py-20 px-4">
             <div className="container mx-auto max-w-6xl">
-                {/* Section Title - Left aligned with blur background */}
-                <div className="inline-block mb-12">
-                    <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl px-8 py-4 shadow-[0_0_40px_rgba(0,255,163,0.1)]">
-                        <h2 className="text-4xl lg:text-5xl font-bold text-white text-left">
-                            AI Coding Guru có gì?
-                        </h2>
-                    </div>
+                {/* Section Title - Centered with blur background */}
+                <div className="text-center mb-16 space-y-4">
+                    <h2 className="text-4xl font-bold font-heading">
+                        <span className="text-accent-secondary">AI Coding Guru</span> có gì?
+                    </h2>
+                    <p className="text-slate-400 max-w-xl mx-auto">
+                        Khám phá các tính năng được thiết kế để giúp bạn trở thành lập trình viên giỏi hơn mỗi ngày.
+                    </p>
                 </div>
 
                 {/* Feature Cards Grid */}
