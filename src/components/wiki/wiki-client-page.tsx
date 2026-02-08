@@ -241,17 +241,17 @@ function WikiCard({ post, isAdmin }: { post: WikiPost, isAdmin: boolean }) {
     return (
         <div className="relative group">
             <Link href={`/wiki/${post.slug}`} className="block h-full">
-                <GlassCard className="h-full flex flex-col group hover:border-accent-secondary/50 transition-all duration-300 overflow-hidden !p-0">
+                <GlassCard className="h-full flex flex-col group hover:border-accent-secondary/50 transition-all duration-300 overflow-hidden p-0">
                     {/* Article Thumbnail */}
-                    <div className="relative w-full h-48 bg-white/5 border-b border-white/10 overflow-hidden group-hover:opacity-90 transition-opacity">
+                    <div className="relative w-full h-48 bg-white/5 border-b border-white/10 overflow-hidden">
                         {post.image_url ? (
                             <img
                                 src={post.image_url}
                                 alt={post.title}
-                                className="w-full h-full object-cover object-center block transition-transform duration-700 group-hover:scale-105"
+                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                             />
                         ) : (
-                            <div className="w-full h-full flex items-center justify-center text-white/10 bg-gradient-to-br from-white/5 to-transparent">
+                            <div className="w-full h-full flex items-center justify-center text-white/20">
                                 <BookOpen size={48} />
                             </div>
                         )}

@@ -1,4 +1,4 @@
-import { Calendar, User, Clock, ArrowLeft, Sparkles } from "lucide-react";
+import { Calendar, User, Clock, ArrowLeft, Sparkles, Edit } from "lucide-react";
 import { GlassCard } from "@/components/ui/glass-card";
 import { ArticleActions } from "@/components/wiki/article-actions";
 import Link from "next/link";
@@ -10,6 +10,7 @@ import "highlight.js/styles/atom-one-dark.css";
 const relatedPosts: any[] = [];
 
 import { supabase } from "@/lib/supabase";
+import { getSession } from "@/lib/auth";
 
 export const revalidate = 60; // Tự động cập nhật dữ liệu sau mỗi 60 giây
 
@@ -47,10 +48,24 @@ export default async function WikiDetailPage({ params }: { params: { slug: strin
 
             <div className="container mx-auto max-w-7xl">
                 {/* Back Button */}
-                <Link href="/wiki" className="inline-flex items-center gap-2 text-white font-bold hover:text-accent-secondary transition-colors mb-8 group">
-                    <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
-                    <span>Quay lại Thư viện</span>
-                </Link>
+                {/* Top Bar: Back & Edit */}
+                <div className="flex items-center justify-between mb-8">
+                    <Link href="/wiki" className="inline-flex items-center gap-2 text-white font-bold hover:text-accent-secondary transition-colors group">
+                        <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
+                        <span>Quay lại Thư viện</span>
+                    </Link>
+
+                    {/* Show Edit button if author */}
+                    {post && (await getSession())?.username === post.author && (
+                        <Link
+                            href={`/wiki/${slug}/edit`}
+                            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white font-semibold transition-colors border border-white/10"
+                        >
+                            <Edit size={16} />
+                            <span>Sửa bài viết</span>
+                        </Link>
+                    )}
+                </div>
 
                 <div className="grid lg:grid-cols-[1fr_350px] gap-12">
                     {/* Left Column: Content */}

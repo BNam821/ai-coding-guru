@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { isAdminAuthenticated, getSession } from "@/lib/auth";
+import { isAdminAuthenticated, isUserAuthenticated, getSession } from "@/lib/auth";
 
 // GET: Lấy danh sách bài viết từ Supabase
 export async function GET() {
@@ -73,6 +73,60 @@ export async function POST(req: Request) {
         }
 
         return NextResponse.json({ success: true, post: data[0] });
+    } catch (error) {
+        return NextResponse.json({ success: false, error: "Internal Server Error" }, { status: 500 });
+    }
+}
+
+// PUT: Cập nhật bài viết (Chỉ tác giả)
+export async function PUT(req: Request) {
+    if (!(await isUserAuthenticated())) {
+        return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+    }
+
+    try {
+        const session = await getSession();
+        const { slug, title, excerpt, content, category, image_url, tips } = await req.json();
+
+        if (!slug) {
+            return NextResponse.json({ success: false, error: "Thiếu Slug" }, { status: 400 });
+        }
+
+        // Check ownership
+        const { data: post, error: fetchError } = await supabase
+            .from("wiki_posts")
+            .select("author")
+            .eq("slug", slug)
+            .single();
+
+        if (fetchError || !post) {
+            return NextResponse.json({ success: false, error: "Bài viết không tồn tại" }, { status: 404 });
+        }
+
+        if (post.author !== session.username && session.role !== 'admin') {
+            return NextResponse.json({ success: false, error: "Bạn không có quyền sửa bài này" }, { status: 403 });
+        }
+
+        const readTime = `${Math.ceil((content || "").split(" ").length / 200)} phút`;
+
+        const { error: updateError } = await supabase
+            .from("wiki_posts")
+            .update({
+                title,
+                excerpt,
+                content,
+                category,
+                image_url,
+                tips,
+                read_time: readTime,
+            })
+            .eq("slug", slug);
+
+        if (updateError) {
+            return NextResponse.json({ success: false, error: updateError.message }, { status: 500 });
+        }
+
+        return NextResponse.json({ success: true });
     } catch (error) {
         return NextResponse.json({ success: false, error: "Internal Server Error" }, { status: 500 });
     }
