@@ -12,7 +12,7 @@ export const revalidate = 60; // Tự động cập nhật dữ liệu sau mỗi
 export default async function WikiPage({
     searchParams
 }: {
-    searchParams: { category?: string; author?: string }
+    searchParams: { category?: string; author?: string; showSaved?: string }
 }) {
     const isAdmin = await isAdminAuthenticated();
     const params = await searchParams;
