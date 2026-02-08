@@ -67,6 +67,8 @@ export default async function WikiPage({
         console.error("Failed to fetch wiki data:", e);
     }
 
+    const showSaved = searchParams.showSaved === "true";
+
     return (
         <main className="min-h-screen pt-32 pb-20 px-4 relative z-10">
             {/* Gentle Neon Aura */}
@@ -74,13 +76,13 @@ export default async function WikiPage({
             <div className="absolute bottom-[20%] right-[-5%] w-[600px] h-[600px] bg-accent-secondary/3 rounded-full blur-[180px] -z-10" />
 
             <div className="container mx-auto max-w-6xl">
-                <header className="mb-20 text-center space-y-8">
+                <header className="mb-14 text-center space-y-8">
                     <div className="space-y-4">
                         <h1 className="text-5xl lg:text-7xl font-bold text-white drop-shadow-[0_0_30px_rgba(255,255,255,0.4)] transition-all duration-500 hover:drop-shadow-[0_0_50px_rgba(255,255,255,0.6)]">
                             Wiki Kiến thức
                         </h1>
                         <p className="text-white text-xl max-w-2xl mx-auto leading-relaxed font-bold border-b border-white/20 pb-6">
-                            Thư viện hướng dẫn sử dụng và kiến thức lập trình dành cho mọi cấp độ.
+                            Thư viện kiến thức lập trình nền tảng và nâng cao.
                         </p>
                     </div>
 
@@ -99,36 +101,52 @@ export default async function WikiPage({
                 <FilterBar categories={allCategories} authors={allAuthors} />
 
                 {/* Saved Posts Section */}
-                {savedPosts.length > 0 && (
+                {showSaved && (
                     <div className="mb-20 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
                         <div className="flex items-center gap-4 mb-8">
                             <div className="h-px flex-1 bg-gradient-to-r from-transparent via-accent-primary/50 to-transparent" />
                             <h2 className="text-2xl font-bold text-white flex items-center gap-3">
                                 <Bookmark size={24} className="text-accent-primary fill-accent-primary" />
-                                Kho kiến thức của bạn
+                                Bài viết đã lưu
                             </h2>
                             <div className="h-px flex-1 bg-gradient-to-r from-transparent via-accent-primary/50 to-transparent" />
                         </div>
-                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                            {savedPosts.map((post: any) => (
-                                <WikiCard key={`saved-${post.slug}`} post={post} isAdmin={isAdmin} />
-                            ))}
-                        </div>
+                        {savedPosts.length > 0 ? (
+                            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                                {savedPosts.map((post: any) => (
+                                    <WikiCard key={`saved-${post.slug}`} post={post} isAdmin={isAdmin} />
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="text-center py-20 px-4 rounded-3xl bg-white/5 border border-dashed border-white/10">
+                                <p className="text-white/40 font-bold uppercase tracking-widest text-sm">Bạn chưa lưu bài viết nào</p>
+                            </div>
+                        )}
                     </div>
                 )}
 
                 <div className="space-y-8">
-                    {savedPosts.length > 0 && (
-                        <h2 className="text-2xl font-bold text-white mb-8 flex items-center gap-3">
-                            <BookOpen size={24} className="text-accent-secondary" />
-                            Tất cả bài viết
-                        </h2>
+                    {!showSaved ? (
+                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            {posts.map((post: any) => (
+                                <WikiCard key={post.slug} post={post} isAdmin={isAdmin} />
+                            ))}
+                        </div>
+                    ) : (
+                        posts.length > 0 && (
+                            <>
+                                <h2 className="text-2xl font-bold text-white mb-8 flex items-center gap-3">
+                                    <BookOpen size={24} className="text-accent-secondary" />
+                                    Tất cả bài viết
+                                </h2>
+                                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                                    {posts.map((post: any) => (
+                                        <WikiCard key={post.slug} post={post} isAdmin={isAdmin} />
+                                    ))}
+                                </div>
+                            </>
+                        )
                     )}
-                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {posts.map((post: any) => (
-                            <WikiCard key={post.slug} post={post} isAdmin={isAdmin} />
-                        ))}
-                    </div>
                 </div>
             </div>
         </main>
