@@ -102,9 +102,9 @@ export default async function WikiPage({
 
                 <FilterBar categories={allCategories} authors={allAuthors} />
 
-                {/* Saved Posts Section */}
-                {showSaved && (
-                    <div className="mb-20 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+                {/* Content Section */}
+                {showSaved ? (
+                    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
                         <div className="flex items-center gap-4 mb-8">
                             <div className="h-px flex-1 bg-gradient-to-r from-transparent via-accent-primary/50 to-transparent" />
                             <h2 className="text-2xl font-bold text-white flex items-center gap-3">
@@ -125,31 +125,13 @@ export default async function WikiPage({
                             </div>
                         )}
                     </div>
+                ) : (
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+                        {posts.map((post: any) => (
+                            <WikiCard key={post.slug} post={post} isAdmin={isAdmin} />
+                        ))}
+                    </div>
                 )}
-
-                <div className="space-y-8">
-                    {!showSaved ? (
-                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                            {posts.map((post: any) => (
-                                <WikiCard key={post.slug} post={post} isAdmin={isAdmin} />
-                            ))}
-                        </div>
-                    ) : (
-                        posts.length > 0 && (
-                            <>
-                                <h2 className="text-2xl font-bold text-white mb-8 flex items-center gap-3">
-                                    <BookOpen size={24} className="text-accent-secondary" />
-                                    Tất cả bài viết
-                                </h2>
-                                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                                    {posts.map((post: any) => (
-                                        <WikiCard key={post.slug} post={post} isAdmin={isAdmin} />
-                                    ))}
-                                </div>
-                            </>
-                        )
-                    )}
-                </div>
             </div>
         </main>
     );
