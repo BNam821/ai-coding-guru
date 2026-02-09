@@ -4,11 +4,34 @@ import { AdminLoginForm } from "@/components/auth/login-form";
 import { GlassCard } from "@/components/ui/glass-card";
 import { LogoutButton } from "@/components/auth/logout-button";
 import { User, ShieldCheck, Mail, MapPin, UserCircle } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 export default async function AccountPage() {
     const session = await getSession();
     const isAdmin = session?.role === "admin";
     const isAuthenticated = !!session;
+
+    let postCount = 0;
+    let memberCount = 0;
+
+    if (isAuthenticated) {
+        try {
+            const [postsRes, usersRes] = await Promise.all([
+                supabase
+                    .from("wiki_posts")
+                    .select("*", { count: 'exact', head: true })
+                    .eq("author", session.username),
+                supabase
+                    .from("users")
+                    .select("*", { count: 'exact', head: true })
+            ]);
+
+            postCount = postsRes.count || 0;
+            memberCount = usersRes.count || 0;
+        } catch (error) {
+            console.error("Failed to fetch account stats:", error);
+        }
+    }
 
     return (
         <main className="min-h-screen pt-32 px-4 relative z-10">
@@ -89,19 +112,19 @@ export default async function AccountPage() {
 
                             <div className="mt-12 pt-8 border-t border-white/10 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
                                 <div className="space-y-1">
-                                    <p className="text-2xl font-bold text-white">{isAdmin ? "18" : "0"}</p>
-                                    <p className="text-[10px] uppercase tracking-widest text-white/40">{isAdmin ? "Bài viết" : "Khóa học"}</p>
+                                    <p className="text-2xl font-bold text-white">{postCount}</p>
+                                    <p className="text-[10px] uppercase tracking-widest text-white/40">Bài viết</p>
                                 </div>
                                 <div className="space-y-1">
-                                    <p className="text-2xl font-bold text-white">{isAdmin ? "36" : "1"}</p>
-                                    <p className="text-[10px] uppercase tracking-widest text-white/40">{isAdmin ? "Thành viên" : "Huy hiệu"}</p>
+                                    <p className="text-2xl font-bold text-white">{memberCount}</p>
+                                    <p className="text-[10px] uppercase tracking-widest text-white/40">Thành viên</p>
                                 </div>
                                 <div className="space-y-1">
-                                    <p className="text-2xl font-bold text-white">{isAdmin ? "36%" : "12%"}</p>
+                                    <p className="text-2xl font-bold text-white">{isAdmin ? "50%" : "12%"}</p>
                                     <p className="text-[10px] uppercase tracking-widest text-white/40">Tiến độ</p>
                                 </div>
                                 <div className="space-y-1">
-                                    <p className="text-2xl font-bold text-white">v3.6</p>
+                                    <p className="text-2xl font-bold text-white">v2.1</p>
                                     <p className="text-[10px] uppercase tracking-widest text-white/40">Phiên bản</p>
                                 </div>
                             </div>
