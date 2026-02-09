@@ -25,14 +25,17 @@ export async function PUT(
             .from('courses')
             .update({ title, description })
             .eq('id', id)
-            .select()
-            .single();
+            .select();
 
         if (error) {
             return NextResponse.json({ success: false, error: error.message }, { status: 500 });
         }
 
-        return NextResponse.json({ success: true, course: data });
+        if (!data || data.length === 0) {
+            return NextResponse.json({ success: false, error: 'Course not found' }, { status: 404 });
+        }
+
+        return NextResponse.json({ success: true, course: data[0] });
     } catch (e) {
         return NextResponse.json({ success: false, error: 'Invalid request body' }, { status: 400 });
     }
