@@ -16,7 +16,7 @@ export function DeleteButton({ slug }: { slug: string }) {
                 const data = await res.json();
 
                 if (data.success) {
-                    router.refresh();
+                    window.location.reload();
                 } else {
                     alert("Lỗi: " + data.error);
                 }
