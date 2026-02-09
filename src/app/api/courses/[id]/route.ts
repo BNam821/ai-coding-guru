@@ -5,7 +5,7 @@ import { isAdminAuthenticated } from '@/lib/auth';
 // PUT: Update course (rename)
 export async function PUT(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     const isAdmin = await isAdminAuthenticated();
     if (!isAdmin) {
@@ -41,7 +41,7 @@ export async function PUT(
 // DELETE: Delete course
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     const isAdmin = await isAdminAuthenticated();
     if (!isAdmin) {
