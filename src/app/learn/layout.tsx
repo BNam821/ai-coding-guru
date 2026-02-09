@@ -1,4 +1,5 @@
 import { getFullLearningTree } from '@/lib/learn-db';
+import { isAdminAuthenticated } from '@/lib/auth';
 import { LearnSidebar } from '@/components/learn/sidebar';
 import { Menu } from 'lucide-react';
 import Link from 'next/link';
@@ -10,11 +11,12 @@ export default async function LearnLayout({
     children: React.ReactNode;
 }) {
     const courses = await getFullLearningTree();
+    const isAdmin = await isAdminAuthenticated();
 
     return (
         <div className="flex min-h-screen bg-black text-gray-100">
             {/* Sidebar Desktop */}
-            <LearnSidebar courses={courses} />
+            <LearnSidebar courses={courses} isAdmin={isAdmin} />
 
             <div className="flex-1 flex flex-col min-h-screen">
                 {/* Mobile Header */}
@@ -34,3 +36,4 @@ export default async function LearnLayout({
         </div>
     );
 }
+
