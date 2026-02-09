@@ -15,7 +15,7 @@ export function LearnSidebar({ courses }: LearnSidebarProps) {
     const pathname = usePathname();
 
     return (
-        <aside className="w-full md:w-64 shrink-0 border-r border-white/10 bg-black/20 backdrop-blur-md hidden md:block h-[calc(100vh-4rem)] sticky top-16 overflow-y-auto">
+        <aside className="w-full md:w-64 shrink-0 border-r border-white/10 bg-black/20 backdrop-blur-md hidden md:block h-[calc(100vh-6rem)] sticky top-24 overflow-y-auto">
             <div className="p-4 space-y-4">
                 <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600 px-2">
                     Học Tập

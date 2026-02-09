@@ -26,7 +26,7 @@ export default async function LearnLayout({
                 </header>
 
                 {/* Main Content */}
-                <main className="flex-1 p-4 md:p-8 max-w-4xl mx-auto w-full relative">
+                <main className="flex-1 p-4 md:p-8 pt-24 md:pt-28 max-w-4xl mx-auto w-full relative">
                     <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-20 pointer-events-none" />
                     {children}
                 </main>
