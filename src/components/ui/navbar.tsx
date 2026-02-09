@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import Image from "next/image";
 
 const navItems = [
-    { name: "Trang chủ", href: "/", icon: <Home className="w-4 h-4" /> },
+    { name: "chủ", href: "/", icon: <Home className="w-4 h-4" /> },
     { name: "Blogs", href: "/wiki", icon: <Book className="w-4 h-4" /> },
     { name: "Học tập", href: "/learn", icon: <GraduationCap className="w-4 h-4" /> },
     { name: "Kiểm tra", href: "/test", icon: <ClipboardCheck className="w-4 h-4" /> },
