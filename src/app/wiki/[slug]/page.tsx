@@ -6,6 +6,8 @@ import Image from "next/image";
 import ReactMarkdown from "react-markdown";
 import rehypeHighlight from "rehype-highlight";
 import "highlight.js/styles/atom-one-dark.css";
+// @ts-ignore
+import { WikiImage } from "@/components/wiki/wiki-image";
 
 const relatedPosts: any[] = [];
 
@@ -98,26 +100,33 @@ export default async function WikiDetailPage({ params }: { params: { slug: strin
 
                         {/* Article Content */}
                         <div className="prose prose-invert prose-slate max-w-none">
-                            <div className="relative w-full aspect-video rounded-2xl overflow-hidden border border-white/10 mb-12">
+                            <div className="relative w-full aspect-video rounded-2xl overflow-hidden border border-white/10 mb-12 block">
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10" />
                                 {post.image_url ? (
                                     <img
                                         src={post.image_url}
                                         alt={post.title}
-                                        className="w-full h-full object-cover opacity-90"
+                                        className="w-full h-full object-cover opacity-90 block !m-0"
                                     />
                                 ) : (
                                     <Image
                                         src="/bgt2.jpg"
                                         alt="Hero Image"
                                         fill
-                                        className="object-cover opacity-80"
+                                        className="object-cover opacity-80 block !m-0"
                                     />
                                 )}
                             </div>
 
                             <div className="markdown-content text-white mb-12">
-                                <ReactMarkdown rehypePlugins={[rehypeHighlight]}>{post.content.trim()}</ReactMarkdown>
+                                <ReactMarkdown
+                                    rehypePlugins={[rehypeHighlight]}
+                                    components={{
+                                        img: ({ node, ...props }) => <WikiImage {...props} />
+                                    }}
+                                >
+                                    {post.content.trim()}
+                                </ReactMarkdown>
                             </div>
 
                             {post.tips && (
