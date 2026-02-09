@@ -11,23 +11,15 @@ interface LoadingScreenProps {
 
 /**
  * Unified loading component for consistent UX across the app.
- * Uses GPU-accelerated animations for smooth performance.
  */
 export function LoadingScreen({
     message = "Đang tải...",
     fullScreen = false
 }: LoadingScreenProps) {
     return (
-        <div
-            className={`flex items-center justify-center ${fullScreen ? "min-h-screen" : "min-h-[400px]"
-                }`}
-        >
+        <div className={`flex items-center justify-center ${fullScreen ? "min-h-screen" : "min-h-[400px]"}`}>
             <div className="flex flex-col items-center gap-4">
-                {/* GPU-accelerated spin animation */}
-                <Loader2
-                    size={48}
-                    className="animate-spin text-accent-secondary will-change-transform"
-                />
+                <Loader2 size={48} className="animate-spin text-accent-secondary" />
                 <p className="text-white/40 font-bold uppercase tracking-widest text-xs">
                     {message}
                 </p>
@@ -35,3 +27,4 @@ export function LoadingScreen({
         </div>
     );
 }
+
