@@ -4,9 +4,10 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
-import rehypeHighlight from 'rehype-highlight'; // Might need to install this if not available, checked package.json -> it is there (rehype-highlight)
-import 'highlight.js/styles/github-dark.css'; // Standard highlight style, might need to adjust import path or rely on global CSS if tailwind typography handles it? Usually require CSS. 
-// Note: tailwind-typography handles style, but syntax highlighting needs CSS.
+import rehypeHighlight from 'rehype-highlight';
+import 'highlight.js/styles/github-dark.css';
+import { AdminControls } from '@/components/learn/admin-controls';
+import { isAdminAuthenticated } from '@/lib/auth';
 
 interface PageProps {
     params: Promise<{
@@ -55,7 +56,13 @@ export default async function LessonPage({ params }: PageProps) {
                 </ReactMarkdown>
             </article>
 
-            <div className="mt-12 pt-8 border-t border-white/10 flex justify-between">
+
+            <div className="mt-12 pt-8 border-t border-white/10 flex flex-col gap-4">
+                {/* Admin Controls */}
+                {await isAdminAuthenticated() && (
+                    <AdminControls lessonId={lesson.id} courseSlug={courseSlug} lessonSlug={lessonSlug} />
+                )}
+
                 {/* Navigation buttons could go here (Next/Prev lesson) - requiring logic to find next/prev */}
             </div>
         </div>
