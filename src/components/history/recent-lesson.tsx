@@ -16,28 +16,36 @@ export function RecentLesson({ isLoggedIn }: { isLoggedIn: boolean }) {
 
     useEffect(() => {
         const fetchRecent = async () => {
+            let foundData = null;
+
             if (isLoggedIn) {
                 try {
                     const res = await fetch('/api/learn/track');
                     const data = await res.json();
                     if (data.success && data.history) {
-                        setLesson(data.history);
+                        foundData = data.history;
+                        console.log('[RecentLesson] API Data found:', foundData);
                     }
                     console.log('[RecentLesson] API Response:', data);
                 } catch (err) {
                     console.error('[RecentLesson] API Error:', err);
                 }
-            } else {
+            }
+
+            // Fallback to local storage if API didn't return anything or not logged in
+            if (!foundData) {
                 const local = localStorage.getItem('last_lesson_guest');
-                console.log('[RecentLesson] Local Storage:', local);
+                console.log('[RecentLesson] Checking Local Storage Fallback:', local);
                 if (local) {
                     try {
-                        setLesson(JSON.parse(local));
+                        foundData = JSON.parse(local);
                     } catch (e) {
                         localStorage.removeItem('last_lesson_guest');
                     }
                 }
             }
+
+            setLesson(foundData);
             setLoading(false);
         };
 

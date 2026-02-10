@@ -17,7 +17,10 @@ interface HistoryTrackerProps {
 
 export function HistoryTracker({ type, data, isLoggedIn }: HistoryTrackerProps) {
     useEffect(() => {
+        console.log(`[HistoryTracker] Component mounted for ${type}`, { isLoggedIn, data });
+
         const trackHistory = async () => {
+            console.log(`[HistoryTracker] Executing track for ${type}...`);
             if (type === 'lesson') {
                 // Hybrid track for lessons
                 const trackData = {
@@ -29,26 +32,29 @@ export function HistoryTracker({ type, data, isLoggedIn }: HistoryTrackerProps) 
 
                 // Guest tracking
                 if (!isLoggedIn) {
+                    console.log('[HistoryTracker] Saving to LocalStorage (Guest)');
                     localStorage.setItem('last_lesson_guest', JSON.stringify({
                         ...trackData,
                         viewed_at: new Date().toISOString()
                     }));
                 }
 
-                // API tracking (will only save to DB if logged in)
+                // API tracking (saves to DB if logged in, handles backup if server fails)
                 try {
-                    await fetch('/api/learn/track', {
+                    const response = await fetch('/api/learn/track', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(trackData),
                     });
+                    const resData = await response.json();
+                    console.log('[HistoryTracker] Lesson API Response:', resData);
                 } catch (err) {
-                    console.error('Failed to track lesson history:', err);
+                    console.error('[HistoryTracker] Failed to track lesson history:', err);
                 }
             } else if (type === 'wiki' && isLoggedIn) {
                 // Only track wiki for logged in users
                 try {
-                    await fetch('/api/wiki/track', {
+                    const response = await fetch('/api/wiki/track', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -56,19 +62,18 @@ export function HistoryTracker({ type, data, isLoggedIn }: HistoryTrackerProps) 
                             post_title: data.post_title
                         }),
                     });
+                    const resData = await response.json();
+                    console.log('[HistoryTracker] Wiki API Response:', resData);
                 } catch (err) {
-                    console.error('Failed to track wiki history:', err);
+                    console.error('[HistoryTracker] Failed to track wiki history:', err);
                 }
             }
         };
 
-        // Tracking after 1 second to ensure the user actually stayed on the page
-        const timer = setTimeout(() => {
-            console.log(`[HistoryTracker] Tracking ${type}:`, data);
-            trackHistory();
-        }, 1000);
+        // Tracking after 1 second
+        const timer = setTimeout(trackHistory, 1000);
         return () => clearTimeout(timer);
-    }, [type, isLoggedIn, data.lesson_id, data.post_slug]); // More stable dependencies
+    }, [type, isLoggedIn, data.lesson_id, data.post_slug]);
 
     return null;
 }

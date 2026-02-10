@@ -36,7 +36,7 @@ export function ReadArticles({ isLoggedIn }: { isLoggedIn: boolean }) {
         fetchHistory();
     }, [isLoggedIn]);
 
-    if (!isLoggedIn || (!loading && history.length === 0)) return null;
+    if (!isLoggedIn) return null;
 
     return (
         <div className="pt-12 mt-12 border-t border-white/10 space-y-6">
@@ -54,7 +54,7 @@ export function ReadArticles({ isLoggedIn }: { isLoggedIn: boolean }) {
                 <div className="flex justify-center py-10">
                     <Loader2 className="w-6 h-6 text-blue-500 animate-spin" />
                 </div>
-            ) : (
+            ) : history.length > 0 ? (
                 <div className="grid gap-4 md:grid-cols-2">
                     {history.map((item) => (
                         <Link
@@ -79,6 +79,10 @@ export function ReadArticles({ isLoggedIn }: { isLoggedIn: boolean }) {
                             <ArrowRight className="w-4 h-4 text-gray-600 group-hover:text-white group-hover:translate-x-1 transition-all shrink-0" />
                         </Link>
                     ))}
+                </div>
+            ) : (
+                <div className="text-center py-10 rounded-xl border border-dashed border-white/10 bg-white/5">
+                    <p className="text-gray-500 text-sm italic">Bạn chưa đọc bài viết nào gần đây.</p>
                 </div>
             )}
         </div>
