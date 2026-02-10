@@ -103,6 +103,7 @@ function CourseItem({
                         <ChapterItem
                             key={chapter.id}
                             chapter={chapter}
+                            courseId={course.id}
                             courseSlug={course.slug}
                             pathname={pathname}
                             isAdmin={isAdmin}
@@ -122,11 +123,13 @@ function CourseItem({
 // --- Chapter Item with inline edit ---
 function ChapterItem({
     chapter,
+    courseId,
     courseSlug,
     pathname,
     isAdmin,
 }: {
     chapter: CourseWithChapters['chapters'][0];
+    courseId: string;
     courseSlug: string;
     pathname: string;
     isAdmin: boolean;
@@ -228,13 +231,22 @@ function ChapterItem({
                             {chapter.title}
                         </div>
                         {isAdmin && (
-                            <button
-                                onClick={() => setIsEditing(true)}
-                                className="p-1 text-gray-600 hover:text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
-                                title="Sửa tên chương"
-                            >
-                                <Pencil className="w-3 h-3" />
-                            </button>
+                            <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                                <Link
+                                    href={`/learn/create?courseId=${courseId}&chapterId=${chapter.id}`}
+                                    className="p-1 text-gray-600 hover:text-green-400"
+                                    title="Thêm bài học vào chương này"
+                                >
+                                    <Plus className="w-3.5 h-3.5" />
+                                </Link>
+                                <button
+                                    onClick={() => setIsEditing(true)}
+                                    className="p-1 text-gray-600 hover:text-blue-400"
+                                    title="Sửa tên chương"
+                                >
+                                    <Pencil className="w-3.5 h-3.5" />
+                                </button>
+                            </div>
                         )}
                     </>
                 )}

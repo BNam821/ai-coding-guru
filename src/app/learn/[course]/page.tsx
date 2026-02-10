@@ -95,11 +95,20 @@ export default async function CourseDetailPage({ params }: { params: { course: s
                                 className="bg-white/5 rounded-xl border border-white/10 overflow-hidden"
                             >
                                 {/* Chapter Header */}
-                                <div className="px-6 py-4 border-b border-white/10 bg-white/5">
+                                <div className="px-6 py-4 border-b border-white/10 bg-white/5 flex items-center justify-between">
                                     <h3 className="text-lg font-semibold text-gray-200">
                                         <span className="text-blue-400 mr-2">Chương {chapterIndex + 1}:</span>
                                         {chapter.title}
                                     </h3>
+                                    {isAdmin && (
+                                        <Link
+                                            href={`/learn/create?courseId=${course.id}&chapterId=${chapter.id}`}
+                                            className="flex items-center gap-1.5 px-3 py-1 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 rounded-lg text-xs font-bold transition-all border border-blue-500/20"
+                                        >
+                                            <Plus className="w-3.5 h-3.5" />
+                                            Thêm bài học
+                                        </Link>
+                                    )}
                                 </div>
 
                                 {/* Lessons */}
