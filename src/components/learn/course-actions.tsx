@@ -222,6 +222,7 @@ export function DeleteCourseButton({ courseId, courseTitle }: { courseId: string
 
             const data = await res.json();
             if (data.success) {
+                router.push('/learn');
                 router.refresh();
                 // Notify other components
                 window.dispatchEvent(new CustomEvent('learn-structure-changed'));
