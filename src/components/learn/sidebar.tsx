@@ -23,6 +23,20 @@ export function LearnSidebar({ courses, isAdmin = false }: LearnSidebarProps) {
                     Học Tập
                 </h2>
 
+                {isAdmin && (
+                    <div className="px-2 pt-2">
+                        <Link
+                            href="/learn/create"
+                            className="flex items-center gap-2 w-full p-3 text-sm font-bold rounded-xl transition-all bg-blue-500 hover:bg-blue-600 text-white shadow-lg shadow-blue-500/20 group"
+                        >
+                            <div className="bg-white/20 p-1 rounded-md group-hover:scale-110 transition-transform">
+                                <Plus className="w-4 h-4" />
+                            </div>
+                            <span>Tạo bài học mới</span>
+                        </Link>
+                    </div>
+                )}
+
                 <div className="space-y-2">
                     {courses.map((course) => (
                         <CourseItem
