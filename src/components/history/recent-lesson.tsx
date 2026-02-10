@@ -22,9 +22,9 @@ export function RecentLesson({ isLoggedIn }: { isLoggedIn: boolean }) {
                 try {
                     const res = await fetch('/api/learn/track');
                     const data = await res.json();
-                    if (data.success && data.history) {
-                        foundData = data.history;
-                        console.log('[RecentLesson] API Data found:', foundData);
+                    if (data.success && data.history && data.history.length > 0) {
+                        foundData = data.history[0];
+                        console.log('[RecentLesson] API Data found (latest):', foundData);
                     }
                     console.log('[RecentLesson] API Response:', data);
                 } catch (err) {
