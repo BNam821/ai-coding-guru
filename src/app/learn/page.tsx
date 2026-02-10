@@ -62,7 +62,7 @@ export default async function LearnPage() {
                 ))}
             </div>
 
-            <ReadArticles isLoggedIn={isLoggedIn} />
+            <RecentLessonsList isLoggedIn={isLoggedIn} />
         </div>
     );
 }
