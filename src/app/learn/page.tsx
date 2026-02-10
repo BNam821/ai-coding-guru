@@ -5,6 +5,8 @@ import { BookOpen, ArrowRight } from 'lucide-react';
 import { RecentLesson } from '@/components/history/recent-lesson';
 import { ReadArticles } from '@/components/history/read-articles';
 
+export const dynamic = 'force-dynamic';
+
 export default async function LearnPage() {
     const courses = await getFullLearningTree();
     const isLoggedIn = await isUserAuthenticated();

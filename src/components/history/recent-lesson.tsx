@@ -23,11 +23,13 @@ export function RecentLesson({ isLoggedIn }: { isLoggedIn: boolean }) {
                     if (data.success && data.history) {
                         setLesson(data.history);
                     }
+                    console.log('[RecentLesson] API Response:', data);
                 } catch (err) {
-                    console.error('Failed to fetch recent lesson from API', err);
+                    console.error('[RecentLesson] API Error:', err);
                 }
             } else {
                 const local = localStorage.getItem('last_lesson_guest');
+                console.log('[RecentLesson] Local Storage:', local);
                 if (local) {
                     try {
                         setLesson(JSON.parse(local));

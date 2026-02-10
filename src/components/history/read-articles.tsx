@@ -25,8 +25,9 @@ export function ReadArticles({ isLoggedIn }: { isLoggedIn: boolean }) {
                 if (data.success) {
                     setHistory(data.history || []);
                 }
+                console.log('[ReadArticles] API Response:', data);
             } catch (err) {
-                console.error('Failed to fetch wiki history', err);
+                console.error('[ReadArticles] API Error:', err);
             } finally {
                 setLoading(false);
             }

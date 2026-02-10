@@ -62,10 +62,13 @@ export function HistoryTracker({ type, data, isLoggedIn }: HistoryTrackerProps) 
             }
         };
 
-        // Delay tracking slightly to avoid unnecessary calls on quick scrolls/clicks
-        const timer = setTimeout(trackHistory, 3000);
+        // Tracking after 1 second to ensure the user actually stayed on the page
+        const timer = setTimeout(() => {
+            console.log(`[HistoryTracker] Tracking ${type}:`, data);
+            trackHistory();
+        }, 1000);
         return () => clearTimeout(timer);
-    }, [type, data, isLoggedIn]);
+    }, [type, isLoggedIn, data.lesson_id, data.post_slug]); // More stable dependencies
 
-    return null; // Invisible component
+    return null;
 }
