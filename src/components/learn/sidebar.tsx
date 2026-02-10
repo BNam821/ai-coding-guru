@@ -76,14 +76,21 @@ function CourseItem({
             <div className="flex items-center group">
                 <button
                     onClick={() => setIsOpen(!isOpen)}
+                    className="p-2 hover:bg-white/5 rounded-l-lg text-gray-400 transition-colors"
+                    title={isOpen ? "Thu gọn" : "Mở rộng"}
+                >
+                    {isOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                </button>
+
+                <Link
+                    href={`/learn/${course.slug}`}
                     className={cn(
-                        "flex items-center flex-1 p-2 text-sm font-medium rounded-lg transition-colors hover:bg-white/5",
+                        "flex-1 p-2 pl-0 text-sm font-medium rounded-r-lg transition-colors hover:bg-white/5 truncate",
                         isActive ? "text-blue-400" : "text-gray-400"
                     )}
                 >
-                    {isOpen ? <ChevronDown className="w-4 h-4 mr-2" /> : <ChevronRight className="w-4 h-4 mr-2" />}
-                    <span className="truncate">{course.title}</span>
-                </button>
+                    {course.title}
+                </Link>
 
                 {/* Admin: Edit Button */}
                 {isAdmin && (

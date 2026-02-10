@@ -158,8 +158,7 @@ export default async function CourseDetailPage({ params }: { params: { course: s
                                     Xoá hoàn toàn khoá học này và tất cả dữ liệu liên quan. Hành động này không thể hoàn tác.
                                 </p>
                             </div>
-                            <div className="shrink-0 flex items-center gap-4 bg-red-500/10 p-3 rounded-xl border border-red-500/20">
-                                <span className="text-sm font-medium text-red-300">Xác nhận xoá:</span>
+                            <div className="shrink-0 flex items-center bg-red-500/10 p-2 rounded-xl border border-red-500/20">
                                 <DeleteCourseButton courseId={course.id} courseTitle={course.title} />
                             </div>
                         </div>
