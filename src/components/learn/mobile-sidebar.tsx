@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { LearnSidebar } from './sidebar';
 import type { CourseWithChapters } from '@/lib/learn-db';
 
-export function MobileSidebar({ courses }: { courses: CourseWithChapters[] }) {
+export function MobileSidebar({ courses, isAdmin = false }: { courses: CourseWithChapters[]; isAdmin?: boolean }) {
     const [isOpen, setIsOpen] = useState(false);
 
     return (
@@ -31,7 +31,7 @@ export function MobileSidebar({ courses }: { courses: CourseWithChapters[] }) {
                     }`}
             >
                 <div className="h-full overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-                    <LearnSidebar courses={courses} />
+                    <LearnSidebar courses={courses} isAdmin={isAdmin} />
                 </div>
             </div>
         </>
