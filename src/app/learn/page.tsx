@@ -3,7 +3,7 @@ import { isUserAuthenticated } from '@/lib/auth';
 import Link from 'next/link';
 import { BookOpen, ArrowRight } from 'lucide-react';
 import { RecentLesson } from '@/components/history/recent-lesson';
-import { ReadArticles } from '@/components/history/read-articles';
+import { RecentLessonsList } from '@/components/history/recent-lessons-list';
 
 export const dynamic = 'force-dynamic';
 
