@@ -44,9 +44,11 @@ export function Hero() {
                                 Bắt đầu Khám phá ngay
                             </NeonButton>
                         </div>
-                        <NeonButton variant="outline" icon={<Code className="w-5 h-5" />}>
-                            Hướng dẫn
-                        </NeonButton>
+                        <Link href="https://www.youtube.com/watch?v=dQw4w9WgXcQ">
+                            <NeonButton variant="outline" icon={<Code className="w-5 h-5" />}>
+                                Hướng dẫn
+                            </NeonButton>
+                        </Link>
                     </div>
 
                     {/* Feature Stats - Horizontal & Compact */}
