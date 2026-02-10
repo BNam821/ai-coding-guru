@@ -6,7 +6,7 @@ import { useState, useRef, useEffect } from 'react';
 import { ChevronDown, ChevronRight, FileText, Plus, Pencil, Check, X, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { CourseWithChapters } from '@/lib/learn-db';
-import { AddCourseButton, EditCourseButton } from './course-actions';
+import { AddCourseButton, EditCourseButton, DeleteCourseButton } from './course-actions';
 
 interface LearnSidebarProps {
     courses: CourseWithChapters[];
@@ -87,13 +87,19 @@ function CourseItem({
 
                 {/* Admin: Edit Button */}
                 {isAdmin && (
-                    <EditCourseButton
-                        course={{
-                            id: course.id,
-                            title: course.title,
-                            description: course.description || undefined
-                        }}
-                    />
+                    <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <EditCourseButton
+                            course={{
+                                id: course.id,
+                                title: course.title,
+                                description: course.description || undefined
+                            }}
+                        />
+                        <DeleteCourseButton
+                            courseId={course.id}
+                            courseTitle={course.title}
+                        />
+                    </div>
                 )}
             </div>
 

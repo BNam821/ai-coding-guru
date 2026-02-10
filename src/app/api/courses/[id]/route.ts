@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { isAdminAuthenticated } from '@/lib/auth';
+import { revalidatePath } from 'next/cache';
 
 // PUT: Update course (rename)
 export async function PUT(
@@ -35,6 +36,7 @@ export async function PUT(
             return NextResponse.json({ success: false, error: 'Course not found' }, { status: 404 });
         }
 
+        revalidatePath("/learn");
         return NextResponse.json({ success: true, course: data[0] });
     } catch (e) {
         return NextResponse.json({ success: false, error: 'Invalid request body' }, { status: 400 });
@@ -62,5 +64,6 @@ export async function DELETE(
         return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
+    revalidatePath("/learn");
     return NextResponse.json({ success: true });
 }

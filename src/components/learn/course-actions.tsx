@@ -187,7 +187,7 @@ export function EditCourseButton({ course }: { course: { id: string; title: stri
                     setIsOpen(true);
                 }}
                 className="p-1 rounded hover:bg-white/10 text-gray-500 hover:text-blue-400 transition-colors"
-                title="Đổi tên"
+                title="Sửa thông tin"
             >
                 <Edit className="w-3 h-3" />
             </button>
@@ -199,5 +199,50 @@ export function EditCourseButton({ course }: { course: { id: string; title: stri
                 initialData={course}
             />
         </>
+    );
+}
+
+// Button to delete course
+export function DeleteCourseButton({ courseId, courseTitle }: { courseId: string; courseTitle: string }) {
+    const router = useRouter();
+    const [loading, setLoading] = useState(false);
+
+    const handleDelete = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+
+        if (!confirm(`Bạn có chắc chắn muốn xoá khoá học "${courseTitle}"? Hành động này sẽ xoá toàn bộ chương và bài học bên trong.`)) {
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const res = await fetch(`/api/courses/${courseId}`, {
+                method: 'DELETE',
+            });
+
+            const data = await res.json();
+            if (data.success) {
+                router.refresh();
+                // Notify other components
+                window.dispatchEvent(new CustomEvent('learn-structure-changed'));
+            } else {
+                alert(data.error || 'Có lỗi xảy ra khi xoá');
+            }
+        } catch (err) {
+            alert('Có lỗi xảy ra');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <button
+            onClick={handleDelete}
+            disabled={loading}
+            className="p-1 rounded hover:bg-white/10 text-gray-500 hover:text-red-400 transition-colors disabled:opacity-50"
+            title="Xoá khoá học"
+        >
+            {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
+        </button>
     );
 }
