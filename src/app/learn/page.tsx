@@ -1,19 +1,28 @@
 import { getFullLearningTree } from '@/lib/learn-db';
+import { isUserAuthenticated } from '@/lib/auth';
 import Link from 'next/link';
 import { BookOpen, ArrowRight } from 'lucide-react';
+import { RecentLesson } from '@/components/history/recent-lesson';
+import { ReadArticles } from '@/components/history/read-articles';
 
 export default async function LearnPage() {
     const courses = await getFullLearningTree();
+    const isLoggedIn = await isUserAuthenticated();
 
     return (
-        <div className="space-y-8 relative z-10">
-            <div className="space-y-4 text-center md:text-left">
-                <h1 className="text-4xl font-bold tracking-tight text-white mb-4">
-                    Trung tâm Học tập
-                </h1>
-                <p className="text-xl text-gray-400 max-w-2xl">
-                    Khám phá các khoá học, bài hướng dẫn và bài tập thực hành để nâng cao kỹ năng lập trình của bạn.
-                </p>
+        <div className="space-y-8 relative z-10 pb-20">
+            <div className="space-y-6 text-center md:text-left">
+                <div className="space-y-4">
+                    <h1 className="text-4xl font-bold tracking-tight text-white mb-4">
+                        Trung tâm Học tập
+                    </h1>
+
+                    <RecentLesson isLoggedIn={isLoggedIn} />
+
+                    <p className="text-xl text-gray-400 max-w-2xl">
+                        Khám phá các khoá học, bài hướng dẫn và bài tập thực hành để nâng cao kỹ năng lập trình của bạn.
+                    </p>
+                </div>
             </div>
 
             <div className="grid gap-6 md:grid-cols-2">
@@ -50,6 +59,8 @@ export default async function LearnPage() {
                     </Link>
                 ))}
             </div>
+
+            <ReadArticles isLoggedIn={isLoggedIn} />
         </div>
     );
 }

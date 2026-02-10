@@ -12,13 +12,15 @@ import { WikiImage } from "@/components/wiki/wiki-image";
 const relatedPosts: any[] = [];
 
 import { supabase } from "@/lib/supabase";
-import { getSession } from "@/lib/auth";
+import { getSession, isUserAuthenticated } from "@/lib/auth";
+import { HistoryTracker } from "@/components/history/history-tracker";
 
 export const revalidate = 60; // Tự động cập nhật dữ liệu sau mỗi 60 giây
 
 export default async function WikiDetailPage({ params }: { params: { slug: string } }) {
     const { slug } = await params;
     let post: any = null;
+    const isLoggedIn = await isUserAuthenticated();
 
     try {
         const { data, error } = await supabase
@@ -45,6 +47,14 @@ export default async function WikiDetailPage({ params }: { params: { slug: strin
 
     return (
         <main className="min-h-screen pt-32 pb-20 px-4 relative z-10">
+            <HistoryTracker
+                type="wiki"
+                isLoggedIn={isLoggedIn}
+                data={{
+                    post_slug: post.slug,
+                    post_title: post.title
+                }}
+            />
             {/* Focal Gentle Aura for reading content */}
             <div className="absolute top-[20%] left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-accent-secondary/5 rounded-full blur-[200px] -z-10" />
 

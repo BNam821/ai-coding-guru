@@ -7,7 +7,8 @@ import { ChevronRight } from 'lucide-react';
 import rehypeHighlight from 'rehype-highlight';
 import 'highlight.js/styles/github-dark.css';
 import { AdminControls } from '@/components/learn/admin-controls';
-import { isAdminAuthenticated } from '@/lib/auth';
+import { isAdminAuthenticated, isUserAuthenticated } from '@/lib/auth';
+import { HistoryTracker } from '@/components/history/history-tracker';
 
 interface PageProps {
     params: Promise<{
@@ -19,6 +20,7 @@ interface PageProps {
 export default async function LessonPage({ params }: PageProps) {
     const { course: courseSlug, lesson: lessonSlug } = await params;
     const lesson = await getLesson(courseSlug, lessonSlug);
+    const isLoggedIn = await isUserAuthenticated();
 
     if (!lesson) {
         notFound();
@@ -26,6 +28,16 @@ export default async function LessonPage({ params }: PageProps) {
 
     return (
         <div className="max-w-none relative z-10 w-full">
+            <HistoryTracker
+                type="lesson"
+                isLoggedIn={isLoggedIn}
+                data={{
+                    lesson_id: lesson.id,
+                    course_slug: courseSlug,
+                    lesson_slug: lessonSlug,
+                    lesson_title: lesson.title
+                }}
+            />
             {/* Breadcrumbs */}
             <nav className="flex items-center space-x-2 text-sm text-gray-500 mb-8 overflow-x-auto whitespace-nowrap pb-2">
                 <Link href="/learn" className="hover:text-white transition-colors">Học tập</Link>
