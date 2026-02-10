@@ -34,7 +34,7 @@ export function Hero() {
                     </h1>
 
                     <p className="text-xl text-slate-400 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
-                        Học lập trình không còn khó khăn. <span className="text-accent-secondary">CẢI THIỆN TƯ DUY LẬP TRÌNH<br />
+                        Học lập trình không còn khó khăn. <span className="text-accent-secondary">AI CODING GURU<br />
                         </span> Giúp bạn bắt đầu thật dễ dàng và vững chắc.
                     </p>
 
@@ -44,7 +44,7 @@ export function Hero() {
                                 Bắt đầu Khám phá ngay
                             </NeonButton>
                         </div>
-                        <Link href="https://www.youtube.com/watch?v=dQw4w9WgXcQ">
+                        <Link href="https://www.youtube.com/watch?v=dQw4w9WgXcQ" target="_blank" rel="noopener noreferrer">
                             <NeonButton variant="outline" icon={<Code className="w-5 h-5" />}>
                                 Hướng dẫn
                             </NeonButton>
