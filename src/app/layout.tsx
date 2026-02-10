@@ -13,7 +13,7 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "AI Coding Guru | Vibe Coding",
+  title: "AI Coding Guru | THPT Cẩm Phả",
   description: "Trải nghiệm học lập trình cùng AI với phong cách Dark Space Futuristic.",
 };
 
