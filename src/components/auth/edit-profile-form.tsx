@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { GlassCard } from "@/components/ui/glass-card";
 import { NeonButton } from "@/components/ui/neon-button";
-import { Lock, User, Mail, Eye, EyeOff, Save, X } from "lucide-react";
+import { Lock, User, Mail, Eye, EyeOff, Save } from "lucide-react";
 
 interface EditProfileFormProps {
     initialData: {
@@ -69,18 +69,11 @@ export function EditProfileForm({ initialData, onCancel }: EditProfileFormProps)
 
     return (
         <form onSubmit={handleUpdate} className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center">
                 <h3 className="text-xl font-bold text-white flex items-center gap-2">
                     <User className="text-accent-primary" size={20} />
                     Chỉnh sửa thông tin
                 </h3>
-                <button
-                    type="button"
-                    onClick={onCancel}
-                    className="p-2 hover:bg-white/5 rounded-full text-white/40 hover:text-white transition-colors"
-                >
-                    <X size={20} />
-                </button>
             </div>
 
             {error && (
