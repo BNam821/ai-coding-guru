@@ -6,6 +6,7 @@ import { useState, useRef, useEffect } from 'react';
 import { ChevronDown, ChevronRight, FileText, Plus, Pencil, Check, X, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { CourseWithChapters } from '@/lib/learn-db';
+import { AddCourseButton, EditCourseButton } from './course-actions';
 
 interface LearnSidebarProps {
     courses: CourseWithChapters[];
@@ -24,30 +25,71 @@ export function LearnSidebar({ courses, isAdmin = false }: LearnSidebarProps) {
 
                 <div className="space-y-2">
                     {courses.map((course) => (
+<<<<<<< HEAD
                         <CourseItem key={course.id} course={course} pathname={pathname} isAdmin={isAdmin} />
+=======
+                        <CourseItem
+                            key={course.id}
+                            course={course}
+                            pathname={pathname}
+                            isAdmin={isAdmin}
+                        />
+>>>>>>> 71c6d8a7a7730e3306b8e890b399f7be0bcb8b33
                     ))}
+
+                    {/* Admin: Add Course Button */}
+                    {isAdmin && (
+                        <div className="pt-2">
+                            <AddCourseButton />
+                        </div>
+                    )}
                 </div>
             </div>
         </aside>
     );
 }
 
+<<<<<<< HEAD
 function CourseItem({ course, pathname, isAdmin }: { course: CourseWithChapters; pathname: string; isAdmin: boolean }) {
+=======
+function CourseItem({
+    course,
+    pathname,
+    isAdmin
+}: {
+    course: CourseWithChapters;
+    pathname: string;
+    isAdmin: boolean;
+}) {
+>>>>>>> 71c6d8a7a7730e3306b8e890b399f7be0bcb8b33
     const [isOpen, setIsOpen] = useState(true);
     const isActive = pathname.startsWith(`/learn/${course.slug}`);
 
     return (
         <div className="space-y-1">
-            <button
-                onClick={() => setIsOpen(!isOpen)}
-                className={cn(
-                    "flex items-center w-full p-2 text-sm font-medium rounded-lg transition-colors hover:bg-white/5",
-                    isActive ? "text-blue-400" : "text-gray-400"
+            <div className="flex items-center group">
+                <button
+                    onClick={() => setIsOpen(!isOpen)}
+                    className={cn(
+                        "flex items-center flex-1 p-2 text-sm font-medium rounded-lg transition-colors hover:bg-white/5",
+                        isActive ? "text-blue-400" : "text-gray-400"
+                    )}
+                >
+                    {isOpen ? <ChevronDown className="w-4 h-4 mr-2" /> : <ChevronRight className="w-4 h-4 mr-2" />}
+                    <span className="truncate">{course.title}</span>
+                </button>
+
+                {/* Admin: Edit Button */}
+                {isAdmin && (
+                    <EditCourseButton
+                        course={{
+                            id: course.id,
+                            title: course.title,
+                            description: course.description || undefined
+                        }}
+                    />
                 )}
-            >
-                {isOpen ? <ChevronDown className="w-4 h-4 mr-2" /> : <ChevronRight className="w-4 h-4 mr-2" />}
-                <span className="truncate">{course.title}</span>
-            </button>
+            </div>
 
             {isOpen && (
                 <div className="ml-4 space-y-1 border-l border-white/10 pl-2">
@@ -71,6 +113,7 @@ function CourseItem({ course, pathname, isAdmin }: { course: CourseWithChapters;
     );
 }
 
+<<<<<<< HEAD
 // --- Chapter Item with inline edit ---
 function ChapterItem({
     chapter,
@@ -316,3 +359,5 @@ function AddChapterInline({ courseId }: { courseId: string }) {
         </div>
     );
 }
+=======
+>>>>>>> 71c6d8a7a7730e3306b8e890b399f7be0bcb8b33

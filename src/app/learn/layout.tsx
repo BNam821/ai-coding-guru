@@ -1,5 +1,9 @@
 import { getFullLearningTree } from '@/lib/learn-db';
+<<<<<<< HEAD
 import { getSession } from '@/lib/auth';
+=======
+import { isAdminAuthenticated } from '@/lib/auth';
+>>>>>>> 71c6d8a7a7730e3306b8e890b399f7be0bcb8b33
 import { LearnSidebar } from '@/components/learn/sidebar';
 import { Menu } from 'lucide-react';
 import Link from 'next/link';
@@ -11,8 +15,12 @@ export default async function LearnLayout({
     children: React.ReactNode;
 }) {
     const courses = await getFullLearningTree();
+<<<<<<< HEAD
     const session = await getSession();
     const isAdmin = session?.role === 'admin';
+=======
+    const isAdmin = await isAdminAuthenticated();
+>>>>>>> 71c6d8a7a7730e3306b8e890b399f7be0bcb8b33
 
     return (
         <div className="flex min-h-screen bg-black text-gray-100">
@@ -37,3 +45,4 @@ export default async function LearnLayout({
         </div>
     );
 }
+

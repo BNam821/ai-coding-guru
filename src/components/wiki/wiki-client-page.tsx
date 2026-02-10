@@ -3,8 +3,9 @@
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { GlassCard } from "@/components/ui/glass-card";
-import { BookOpen, Clock, User, ArrowRight, Bookmark, Filter, ChevronDown, X, Loader2 } from "lucide-react";
+import { BookOpen, Clock, User, ArrowRight, Bookmark, Filter, ChevronDown, X } from "lucide-react";
 import { DeleteButton } from "@/components/wiki/delete-button";
+import { LoadingScreen } from "@/components/ui/loading-screen";
 
 interface WikiPost {
     slug: string;
@@ -101,14 +102,7 @@ export function WikiClientPage({ initialData }: WikiClientPageProps) {
 
     // Hiển thị loading state
     if (loading) {
-        return (
-            <div className="flex items-center justify-center min-h-[400px]">
-                <div className="flex flex-col items-center gap-4">
-                    <Loader2 size={48} className="animate-spin text-accent-secondary" />
-                    <p className="text-white/40 font-bold uppercase tracking-widest text-xs">Đang tải bài viết...</p>
-                </div>
-            </div>
-        );
+        return <LoadingScreen />;
     }
 
     const displayPosts = showSaved ? savedPosts : filteredPosts;
