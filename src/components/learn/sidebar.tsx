@@ -25,16 +25,12 @@ export function LearnSidebar({ courses, isAdmin = false }: LearnSidebarProps) {
 
                 <div className="space-y-2">
                     {courses.map((course) => (
-<<<<<<< HEAD
-                        <CourseItem key={course.id} course={course} pathname={pathname} isAdmin={isAdmin} />
-=======
                         <CourseItem
                             key={course.id}
                             course={course}
                             pathname={pathname}
                             isAdmin={isAdmin}
                         />
->>>>>>> 71c6d8a7a7730e3306b8e890b399f7be0bcb8b33
                     ))}
 
                     {/* Admin: Add Course Button */}
@@ -49,9 +45,6 @@ export function LearnSidebar({ courses, isAdmin = false }: LearnSidebarProps) {
     );
 }
 
-<<<<<<< HEAD
-function CourseItem({ course, pathname, isAdmin }: { course: CourseWithChapters; pathname: string; isAdmin: boolean }) {
-=======
 function CourseItem({
     course,
     pathname,
@@ -61,7 +54,6 @@ function CourseItem({
     pathname: string;
     isAdmin: boolean;
 }) {
->>>>>>> 71c6d8a7a7730e3306b8e890b399f7be0bcb8b33
     const [isOpen, setIsOpen] = useState(true);
     const isActive = pathname.startsWith(`/learn/${course.slug}`);
 
@@ -113,7 +105,6 @@ function CourseItem({
     );
 }
 
-<<<<<<< HEAD
 // --- Chapter Item with inline edit ---
 function ChapterItem({
     chapter,
@@ -359,5 +350,3 @@ function AddChapterInline({ courseId }: { courseId: string }) {
         </div>
     );
 }
-=======
->>>>>>> 71c6d8a7a7730e3306b8e890b399f7be0bcb8b33
