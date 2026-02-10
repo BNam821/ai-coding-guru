@@ -25,26 +25,31 @@ export default function CreateLessonPage() {
     const router = useRouter();
 
     // Fetch Course Structure
-    useEffect(() => {
-        const fetchStructure = async () => {
-            try {
-                const res = await fetch("/api/learn/structure");
-                const data = await res.json();
-                if (Array.isArray(data)) {
-                    setCourses(data);
-                    // Select first course by default if available
-                    if (data.length > 0) {
-                        setSelectedCourseId(data[0].id);
-                    }
+    const fetchStructure = async () => {
+        try {
+            const res = await fetch("/api/learn/structure");
+            const data = await res.json();
+            if (Array.isArray(data)) {
+                setCourses(data);
+                // Select first course by default if none selected
+                if (data.length > 0 && !selectedCourseId) {
+                    setSelectedCourseId(data[0].id);
                 }
-            } catch (err) {
-                console.error("Failed to fetch structure", err);
-            } finally {
-                setIsFetchingStructure(false);
             }
-        };
+        } catch (err) {
+            console.error("Failed to fetch structure", err);
+        } finally {
+            setIsFetchingStructure(false);
+        }
+    };
+
+    useEffect(() => {
         fetchStructure();
-    }, []);
+
+        // Listen for structure changes (from sidebar/modals)
+        window.addEventListener('learn-structure-changed', fetchStructure);
+        return () => window.removeEventListener('learn-structure-changed', fetchStructure);
+    }, [selectedCourseId]);
 
     // Auto-select first chapter when course changes
     useEffect(() => {

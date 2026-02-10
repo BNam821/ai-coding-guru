@@ -66,6 +66,8 @@ export function CourseModal({ isOpen, onClose, mode, initialData }: CourseModalP
             }
 
             router.refresh();
+            // Notify other components that storage changed
+            window.dispatchEvent(new CustomEvent('learn-structure-changed'));
             onClose();
         } catch (e) {
             setError('Có lỗi xảy ra');

@@ -163,6 +163,8 @@ function ChapterItem({
             if (data.success) {
                 setIsEditing(false);
                 router.refresh();
+                // Notify other components (like /learn/create) that structure changed
+                window.dispatchEvent(new CustomEvent('learn-structure-changed'));
             } else {
                 alert(data.error || 'Lỗi khi cập nhật');
             }
@@ -296,6 +298,8 @@ function AddChapterInline({ courseId }: { courseId: string }) {
                 setNewTitle('');
                 setIsAdding(false);
                 router.refresh();
+                // Notify other components (like /learn/create) that structure changed
+                window.dispatchEvent(new CustomEvent('learn-structure-changed'));
             } else {
                 alert(data.error || 'Lỗi khi tạo chương');
             }
