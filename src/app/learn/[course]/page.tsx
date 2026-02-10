@@ -1,8 +1,9 @@
 import { getCourseBySlug, getCourseSyllabus } from '@/lib/learn-db';
 import { isAdminAuthenticated } from '@/lib/auth';
 import Link from 'next/link';
-import { BookOpen, FileText, ArrowRight, ChevronRight, Edit, ArrowLeft, Plus } from 'lucide-react';
+import { BookOpen, FileText, ArrowRight, ChevronRight, Edit, ArrowLeft, Plus, Trash2 } from 'lucide-react';
 import { notFound } from 'next/navigation';
+import { DeleteCourseButton } from '@/components/learn/course-actions';
 
 export default async function CourseDetailPage({ params }: { params: { course: string } }) {
     const { course: courseSlug } = await params;
@@ -142,6 +143,29 @@ export default async function CourseDetailPage({ params }: { params: { course: s
                     </div>
                 )}
             </div>
+
+            {/* Admin: Danger Zone */}
+            {isAdmin && (
+                <div className="pt-12 mt-12 border-t border-red-500/20">
+                    <div className="bg-red-500/5 rounded-xl border border-red-500/20 p-6">
+                        <div className="flex items-center justify-between gap-4">
+                            <div>
+                                <h3 className="text-lg font-bold text-red-400 flex items-center gap-2">
+                                    <Trash2 className="w-5 h-5" />
+                                    Vùng nguy hiểm
+                                </h3>
+                                <p className="text-gray-400 text-sm mt-1">
+                                    Xoá hoàn toàn khoá học này và tất cả dữ liệu liên quan. Hành động này không thể hoàn tác.
+                                </p>
+                            </div>
+                            <div className="shrink-0 flex items-center gap-4 bg-red-500/10 p-3 rounded-xl border border-red-500/20">
+                                <span className="text-sm font-medium text-red-300">Xác nhận xoá:</span>
+                                <DeleteCourseButton courseId={course.id} courseTitle={course.title} />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
