@@ -29,7 +29,8 @@ export function Hero() {
 
                     <h1 className="text-5xl lg:text-7xl font-bold tracking-tight font-heading leading-tight">
                         Cải thiện <br />
-                        <span className="text-gradient">Tư duy lập trình </span> cùng AI
+                        <span className="text-gradient">Tư duy lập trình <br />
+                        </span> cùng AI
                     </h1>
 
                     <p className="text-xl text-slate-400 max-w-2xl mx-auto lg:mx-0 leading-relaxed">

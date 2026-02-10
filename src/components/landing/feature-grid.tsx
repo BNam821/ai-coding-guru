@@ -5,7 +5,7 @@ const features = [
     {
         icon: <Terminal className="w-8 h-8 text-accent-secondary" />,
         title: "Smart Debugger",
-        desc: "AI phân tích lỗi logic, giải thích nguyên nhân và gợi ý cách sửa thay vì chỉ hiển thị stack trace.",
+        desc: "AI phân tích lỗi logic, giải thích nguyên nhân và gợi ý cách sửa tránh mắc lại sai lầm cũ.",
     },
     {
         icon: <Lightbulb className="w-8 h-8 text-accent-primary" />,
@@ -15,7 +15,7 @@ const features = [
     {
         icon: <BookOpen className="w-8 h-8 text-blue-400" />,
         title: "Learning Path",
-        desc: "Lộ trình bài bản từ Zero đến Hero. Mỗi bài học đều có bài tập thực hành và dự án thực tế.",
+        desc: "Lộ trình bài bản từ khi bắt đầu. Mỗi bài học đều có bài tập thực hành và dự án thực tế.",
     },
     {
         icon: <Trophy className="w-8 h-8 text-purple-400" />,
@@ -33,7 +33,7 @@ export function FeatureGrid() {
                         Tại sao chọn <span className="text-accent-secondary">AI Coding Guru</span>?
                     </h2>
                     <p className="text-slate-400 max-w-xl mx-auto">
-                        Chúng tôi kết hợp giáo trình chuẩn quốc tế với sức mạnh của AI để tạo ra trải nghiệm học tập đột phá.
+                        Chúng tôi kết hợp giáo trình với sức mạnh của AI, mong muốn giúp các bạn có tư duy lập trình tốt hơn. Trở thành những người thầy trẻ đột phá trong tương lai.
                     </p>
                 </div>
 
