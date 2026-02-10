@@ -1,0 +1,212 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { GlassCard } from "@/components/ui/glass-card";
+import { NeonButton } from "@/components/ui/neon-button";
+import { Lock, User, Mail, Eye, EyeOff, Save, X } from "lucide-react";
+
+interface EditProfileFormProps {
+    initialData: {
+        username: string;
+        email: string;
+    };
+    onCancel: () => void;
+}
+
+export function EditProfileForm({ initialData, onCancel }: EditProfileFormProps) {
+    const [username, setUsername] = useState(initialData.username);
+    const [email, setEmail] = useState(initialData.email);
+    const [newPassword, setNewPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+    const [oldPassword, setOldPassword] = useState("");
+
+    const [showPassword, setShowPassword] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState("");
+    const [success, setSuccess] = useState(false);
+    const router = useRouter();
+
+    const handleUpdate = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        if (newPassword && newPassword !== confirmPassword) {
+            setError("Máº­t kháº©u xÃ¡c nháº­n khÃ´ng khá»›p");
+            return;
+        }
+
+        if (!oldPassword) {
+            setError("Vui lÃ²ng nháº­p máº­t kháº©u hiá»‡n táº¡i Ä‘á»ƒ xÃ¡c nháº­n");
+            return;
+        }
+
+        setIsLoading(true);
+        setError("");
+
+        try {
+            const res = await fetch("/api/auth/update-profile", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username, email, newPassword, oldPassword }),
+            });
+
+            const data = await res.json();
+            if (data.success) {
+                setSuccess(true);
+                setTimeout(() => {
+                    router.refresh();
+                    onCancel();
+                }, 1500);
+            } else {
+                setError(data.error);
+            }
+        } catch (err) {
+            setError("Ä Ã£ cÃ³ lá»—i xáº£y ra. Vui lÃ²ng thá» laráº¡i.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    return (
+        <form onSubmit={handleUpdate} className="space-y-6">
+            <div className="flex items-center justify-between">
+                <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                    <User className="text-accent-primary" size={20} />
+                    Chá»‰nh sá»a thÃ´ng tin
+                </h3>
+                <button
+                    type="button"
+                    onClick={onCancel}
+                    className="p-2 hover:bg-white/5 rounded-full text-white/40 hover:text-white transition-colors"
+                >
+                    <X size={20} />
+                </button>
+            </div>
+
+            {error && (
+                <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-500 text-sm text-center">
+                    {error}
+                </div>
+            )}
+
+            {success && (
+                <div className="p-3 bg-accent-secondary/10 border border-accent-secondary/20 rounded-lg text-accent-secondary text-sm text-center font-medium">
+                    Cáº­p nháº­t thÃ nh cÃ´ng!
+                </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                    <label className="text-xs font-medium text-white/50 ml-1 uppercase tracking-wider">TÃªn Ä‘Äƒng nháº­p</label>
+                    <div className="relative group">
+                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 group-focus-within:text-accent-primary transition-colors">
+                            <User size={16} />
+                        </div>
+                        <input
+                            type="text"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                            className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-white focus:outline-none focus:border-accent-primary/50 transition-all text-sm"
+                            required
+                        />
+                    </div>
+                </div>
+
+                <div className="space-y-1">
+                    <label className="text-xs font-medium text-white/50 ml-1 uppercase tracking-wider">Email</label>
+                    <div className="relative group">
+                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 group-focus-within:text-accent-primary transition-colors">
+                            <Mail size={16} />
+                        </div>
+                        <input
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-white focus:outline-none focus:border-accent-primary/50 transition-all text-sm"
+                            required
+                        />
+                    </div>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                    <label className="text-xs font-medium text-white/50 ml-1 uppercase tracking-wider">Máº­t kháº©u má»›i (tÃ¹y chá» n)</label>
+                    <div className="relative group">
+                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 group-focus-within:text-accent-primary transition-colors">
+                            <Lock size={16} />
+                        </div>
+                        <input
+                            type={showPassword ? "text" : "password"}
+                            value={newPassword}
+                            onChange={(e) => setNewPassword(e.target.value)}
+                            className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 pl-10 pr-10 text-white focus:outline-none focus:border-accent-primary/50 transition-all text-sm"
+                            placeholder="â— â— â— â— â— â— â— â— "
+                        />
+                    </div>
+                </div>
+
+                <div className="space-y-1">
+                    <label className="text-xs font-medium text-white/50 ml-1 uppercase tracking-wider">XÃ¡c nháº­n máº­t kháº©u má»›i</label>
+                    <div className="relative group">
+                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 group-focus-within:text-accent-primary transition-colors">
+                            <Lock size={16} />
+                        </div>
+                        <input
+                            type={showPassword ? "text" : "password"}
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                            className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 pl-10 pr-10 text-white focus:outline-none focus:border-accent-primary/50 transition-all text-sm"
+                            placeholder="â— â— â— â— â— â— â— â— "
+                        />
+                    </div>
+                </div>
+            </div>
+
+            <div className="pt-4 border-t border-white/10 space-y-4">
+                <div className="space-y-1">
+                    <label className="text-xs font-bold text-accent-secondary ml-1 uppercase tracking-widest">XÃ¡c nháº­n máº­t kháº©u hiá»‡n táº¡i</label>
+                    <div className="relative group">
+                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 group-focus-within:text-accent-secondary transition-colors">
+                            <Lock size={16} />
+                        </div>
+                        <input
+                            type={showPassword ? "text" : "password"}
+                            value={oldPassword}
+                            onChange={(e) => setOldPassword(e.target.value)}
+                            className="w-full bg-white/10 border border-white/20 rounded-xl py-3 pl-10 pr-12 text-white focus:outline-none focus:border-accent-secondary/50 transition-all font-bold"
+                            placeholder="Nháº­p máº­t kháº©u Ä‘á»ƒ lÆ°u thay Ä‘á»•i"
+                            required
+                        />
+                        <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors"
+                        >
+                            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </button>
+                    </div>
+                </div>
+
+                <div className="flex gap-4">
+                    <NeonButton
+                        type="submit"
+                        variant="primary"
+                        className="flex-1 py-3 rounded-xl font-bold flex items-center justify-center gap-2"
+                        disabled={isLoading}
+                    >
+                        <Save size={18} />
+                        {isLoading ? "Ä ang lÆ°u..." : "LÆ°u thay Ä‘á»•i"}
+                    </NeonButton>
+                    <button
+                        type="button"
+                        onClick={onCancel}
+                        className="px-6 py-3 rounded-xl border border-white/10 text-white/60 hover:bg-white/5 transition-all text-sm font-medium"
+                    >
+                        Há»§y
+                    </button>
+                </div>
+            </div>
+        </form>
+    );
+}
