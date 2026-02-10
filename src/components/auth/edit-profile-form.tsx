@@ -31,12 +31,12 @@ export function EditProfileForm({ initialData, onCancel }: EditProfileFormProps)
         e.preventDefault();
 
         if (newPassword && newPassword !== confirmPassword) {
-            setError("Máº­t kháº©u xÃ¡c nháº­n khÃ´ng khá»›p");
+            setError("Mật khẩu xác nhận không khớp");
             return;
         }
 
         if (!oldPassword) {
-            setError("Vui lÃ²ng nháº­p máº­t kháº©u hiá»‡n táº¡i Ä‘á»ƒ xÃ¡c nháº­n");
+            setError("Vui lòng nhập mật khẩu hiện tại để xác nhận");
             return;
         }
 
@@ -61,7 +61,7 @@ export function EditProfileForm({ initialData, onCancel }: EditProfileFormProps)
                 setError(data.error);
             }
         } catch (err) {
-            setError("Ä Ã£ cÃ³ lá»—i xáº£y ra. Vui lÃ²ng thá» laráº¡i.");
+            setError("Đã có lỗi xảy ra. Vui lòng thử lại.");
         } finally {
             setIsLoading(false);
         }
@@ -72,7 +72,7 @@ export function EditProfileForm({ initialData, onCancel }: EditProfileFormProps)
             <div className="flex items-center justify-between">
                 <h3 className="text-xl font-bold text-white flex items-center gap-2">
                     <User className="text-accent-primary" size={20} />
-                    Chá»‰nh sá»a thÃ´ng tin
+                    Chỉnh sửa thông tin
                 </h3>
                 <button
                     type="button"
@@ -91,13 +91,13 @@ export function EditProfileForm({ initialData, onCancel }: EditProfileFormProps)
 
             {success && (
                 <div className="p-3 bg-accent-secondary/10 border border-accent-secondary/20 rounded-lg text-accent-secondary text-sm text-center font-medium">
-                    Cáº­p nháº­t thÃ nh cÃ´ng!
+                    Cập nhật thành công!
                 </div>
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1">
-                    <label className="text-xs font-medium text-white/50 ml-1 uppercase tracking-wider">TÃªn Ä‘Äƒng nháº­p</label>
+                    <label className="text-xs font-medium text-white/50 ml-1 uppercase tracking-wider">Tên đăng nhập</label>
                     <div className="relative group">
                         <div className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 group-focus-within:text-accent-primary transition-colors">
                             <User size={16} />
@@ -131,7 +131,7 @@ export function EditProfileForm({ initialData, onCancel }: EditProfileFormProps)
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1">
-                    <label className="text-xs font-medium text-white/50 ml-1 uppercase tracking-wider">Máº­t kháº©u má»›i (tÃ¹y chá» n)</label>
+                    <label className="text-xs font-medium text-white/50 ml-1 uppercase tracking-wider">Mật khẩu mới (tùy chọn)</label>
                     <div className="relative group">
                         <div className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 group-focus-within:text-accent-primary transition-colors">
                             <Lock size={16} />
@@ -141,13 +141,13 @@ export function EditProfileForm({ initialData, onCancel }: EditProfileFormProps)
                             value={newPassword}
                             onChange={(e) => setNewPassword(e.target.value)}
                             className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 pl-10 pr-10 text-white focus:outline-none focus:border-accent-primary/50 transition-all text-sm"
-                            placeholder="â— â— â— â— â— â— â— â— "
+                            placeholder="••••••••"
                         />
                     </div>
                 </div>
 
                 <div className="space-y-1">
-                    <label className="text-xs font-medium text-white/50 ml-1 uppercase tracking-wider">XÃ¡c nháº­n máº­t kháº©u má»›i</label>
+                    <label className="text-xs font-medium text-white/50 ml-1 uppercase tracking-wider">Xác nhận mật khẩu mới</label>
                     <div className="relative group">
                         <div className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 group-focus-within:text-accent-primary transition-colors">
                             <Lock size={16} />
@@ -157,7 +157,7 @@ export function EditProfileForm({ initialData, onCancel }: EditProfileFormProps)
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
                             className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 pl-10 pr-10 text-white focus:outline-none focus:border-accent-primary/50 transition-all text-sm"
-                            placeholder="â— â— â— â— â— â— â— â— "
+                            placeholder="••••••••"
                         />
                     </div>
                 </div>
@@ -165,7 +165,7 @@ export function EditProfileForm({ initialData, onCancel }: EditProfileFormProps)
 
             <div className="pt-4 border-t border-white/10 space-y-4">
                 <div className="space-y-1">
-                    <label className="text-xs font-bold text-accent-secondary ml-1 uppercase tracking-widest">XÃ¡c nháº­n máº­t kháº©u hiá»‡n táº¡i</label>
+                    <label className="text-xs font-bold text-accent-secondary ml-1 uppercase tracking-widest">Xác nhận mật khẩu hiện tại</label>
                     <div className="relative group">
                         <div className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 group-focus-within:text-accent-secondary transition-colors">
                             <Lock size={16} />
@@ -175,7 +175,7 @@ export function EditProfileForm({ initialData, onCancel }: EditProfileFormProps)
                             value={oldPassword}
                             onChange={(e) => setOldPassword(e.target.value)}
                             className="w-full bg-white/10 border border-white/20 rounded-xl py-3 pl-10 pr-12 text-white focus:outline-none focus:border-accent-secondary/50 transition-all font-bold"
-                            placeholder="Nháº­p máº­t kháº©u Ä‘á»ƒ lÆ°u thay Ä‘á»•i"
+                            placeholder="Nhập mật khẩu để lưu thay đổi"
                             required
                         />
                         <button
@@ -196,14 +196,14 @@ export function EditProfileForm({ initialData, onCancel }: EditProfileFormProps)
                         disabled={isLoading}
                     >
                         <Save size={18} />
-                        {isLoading ? "Ä ang lÆ°u..." : "LÆ°u thay Ä‘á»•i"}
+                        {isLoading ? "Đang lưu..." : "Lưu thay đổi"}
                     </NeonButton>
                     <button
                         type="button"
                         onClick={onCancel}
                         className="px-6 py-3 rounded-xl border border-white/10 text-white/60 hover:bg-white/5 transition-all text-sm font-medium"
                     >
-                        Há»§y
+                        Hủy
                     </button>
                 </div>
             </div>

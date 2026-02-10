@@ -5,7 +5,7 @@ import { GlassCard } from "@/components/ui/glass-card";
 import { LogoutButton } from "@/components/auth/logout-button";
 import { EditProfileForm } from "@/components/auth/edit-profile-form";
 import { DeleteAccountSection } from "@/components/auth/delete-account-section";
-import { User, ShieldCheck, Mail, MapPin, UserCircle, Edit3, Settings } from "lucide-react";
+import { User, ShieldCheck, Mail, MapPin, UserCircle, Edit3 } from "lucide-react";
 
 interface AccountContentProps {
     session: {
@@ -31,7 +31,7 @@ export function AccountContent({ session, stats }: AccountContentProps) {
                         <button
                             onClick={() => setIsEditing(true)}
                             className="p-2 hover:bg-white/5 rounded-full text-white/40 hover:text-accent-primary transition-colors"
-                            title="Chá»‰nh sá»a thÃ´ng tin"
+                            title="Chỉnh sửa thông tin"
                         >
                             <Edit3 size={20} />
                         </button>
@@ -81,18 +81,18 @@ export function AccountContent({ session, stats }: AccountContentProps) {
                                         )}
                                     </h2>
                                     <p className="text-white/40 text-sm mt-1">
-                                        {isAdmin ? "Quáº£n trá»‹ viÃªn cáº¥p cao cá»§a AI Coding Guru" : "ThÃ nh viÃªn nhiá»‡t huyáº¿t cá»§a cá»™ng Ä‘á»“ng"}
+                                        {isAdmin ? "Quản trị viên cấp cao của AI Coding Guru" : "Thành viên nhiệt huyết của cộng đồng"}
                                     </p>
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="flex items-center gap-3 text-white/80">
                                         <Mail size={18} className="text-accent-primary" />
-                                        <span>{isAdmin ? "admin@campha8.dev" : "user@example.com"}</span>
+                                        <span>{session.email}</span>
                                     </div>
                                     <div className="flex items-center gap-3 text-white/80">
                                         <MapPin size={18} className="text-accent-secondary" />
-                                        <span>Quáº£ng Ninh, Viá»‡t Nam</span>
+                                        <span>Quảng Ninh, Việt Nam</span>
                                     </div>
                                 </div>
                             </div>
@@ -101,19 +101,19 @@ export function AccountContent({ session, stats }: AccountContentProps) {
                         <div className="mt-12 pt-8 border-t border-white/10 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
                             <div className="space-y-1">
                                 <p className="text-2xl font-bold text-white">{stats.postCount}</p>
-                                <p className="text-[10px] uppercase tracking-widest text-white/40">BÃ i viáº¿t</p>
+                                <p className="text-[10px] uppercase tracking-widest text-white/40">Bài viết</p>
                             </div>
                             <div className="space-y-1">
                                 <p className="text-2xl font-bold text-white">{stats.memberCount}</p>
-                                <p className="text-[10px] uppercase tracking-widest text-white/40">ThÃ nh viÃªn</p>
+                                <p className="text-[10px] uppercase tracking-widest text-white/40">Thành viên</p>
                             </div>
                             <div className="space-y-1">
                                 <p className="text-2xl font-bold text-white">{isAdmin ? "50%" : "12%++"}</p>
-                                <p className="text-[10px] uppercase tracking-widest text-white/40">Tiáº¿n Ä‘á»™</p>
+                                <p className="text-[10px] uppercase tracking-widest text-white/40">Tiến độ</p>
                             </div>
                             <div className="space-y-1">
                                 <p className="text-2xl font-bold text-white">v2.1</p>
-                                <p className="text-[10px] uppercase tracking-widest text-white/40">PhiÃªn báº£n</p>
+                                <p className="text-[10px] uppercase tracking-widest text-white/40">Phiên bản</p>
                             </div>
                         </div>
                     </>

@@ -8,12 +8,12 @@ export async function POST(req: Request) {
     try {
         const session = await getSession();
         if (!session) {
-            return NextResponse.json({ success: false, error: "Báº¡n cáº§n Ä‘Äƒng nháº­p" }, { status: 401 });
+            return NextResponse.json({ success: false, error: "Bạn cần đăng nhập" }, { status: 401 });
         }
 
         const { username, email, newPassword, oldPassword } = await req.json();
 
-        // 1. Láº¥y thÃ´ng tin ngÆ°á» i dÃ¹ng hiá»‡n táº¡i tá»« DB
+        // 1. Lấy thông tin người dùng hiện tại từ DB
         const { data: user, error: fetchError } = await supabase
             .from("users")
             .select("*")
@@ -21,16 +21,16 @@ export async function POST(req: Request) {
             .single();
 
         if (fetchError || !user) {
-            return NextResponse.json({ success: false, error: "KhÃ´ng tÃ¬m tháº¥y ngÆ°á» i dÃ¹ng" }, { status: 404 });
+            return NextResponse.json({ success: false, error: "Không tìm thấy người dùng" }, { status: 404 });
         }
 
-        // 2. XÃ¡c thá»±c máº­t kháº©u cÅ©
+        // 2. Xác thực mật khẩu cũ
         const isMatch = await bcrypt.compare(oldPassword, user.password);
         if (!isMatch) {
-            return NextResponse.json({ success: false, error: "Máº­t kháº©u cÅ© khÃ´ng chÃ­nh xÃ¡c" }, { status: 400 });
+            return NextResponse.json({ success: false, error: "Mật khẩu cũ không chính xác" }, { status: 400 });
         }
 
-        // 3. Kiá»ƒm tra trÃ¹ng láº·p Email/Username má»›i (náº¿u thay Ä‘á»•i)
+        // 3. Kiểm tra trùng lặp Email/Username mới (nếu thay đổi)
         if (username !== user.username || email !== user.email) {
             const { data: existingUser } = await supabase
                 .from("users")
@@ -41,32 +41,32 @@ export async function POST(req: Request) {
 
             if (existingUser) {
                 if (existingUser.username === username) {
-                    return NextResponse.json({ success: false, error: "TÃªn Ä‘Äƒng nháº­p Ä‘Ã£ tá»“n táº¡i" }, { status: 400 });
+                    return NextResponse.json({ success: false, error: "Tên đăng nhập đã tồn tại" }, { status: 400 });
                 }
                 if (existingUser.email === email) {
-                    return NextResponse.json({ success: false, error: "Email Ä‘Ã£ Ä‘Æ°á»£c sá» dá»¥ng" }, { status: 400 });
+                    return NextResponse.json({ success: false, error: "Email đã được sử dụng" }, { status: 400 });
                 }
             }
         }
 
-        // 4. Chuáº©n bá»‹ dá»¯ liá»‡u cáº­p nháº­t
+        // 4. Chuẩn bị dữ liệu cập nhật
         const updateData: any = { username, email };
         if (newPassword) {
             const salt = await bcrypt.genSalt(10);
             updateData.password = await bcrypt.hash(newPassword, salt);
         }
 
-        // 5. Cáº­p nháº­t DB
+        // 5. Cập nhật DB
         const { error: updateError } = await supabase
             .from("users")
             .update(updateData)
             .eq("id", user.id);
 
         if (updateError) {
-            return NextResponse.json({ success: false, error: "KhÃ´ng thá»ƒ cáº­p nháº­t thÃ´ng tin" }, { status: 500 });
+            return NextResponse.json({ success: false, error: "Không thể cập nhật thông tin" }, { status: 500 });
         }
 
-        // 6. Cáº­p nháº­t Session cookie
+        // 6. Cập nhật Session cookie
         (await cookies()).set("session", JSON.stringify({ username, role: session.role }), {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
@@ -74,7 +74,7 @@ export async function POST(req: Request) {
             path: "/",
         });
 
-        return NextResponse.json({ success: true, message: "Cáº­p nháº­t thÃ´ng tin thÃ nh cÃ´ng" });
+        return NextResponse.json({ success: true, message: "Cập nhật thông tin thành công" });
 
     } catch (error) {
         console.error("Update profile error:", error);
