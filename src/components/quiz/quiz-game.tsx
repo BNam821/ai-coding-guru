@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Loader2, CheckCircle2, XCircle, ChevronRight, RefreshCcw, Award, AlertCircle } from "lucide-react";
+import { Loader2, CheckCircle2, XCircle, ChevronRight, RefreshCcw, Award, AlertCircle, Sparkles } from "lucide-react";
 import { NeonButton } from "@/components/ui/neon-button";
 import { GlassCard } from "@/components/ui/glass-card";
 import Link from "next/link";
@@ -111,10 +111,10 @@ export function QuizGame() {
                     <Award className="w-24 h-24 text-yellow-400 mx-auto mb-6" />
                     <h2 className="text-3xl font-bold text-white mb-2">Hoàn thành!</h2>
                     <div className="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-br from-yellow-300 to-yellow-600 mb-4">
-                        {score}/{questions.length}
+                        {Math.round((score / questions.length) * 100)}/100
                     </div>
                     <p className="text-gray-400 text-lg">
-                        Bạn đã trả lời đúng <span className="text-white font-bold">{percentage}%</span> số câu hỏi.
+                        Bạn đã trả lời đúng <span className="text-white font-bold">{score}/{questions.length}</span> câu hỏi.
                     </p>
                 </GlassCard>
 
@@ -134,16 +134,29 @@ export function QuizGame() {
 
     return (
         <div className="max-w-3xl mx-auto space-y-8">
-            {/* Progress Bar */}
-            <div className="flex items-center justify-between text-sm text-gray-400 mb-2">
-                <span>Câu hỏi {currentIndex + 1}/{questions.length}</span>
-                <span>Điểm: {score}</span>
-            </div>
-            <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
-                <div
-                    className="h-full bg-yellow-400 transition-all duration-500"
-                    style={{ width: `${((currentIndex + 1) / questions.length) * 100}%` }}
-                />
+            {/* Progress Bar & Header Info */}
+            <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                    <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-yellow-400/10 border border-yellow-400/20 text-yellow-400 font-bold text-xs tracking-widest uppercase shadow-[0_0_15px_rgba(250,204,21,0.1)]">
+                        <Sparkles size={14} className="animate-pulse" />
+                        Câu hỏi {currentIndex + 1} / {questions.length}
+                    </div>
+
+                    <div className="px-4 py-1.5 rounded-lg bg-black/40 border-2 border-yellow-400/50 text-yellow-400 font-bold shadow-[0_0_20px_rgba(250,204,21,0.2)] flex items-center gap-2">
+                        <span className="text-[10px] uppercase tracking-tighter opacity-70">Score:</span>
+                        <span className="text-lg font-black">{Math.round((score / questions.length) * 100)}</span>
+                    </div>
+                </div>
+
+                <div className="relative h-2.5 w-full bg-white/5 rounded-full overflow-hidden border border-white/5 p-[1px]">
+                    <div
+                        className="h-full bg-gradient-to-r from-yellow-600 via-yellow-400 to-yellow-500 rounded-full transition-all duration-700 ease-out relative shadow-[0_0_15px_rgba(250,204,21,0.4)]"
+                        style={{ width: `${((currentIndex + 1) / questions.length) * 100}%` }}
+                    >
+                        {/* Shimmer Effect */}
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent w-1/2 -skew-x-[30deg] animate-shimmer" />
+                    </div>
+                </div>
             </div>
 
             {/* Question Card */}
