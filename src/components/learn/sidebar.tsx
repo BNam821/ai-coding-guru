@@ -85,8 +85,8 @@ function CourseItem({
                 <Link
                     href={`/learn/${course.slug}`}
                     className={cn(
-                        "flex-1 p-2 pl-0 text-sm font-medium rounded-r-lg transition-colors hover:bg-white/5 truncate",
-                        isActive ? "text-blue-400" : "text-gray-400"
+                        "flex-1 p-2 pl-0 text-base font-bold rounded-r-lg transition-colors hover:bg-white/5 truncate",
+                        isActive ? "text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.3)]" : "text-gray-400"
                     )}
                 >
                     {course.title}
