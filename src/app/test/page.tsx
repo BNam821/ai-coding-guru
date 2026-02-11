@@ -44,20 +44,30 @@ export default function TestLandingPage() {
                 </div>
 
                 {/* Footer Info */}
-                <div className="grid grid-cols-3 gap-8 text-sm text-gray-500 border-t border-white/5 pt-8 animate-fade-in-up delay-500">
-                    <div>
-                        <span className="block text-white font-bold text-lg mb-1">3</span>
-                        Bài học gần nhất
-                    </div>
-                    <div>
-                        <span className="block text-white font-bold text-lg mb-1">10</span>
-                        Câu hỏi trắc nghiệm
-                    </div>
-                    <div>
-                        <span className="block text-white font-bold text-lg mb-1">AI</span>
-                        Phân tích & Chấm điểm
+                <div className="space-y-6 border-t border-white/5 pt-8 animate-fade-in-up delay-500">
+                    <h3 className="text-white font-medium text-sm tracking-wider uppercase opacity-50">
+                        Chi tiết bài kiểm tra:
+                    </h3>
+                    <div className="grid grid-cols-3 gap-8 text-sm text-gray-500">
+                        <div>
+                            <span className="block text-white font-bold text-lg mb-1">3</span>
+                            Bài học gần nhất
+                        </div>
+                        <div>
+                            <span className="block text-white font-bold text-lg mb-1">10</span>
+                            Câu hỏi trắc nghiệm
+                        </div>
+                        <div>
+                            <span className="block text-white font-bold text-lg mb-1">AI</span>
+                            Phân tích & Chấm điểm
+                        </div>
                     </div>
                 </div>
+
+                {/* AI Disclaimer */}
+                <p className="text-[10px] text-gray-500/50 animate-fade-in-up delay-700 max-w-xs mx-auto">
+                    Bài kiểm tra được tạo tự động bởi AI. Vui lòng kiểm tra tính xác thực của nội dung.
+                </p>
             </div>
         </main>
     );
