@@ -45,7 +45,7 @@ export default async function LessonPage({ params }: PageProps) {
                     className="flex items-center gap-2 text-white/60 hover:text-accent-secondary transition-all group w-fit"
                 >
                     <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
-                    <span className="text-sm font-bold uppercase tracking-wider">Quay lại khóa học</span>
+                    <span className="text-sm font-bold uppercase tracking-wider">Quay lại</span>
                 </Link>
 
                 <nav className="flex items-center space-x-2 text-sm text-gray-500 overflow-x-auto whitespace-nowrap pb-2">
