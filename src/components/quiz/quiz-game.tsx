@@ -200,9 +200,8 @@ export function QuizGame() {
             <div className="flex justify-between items-center pt-4">
                 <button
                     onClick={() => setShowExitModal(true)}
-                    className="text-gray-500 hover:text-red-400 transition-colors text-sm font-medium flex items-center gap-2 group"
+                    className="px-6 py-2 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 hover:bg-red-500 hover:text-white transition-all duration-300 text-sm font-bold flex items-center gap-2 shadow-lg shadow-red-500/10"
                 >
-                    <span className="opacity-0 group-hover:opacity-100 transition-opacity">←</span>
                     Thoát
                 </button>
 
