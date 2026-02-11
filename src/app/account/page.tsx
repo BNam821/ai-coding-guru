@@ -10,6 +10,8 @@ export default async function AccountPage() {
 
     let postCount = 0;
     let memberCount = 0;
+    let lessonCount = 0;
+    let avgScore = "0";
     let userEmail = "";
     let userDisplayName = "";
     let userBio = "";
@@ -17,7 +19,7 @@ export default async function AccountPage() {
 
     if (isAuthenticated) {
         try {
-            const [postsRes, usersRes, currentUserRes] = await Promise.all([
+            const [postsRes, usersRes, currentUserRes, historyRes, scoresRes] = await Promise.all([
                 supabase
                     .from("wiki_posts")
                     .select("*", { count: 'exact', head: true })
@@ -29,7 +31,15 @@ export default async function AccountPage() {
                     .from("users")
                     .select("email, display_name, bio, avatar_url")
                     .eq("username", session.username)
-                    .single()
+                    .single(),
+                supabase
+                    .from("user_learning_history")
+                    .select("lesson_slug", { count: 'exact' })
+                    .eq("username", session.username),
+                supabase
+                    .from("quiz_scores")
+                    .select("score")
+                    .eq("username", session.username)
             ]);
 
             postCount = postsRes.count || 0;
@@ -38,6 +48,15 @@ export default async function AccountPage() {
             userDisplayName = currentUserRes.data?.display_name || "";
             userBio = currentUserRes.data?.bio || "";
             userAvatarUrl = currentUserRes.data?.avatar_url || "";
+
+            // Đếm số bài học duy nhất (Supabase count mang lại tổng dòng, ở đây coi như mỗi dòng là 1 bài duy nhất nếu logic tracker ổn)
+            lessonCount = historyRes.count || 0;
+
+            // Tính điểm trung bình
+            if (scoresRes.data && scoresRes.data.length > 0) {
+                const total = scoresRes.data.reduce((acc, curr) => acc + curr.score, 0);
+                avgScore = (total / scoresRes.data.length).toFixed(1);
+            }
         } catch (error) {
             console.error("Failed to fetch account stats:", error);
         }
@@ -73,7 +92,7 @@ export default async function AccountPage() {
                             bio: userBio,
                             avatarUrl: userAvatarUrl
                         }}
-                        stats={{ postCount, memberCount }}
+                        stats={{ postCount, memberCount, lessonCount, avgScore }}
                     />
                 )}
             </div>

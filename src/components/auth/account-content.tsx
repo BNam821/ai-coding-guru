@@ -21,6 +21,8 @@ interface AccountContentProps {
     stats: {
         postCount: number;
         memberCount: number;
+        lessonCount: number;
+        avgScore: string;
     };
 }
 
@@ -121,12 +123,12 @@ export function AccountContent({ session, stats }: AccountContentProps) {
                                 <p className="text-[10px] uppercase tracking-widest text-white/40">Thành viên</p>
                             </div>
                             <div className="space-y-1">
-                                <p className="text-2xl font-bold text-white">{isAdmin ? "50%" : "12%++"}</p>
-                                <p className="text-[10px] uppercase tracking-widest text-white/40">Tiến độ</p>
+                                <p className="text-2xl font-bold text-white">{stats.lessonCount}</p>
+                                <p className="text-[10px] uppercase tracking-widest text-white/40">Bài đã học</p>
                             </div>
                             <div className="space-y-1">
-                                <p className="text-2xl font-bold text-white">v2.1</p>
-                                <p className="text-[10px] uppercase tracking-widest text-white/40">Phiên bản</p>
+                                <p className="text-2xl font-bold text-white">{stats.avgScore}</p>
+                                <p className="text-[10px] uppercase tracking-widest text-white/40">Tổng điểm</p>
                             </div>
                         </div>
                     </>

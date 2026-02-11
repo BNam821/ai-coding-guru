@@ -74,6 +74,18 @@ export function QuizGame() {
         }
     };
 
+    const syncScore = async (finalScore: number) => {
+        try {
+            const actualScore = Math.round((finalScore / questions.length) * 100);
+            await fetch("/api/quiz/score", {
+                method: "POST",
+                body: JSON.stringify({ score: actualScore }),
+            });
+        } catch (err) {
+            console.error("Failed to sync score:", err);
+        }
+    };
+
     const nextQuestion = () => {
         if (currentIndex < questions.length - 1) {
             setCurrentIndex(prev => prev + 1);
@@ -81,6 +93,7 @@ export function QuizGame() {
             setShowExplanation(false);
         } else {
             setIsFinished(true);
+            syncScore(score);
         }
     };
 
