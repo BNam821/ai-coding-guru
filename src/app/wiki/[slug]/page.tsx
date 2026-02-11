@@ -29,7 +29,12 @@ export default async function WikiDetailPage({ params }: { params: { slug: strin
             .eq("slug", slug)
             .single();
 
-        if (!error && data) {
+        if (error) {
+            console.error("Error fetching wiki detail:", error);
+            // Fallback: Query cơ bản không join nếu lỗi quan hệ
+            const fallback = await supabase.from("wiki_posts").select("*").eq("slug", slug).single();
+            post = fallback.data;
+        } else {
             post = data;
         }
     } catch (e) {

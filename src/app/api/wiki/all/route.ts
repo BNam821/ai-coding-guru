@@ -6,12 +6,20 @@ export async function GET() {
     try {
         // Chạy song song tất cả các truy vấn để tối ưu tốc độ
         const [postsResult, sessionResult, adminResult] = await Promise.all([
-            supabase.from("wiki_posts").select("*, author:users(display_name, avatar_url)").order("created_at", { ascending: false }),
+            supabase.from("wiki_posts").select("*, author_details:users(display_name, avatar_url)").order("created_at", { ascending: false }),
             getSession(),
             isAdminAuthenticated()
         ]);
 
-        const posts = postsResult.data || [];
+        if (postsResult.error) {
+            console.error("Supabase error fetching wiki posts:", postsResult.error);
+            // Nếu lỗi là do quan hệ bảng (FK) không tồn tại, trả về query cơ bản để cứu nguy website
+            const fallbackResult = await supabase.from("wiki_posts").select("*").order("created_at", { ascending: false });
+            var posts = fallbackResult.data || [];
+        } else {
+            var posts = postsResult.data || [];
+        }
+
         const session = sessionResult;
         const isAdmin = adminResult;
 
