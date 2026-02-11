@@ -5,7 +5,7 @@ import { BrainCircuit, Sparkles } from "lucide-react";
 
 export default function TestLandingPage() {
     return (
-        <main className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden">
+        <main className="min-h-screen flex flex-col items-center pt-32 pb-20 p-4 relative overflow-hidden">
             {/* Background Effects */}
             <div className="absolute inset-0 bg-deep-space -z-20" />
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-yellow-400/5 rounded-full blur-[120px] -z-10 animate-pulse-slow" />
