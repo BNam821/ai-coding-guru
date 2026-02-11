@@ -20,7 +20,7 @@ export function LogoutButton() {
             className="flex items-center gap-2 text-white/40 hover:text-red-400 transition-colors text-sm font-medium"
         >
             <LogOut size={16} />
-            Thoát quản trị
+            ĐĂNG XUẤT
         </button>
     );
 }

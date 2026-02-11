@@ -68,7 +68,10 @@ function CourseItem({
     pathname: string;
     isAdmin: boolean;
 }) {
-    const [isOpen, setIsOpen] = useState(true);
+    const [isOpen, setIsOpen] = useState(() => {
+        // Chỉ tự động mở nếu đang ở trong khóa học này
+        return pathname.startsWith(`/learn/${course.slug}`);
+    });
     const isActive = pathname.startsWith(`/learn/${course.slug}`);
 
     return (
