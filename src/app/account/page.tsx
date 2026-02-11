@@ -13,6 +13,7 @@ export default async function AccountPage() {
     let userEmail = "";
     let userDisplayName = "";
     let userBio = "";
+    let userAvatarUrl = "";
 
     if (isAuthenticated) {
         try {
@@ -26,7 +27,7 @@ export default async function AccountPage() {
                     .select("*", { count: 'exact', head: true }),
                 supabase
                     .from("users")
-                    .select("email, display_name, bio")
+                    .select("email, display_name, bio, avatar_url")
                     .eq("username", session.username)
                     .single()
             ]);
@@ -36,6 +37,7 @@ export default async function AccountPage() {
             userEmail = currentUserRes.data?.email || "";
             userDisplayName = currentUserRes.data?.display_name || "";
             userBio = currentUserRes.data?.bio || "";
+            userAvatarUrl = currentUserRes.data?.avatar_url || "";
         } catch (error) {
             console.error("Failed to fetch account stats:", error);
         }
@@ -64,7 +66,13 @@ export default async function AccountPage() {
                     </div>
                 ) : (
                     <AccountContent
-                        session={{ ...session, email: userEmail, displayName: userDisplayName, bio: userBio }}
+                        session={{
+                            ...session,
+                            email: userEmail,
+                            displayName: userDisplayName,
+                            bio: userBio,
+                            avatarUrl: userAvatarUrl
+                        }}
                         stats={{ postCount, memberCount }}
                     />
                 )}

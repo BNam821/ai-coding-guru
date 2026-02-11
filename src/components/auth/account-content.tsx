@@ -7,6 +7,8 @@ import { EditProfileForm } from "@/components/auth/edit-profile-form";
 import { DeleteAccountSection } from "@/components/auth/delete-account-section";
 import { User, ShieldCheck, Mail, MapPin, UserCircle, Edit3 } from "lucide-react";
 
+import Image from "next/image";
+
 interface AccountContentProps {
     session: {
         username: string;
@@ -14,6 +16,7 @@ interface AccountContentProps {
         email: string;
         displayName?: string;
         bio?: string;
+        avatarUrl?: string;
     };
     stats: {
         postCount: number;
@@ -38,7 +41,8 @@ export function AccountContent({ session, stats }: AccountContentProps) {
                             username: session.username,
                             email: session.email,
                             displayName: session.displayName || "",
-                            bio: session.bio || ""
+                            bio: session.bio || "",
+                            avatarUrl: session.avatarUrl || ""
                         }}
                         onCancel={() => setIsEditing(false)}
                     />
@@ -50,8 +54,15 @@ export function AccountContent({ session, stats }: AccountContentProps) {
                                     ? "w-32 h-32 rounded-full bg-gradient-to-br from-accent-primary to-accent-secondary p-1 shadow-2xl"
                                     : "w-32 h-32 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 p-1 shadow-2xl"
                                 }>
-                                    <div className="w-full h-full rounded-full bg-deep-space flex items-center justify-center border-4 border-white/5">
-                                        {isAdmin ? (
+                                    <div className="w-full h-full rounded-full bg-deep-space flex items-center justify-center border-4 border-white/5 overflow-hidden relative">
+                                        {session.avatarUrl ? (
+                                            <Image
+                                                src={session.avatarUrl}
+                                                alt={session.displayName || session.username}
+                                                fill
+                                                className="object-cover"
+                                            />
+                                        ) : isAdmin ? (
                                             <User size={60} className="text-white" />
                                         ) : (
                                             <UserCircle size={60} className="text-white/80" />

@@ -1,7 +1,7 @@
 import { isUserAuthenticated, getSession } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
-import { BookOpen, Clock, ArrowRight, BookMarked, History } from "lucide-react";
+import { BookOpen, Clock, ArrowRight, BookMarked, History, ArrowLeft } from "lucide-react";
 import { GlassCard } from "@/components/ui/glass-card";
 import { HistoryTracker } from "@/components/history/history-tracker";
 
@@ -27,6 +27,11 @@ export default async function HistoryPage() {
             <div className="absolute top-[10%] left-[-10%] w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-[160px] -z-10" />
 
             <div className="container mx-auto max-w-4xl">
+                <Link href="/learn" className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-6 group">
+                    <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
+                    Quay lại khóa học
+                </Link>
+
                 <div className="mb-12 space-y-4 text-center md:text-left">
                     <h1 className="text-4xl lg:text-5xl font-bold text-white flex items-center justify-center md:justify-start gap-4">
                         <History size={40} className="text-blue-400" />

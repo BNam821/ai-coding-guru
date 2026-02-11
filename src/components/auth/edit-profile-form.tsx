@@ -6,12 +6,15 @@ import { GlassCard } from "@/components/ui/glass-card";
 import { NeonButton } from "@/components/ui/neon-button";
 import { Lock, User, Mail, Eye, EyeOff, Save } from "lucide-react";
 
+import { AvatarUpload } from "@/components/auth/avatar-upload";
+
 interface EditProfileFormProps {
     initialData: {
         username: string;
         email: string;
         displayName: string;
         bio: string;
+        avatarUrl?: string;
     };
     onCancel: () => void;
 }
@@ -21,6 +24,7 @@ export function EditProfileForm({ initialData, onCancel }: EditProfileFormProps)
     const [displayName, setDisplayName] = useState(initialData.displayName);
     const [email, setEmail] = useState(initialData.email);
     const [bio, setBio] = useState(initialData.bio);
+    const [avatarUrl, setAvatarUrl] = useState(initialData.avatarUrl || "");
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [oldPassword, setOldPassword] = useState("");
@@ -51,7 +55,7 @@ export function EditProfileForm({ initialData, onCancel }: EditProfileFormProps)
             const res = await fetch("/api/auth/update-profile", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ displayName, email, bio, newPassword, oldPassword }),
+                body: JSON.stringify({ displayName, email, bio, avatarUrl, newPassword, oldPassword }),
             });
 
             const data = await res.json();
@@ -91,6 +95,13 @@ export function EditProfileForm({ initialData, onCancel }: EditProfileFormProps)
                     Cập nhật thành công!
                 </div>
             )}
+
+            <div className="bg-white/5 p-4 rounded-xl border border-white/10">
+                <AvatarUpload
+                    currentAvatarUrl={avatarUrl}
+                    onUploadComplete={setAvatarUrl}
+                />
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1">
