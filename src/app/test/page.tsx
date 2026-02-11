@@ -23,7 +23,7 @@ export default function TestLandingPage() {
                     </h1>
 
                     <p className="text-xl text-gray-400 animate-fade-in-up delay-200">
-                        Hệ thống AI sẽ phân tích lịch sử học tập của bạn và tạo ra bài kiểm tra được cá nhân hóa ngay lập tức.
+                        Hệ thống AI sẽ phân tích lịch sử học tập của bạn <br />và tạo ra bài kiểm tra được cá nhân hóa ngay lập tức.
                     </p>
                 </div>
 

@@ -26,6 +26,7 @@ export function QuizGame() {
     const [showExplanation, setShowExplanation] = useState(false);
     const [score, setScore] = useState(0);
     const [isFinished, setIsFinished] = useState(false);
+    const [showExitModal, setShowExitModal] = useState(false);
 
     useEffect(() => {
         fetchQuiz();
@@ -195,8 +196,16 @@ export function QuizGame() {
                 )}
             </GlassCard>
 
-            {/* Next Button */}
-            <div className="flex justify-end">
+            {/* Action Buttons */}
+            <div className="flex justify-between items-center pt-4">
+                <button
+                    onClick={() => setShowExitModal(true)}
+                    className="text-gray-500 hover:text-red-400 transition-colors text-sm font-medium flex items-center gap-2 group"
+                >
+                    <span className="opacity-0 group-hover:opacity-100 transition-opacity">←</span>
+                    Thoát
+                </button>
+
                 <button
                     onClick={nextQuestion}
                     disabled={selectedAnswer === null}
@@ -206,6 +215,40 @@ export function QuizGame() {
                     <ChevronRight size={20} />
                 </button>
             </div>
+
+            {/* Exit Confirmation Modal */}
+            {showExitModal && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-fade-in">
+                    <div
+                        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                        onClick={() => setShowExitModal(false)}
+                    />
+                    <GlassCard className="relative z-10 p-8 max-w-sm w-full border-white/10 text-center space-y-6">
+                        <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto">
+                            <AlertCircle className="text-red-400 w-8 h-8" />
+                        </div>
+                        <div className="space-y-2">
+                            <h3 className="text-xl font-bold text-white">Bạn có chắc chắn không?</h3>
+                            <p className="text-gray-400 text-sm">
+                                Tiến trình làm bài của bạn sẽ bị mất nếu bạn thoát ngay bây giờ.
+                            </p>
+                        </div>
+                        <div className="flex flex-col gap-3">
+                            <button
+                                onClick={() => setShowExitModal(false)}
+                                className="w-full py-3 bg-white/5 hover:bg-white/10 text-white font-medium rounded-xl transition-colors border border-white/10"
+                            >
+                                Tiếp tục làm bài
+                            </button>
+                            <Link href="/test" className="w-full">
+                                <button className="w-full py-3 bg-red-500/20 hover:bg-red-500/30 text-red-400 font-bold rounded-xl transition-colors border border-red-500/20">
+                                    Thoát
+                                </button>
+                            </Link>
+                        </div>
+                    </GlassCard>
+                </div>
+            )}
         </div>
     );
 }
