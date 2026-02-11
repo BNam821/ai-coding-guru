@@ -167,7 +167,7 @@ export function EditProfileForm({ initialData, onCancel }: EditProfileFormProps)
                             className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-white focus:outline-none focus:border-accent-primary/50 transition-all text-sm appearance-none"
                         >
                             {VIETNAM_PROVINCES.map((prov) => (
-                                <option key={prov} value={prov} className="bg-deep-space text-white lowercase">
+                                <option key={prov} value={prov} className="bg-deep-space text-white">
                                     {prov}
                                 </option>
                             ))}
