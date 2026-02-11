@@ -4,9 +4,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { GlassCard } from "@/components/ui/glass-card";
 import { NeonButton } from "@/components/ui/neon-button";
-import { Lock, User, Mail, Eye, EyeOff, Save } from "lucide-react";
+import { Lock, User, Mail, Eye, EyeOff, Save, ChevronRight } from "lucide-react";
 
 import { AvatarUpload } from "@/components/auth/avatar-upload";
+import { VIETNAM_PROVINCES } from "@/constants/provinces";
+import { MapPin } from "lucide-react";
 
 interface EditProfileFormProps {
     initialData: {
@@ -14,6 +16,7 @@ interface EditProfileFormProps {
         email: string;
         displayName: string;
         bio: string;
+        location?: string;
         avatarUrl?: string;
     };
     onCancel: () => void;
@@ -24,6 +27,7 @@ export function EditProfileForm({ initialData, onCancel }: EditProfileFormProps)
     const [displayName, setDisplayName] = useState(initialData.displayName);
     const [email, setEmail] = useState(initialData.email);
     const [bio, setBio] = useState(initialData.bio);
+    const [location, setLocation] = useState(initialData.location || "Quảng Ninh");
     const [avatarUrl, setAvatarUrl] = useState(initialData.avatarUrl || "");
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
@@ -55,7 +59,7 @@ export function EditProfileForm({ initialData, onCancel }: EditProfileFormProps)
             const res = await fetch("/api/auth/update-profile", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ displayName, email, bio, avatarUrl, newPassword, oldPassword }),
+                body: JSON.stringify({ displayName, email, bio, avatarUrl, location, newPassword, oldPassword }),
             });
 
             const data = await res.json();
@@ -148,6 +152,29 @@ export function EditProfileForm({ initialData, onCancel }: EditProfileFormProps)
                             className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-white focus:outline-none focus:border-accent-primary/50 transition-all text-sm"
                             required
                         />
+                    </div>
+                </div>
+
+                <div className="space-y-1">
+                    <label className="text-xs font-medium text-white/50 ml-1 uppercase tracking-wider">Địa chỉ (Tỉnh/Thành)</label>
+                    <div className="relative group">
+                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 group-focus-within:text-accent-primary transition-colors">
+                            <MapPin size={16} />
+                        </div>
+                        <select
+                            value={location}
+                            onChange={(e) => setLocation(e.target.value)}
+                            className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-white focus:outline-none focus:border-accent-primary/50 transition-all text-sm appearance-none"
+                        >
+                            {VIETNAM_PROVINCES.map((prov) => (
+                                <option key={prov} value={prov} className="bg-deep-space text-white lowercase">
+                                    {prov}
+                                </option>
+                            ))}
+                        </select>
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-white/20">
+                            <ChevronRight size={14} className="rotate-90" />
+                        </div>
                     </div>
                 </div>
 

@@ -11,7 +11,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ success: false, error: "Bạn cần đăng nhập" }, { status: 401 });
         }
 
-        const { displayName, email, bio, avatarUrl, newPassword, oldPassword } = await req.json();
+        const { displayName, email, bio, avatarUrl, location, newPassword, oldPassword } = await req.json();
 
         // 1. Lấy thông tin người dùng hiện tại từ DB
         const { data: user, error: fetchError } = await supabase
@@ -49,7 +49,8 @@ export async function POST(req: Request) {
             display_name: displayName,
             email,
             bio: bio,
-            avatar_url: avatarUrl
+            avatar_url: avatarUrl,
+            location: location
         };
         if (newPassword) {
             const salt = await bcrypt.genSalt(10);

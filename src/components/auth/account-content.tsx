@@ -16,6 +16,7 @@ interface AccountContentProps {
         email: string;
         displayName?: string;
         bio?: string;
+        location?: string;
         avatarUrl?: string;
     };
     stats: {
@@ -44,6 +45,7 @@ export function AccountContent({ session, stats }: AccountContentProps) {
                             email: session.email,
                             displayName: session.displayName || "",
                             bio: session.bio || "",
+                            location: session.location || "",
                             avatarUrl: session.avatarUrl || ""
                         }}
                         onCancel={() => setIsEditing(false)}
@@ -107,7 +109,7 @@ export function AccountContent({ session, stats }: AccountContentProps) {
                                     </div>
                                     <div className="flex items-center gap-3 text-white/80">
                                         <MapPin size={18} className="text-accent-secondary" />
-                                        <span>Quảng Ninh, Việt Nam</span>
+                                        <span>{session.location || "Quảng Ninh, Việt Nam"}</span>
                                     </div>
                                 </div>
                             </div>
@@ -128,7 +130,7 @@ export function AccountContent({ session, stats }: AccountContentProps) {
                             </div>
                             <div className="space-y-1">
                                 <p className="text-2xl font-bold text-white">{stats.avgScore}</p>
-                                <p className="text-[10px] uppercase tracking-widest text-white/40">Tổng điểm</p>
+                                <p className="text-[10px] uppercase tracking-widest text-white/40">Điểm Trung Bình</p>
                             </div>
                         </div>
                     </>

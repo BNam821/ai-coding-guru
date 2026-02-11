@@ -15,6 +15,7 @@ export default async function AccountPage() {
     let userEmail = "";
     let userDisplayName = "";
     let userBio = "";
+    let userLocation = "";
     let userAvatarUrl = "";
 
     if (isAuthenticated) {
@@ -29,7 +30,7 @@ export default async function AccountPage() {
                     .select("*", { count: 'exact', head: true }),
                 supabase
                     .from("users")
-                    .select("email, display_name, bio, avatar_url")
+                    .select("email, display_name, bio, location, avatar_url")
                     .eq("username", session.username)
                     .single(),
                 supabase
@@ -47,6 +48,7 @@ export default async function AccountPage() {
             userEmail = currentUserRes.data?.email || "";
             userDisplayName = currentUserRes.data?.display_name || "";
             userBio = currentUserRes.data?.bio || "";
+            userLocation = currentUserRes.data?.location || "";
             userAvatarUrl = currentUserRes.data?.avatar_url || "";
 
             // Đếm số bài học duy nhất (Supabase count mang lại tổng dòng, ở đây coi như mỗi dòng là 1 bài duy nhất nếu logic tracker ổn)
@@ -90,6 +92,7 @@ export default async function AccountPage() {
                             email: userEmail,
                             displayName: userDisplayName,
                             bio: userBio,
+                            location: userLocation,
                             avatarUrl: userAvatarUrl
                         }}
                         stats={{ postCount, memberCount, lessonCount, avgScore }}
