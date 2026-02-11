@@ -20,7 +20,7 @@ export function LearnSidebar({ courses, isAdmin = false }: LearnSidebarProps) {
         <aside className="w-full md:w-64 shrink-0 border-r border-white/10 bg-black/20 backdrop-blur-md hidden md:block h-[calc(100vh-6rem)] sticky top-24 overflow-y-auto no-scrollbar">
             <div className="p-4 space-y-4">
                 <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600 px-2">
-                    DANH SÁCH KHÓA HỌC
+                    DANH SÁCH<br /> KHÓA HỌC
                 </h2>
 
                 {isAdmin && (
