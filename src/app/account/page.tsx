@@ -11,6 +11,7 @@ export default async function AccountPage() {
     let postCount = 0;
     let memberCount = 0;
     let userEmail = "";
+    let userDisplayName = "";
 
     if (isAuthenticated) {
         try {
@@ -32,6 +33,7 @@ export default async function AccountPage() {
             postCount = postsRes.count || 0;
             memberCount = usersRes.count || 0;
             userEmail = currentUserRes.data?.email || "";
+            userDisplayName = currentUserRes.data?.display_name || "";
         } catch (error) {
             console.error("Failed to fetch account stats:", error);
         }
@@ -60,7 +62,7 @@ export default async function AccountPage() {
                     </div>
                 ) : (
                     <AccountContent
-                        session={{ ...session, email: userEmail, displayName: currentUserRes.data?.display_name }}
+                        session={{ ...session, email: userEmail, displayName: userDisplayName }}
                         stats={{ postCount, memberCount }}
                     />
                 )}
