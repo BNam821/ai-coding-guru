@@ -2,7 +2,6 @@
 
 import { useState, useRef } from "react";
 import { Upload, X, Image as ImageIcon, Loader2 } from "lucide-react";
-import { createClient } from "@/lib/supabase-client";
 import imageCompression from "browser-image-compression";
 import Image from "next/image";
 
@@ -12,7 +11,6 @@ interface AvatarUploadProps {
 }
 
 export function AvatarUpload({ currentAvatarUrl, onUploadComplete }: AvatarUploadProps) {
-    const supabase = createClient();
     const [previewUrl, setPreviewUrl] = useState<string | null>(currentAvatarUrl || null);
     const [isUploading, setIsUploading] = useState(false);
     const [error, setError] = useState("");
@@ -50,28 +48,24 @@ export function AvatarUpload({ currentAvatarUrl, onUploadComplete }: AvatarUploa
             const objectUrl = URL.createObjectURL(compressedFile);
             setPreviewUrl(objectUrl);
 
-            // 3. Upload to Supabase Storage
-            const fileExt = "webp";
-            const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
-            const filePath = `${fileName}`;
+            // 3. Upload to Server (API Route Proxy to bypass RLS)
+            const formData = new FormData();
+            formData.append("file", compressedFile);
 
-            const { error: uploadError, data } = await supabase.storage
-                .from("avatars")
-                .upload(filePath, compressedFile, {
-                    cacheControl: "3600",
-                    upsert: true
-                });
+            const res = await fetch("/api/upload/avatar", {
+                method: "POST",
+                body: formData,
+            });
 
-            if (uploadError) {
-                throw uploadError;
+            if (!res.ok) {
+                const errorData = await res.json();
+                throw new Error(errorData.error || "Upload failed");
             }
 
-            // 4. Get Public URL
-            const { data: { publicUrl } } = supabase.storage
-                .from("avatars")
-                .getPublicUrl(filePath);
+            const data = await res.json();
 
-            onUploadComplete(publicUrl);
+            // 4. Get Public URL from server response
+            onUploadComplete(data.url);
 
         } catch (err: any) {
             console.error("Upload failed:", err);
