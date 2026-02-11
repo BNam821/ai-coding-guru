@@ -12,7 +12,7 @@ export function Footer() {
 
                 <div className="flex items-center gap-4 order-1 md:order-2">
                     <a
-                        href="mailto:contact@aicodingguru.com"
+                        href="https://www.facebook.com/bnam8210/"
                         className="hover:text-accent-primary text-[10px] tracking-widest uppercase transition-colors"
                     >
                         Liên hệ
