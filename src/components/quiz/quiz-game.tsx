@@ -78,7 +78,7 @@ export function QuizGame() {
                 <div className="relative">
                     <div className="w-24 h-24 border-4 border-yellow-400/20 border-t-yellow-400 rounded-full animate-spin" />
                     <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-2xl">🤖</span>
+                        <span className="text-2xl">🧑‍💻</span>
                     </div>
                 </div>
                 <div className="space-y-2">

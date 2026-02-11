@@ -66,7 +66,7 @@ export default function TestLandingPage() {
 
                 {/* AI Disclaimer */}
                 <p className="text-[10px] text-gray-500/50 animate-fade-in-up delay-700 max-w-xs mx-auto">
-                    Bài kiểm tra được tạo tự động bởi AI. Vui lòng kiểm tra tính xác thực của nội dung.
+                    Bài kiểm tra được tạo tự động bởi AI. <br />Vui lòng kiểm tra tính xác thực của nội dung.
                 </p>
             </div>
         </main>
