@@ -76,7 +76,7 @@ export default async function HistoryPage() {
                                                 </h3>
                                                 <div className="flex items-center gap-2 mt-2 text-sm text-gray-500">
                                                     <Clock size={14} />
-                                                    {new Date(item.updated_at).toLocaleString('vi-VN')}
+                                                    {new Date(item.updated_at).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}
                                                 </div>
                                             </div>
                                         </div>
