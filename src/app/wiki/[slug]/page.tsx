@@ -25,7 +25,7 @@ export default async function WikiDetailPage({ params }: { params: { slug: strin
     try {
         const { data, error } = await supabase
             .from("wiki_posts")
-            .select("*")
+            .select("*, author_details:users(display_name, avatar_url)")
             .eq("slug", slug)
             .single();
 
@@ -92,10 +92,20 @@ export default async function WikiDetailPage({ params }: { params: { slug: strin
 
                             <div className="flex flex-wrap items-center gap-6 text-white text-sm border-y border-white/10 py-6">
                                 <div className="flex items-center gap-2">
-                                    <div className="w-8 h-8 rounded-full bg-accent-primary/20 flex items-center justify-center text-accent-primary font-bold">
-                                        {post.author?.[0] || 'A'}
-                                    </div>
-                                    <span>Tác giả: <b className="text-white">{post.author}</b></span>
+                                    {post.author_details?.avatar_url ? (
+                                        <div className="w-8 h-8 rounded-full overflow-hidden border border-white/10 shrink-0">
+                                            <img
+                                                src={post.author_details.avatar_url}
+                                                alt={post.author_details.display_name || post.author}
+                                                className="w-full h-full object-cover"
+                                            />
+                                        </div>
+                                    ) : (
+                                        <div className="w-8 h-8 rounded-full bg-accent-primary/20 flex items-center justify-center text-accent-primary font-bold shrink-0">
+                                            {(post.author_details?.display_name?.[0] || post.author?.[0] || 'A').toUpperCase()}
+                                        </div>
+                                    )}
+                                    <span>Tác giả: <b className="text-white">{post.author_details?.display_name || post.author}</b></span>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <Calendar size={16} />

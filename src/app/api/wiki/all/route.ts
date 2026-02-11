@@ -6,7 +6,7 @@ export async function GET() {
     try {
         // Chạy song song tất cả các truy vấn để tối ưu tốc độ
         const [postsResult, sessionResult, adminResult] = await Promise.all([
-            supabase.from("wiki_posts").select("*").order("created_at", { ascending: false }),
+            supabase.from("wiki_posts").select("*, author:users(display_name, avatar_url)").order("created_at", { ascending: false }),
             getSession(),
             isAdminAuthenticated()
         ]);

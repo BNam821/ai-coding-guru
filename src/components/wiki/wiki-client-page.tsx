@@ -13,6 +13,10 @@ interface WikiPost {
     excerpt: string;
     content: string;
     author: string;
+    author_details?: {
+        display_name: string;
+        avatar_url: string;
+    };
     category: string;
     image_url?: string;
     read_time: string;
@@ -153,16 +157,23 @@ export function WikiClientPage({ initialData }: WikiClientPageProps) {
                 </div>
 
                 {/* Author Dropdown */}
-                <div className="relative group min-w-[180px]">
+                <div className="relative group min-w-[220px]">
                     <select
                         value={authorFilter}
                         onChange={(e) => setAuthorFilter(e.target.value)}
                         className="w-full appearance-none bg-white/5 border border-white/10 text-white/90 text-sm font-bold rounded-xl px-4 py-2.5 pr-10 hover:bg-white/10 hover:border-accent-primary/30 transition-all focus:outline-none focus:ring-2 focus:ring-accent-primary/20 cursor-pointer"
                     >
                         <option value="" className="bg-[#0a0a1a] text-white">Tác giả: Tất cả</option>
-                        {authors.map((author) => (
-                            <option key={author} value={author} className="bg-[#0a0a1a] text-white">{author}</option>
-                        ))}
+                        {authors.map((username) => {
+                            // Tìm display_name từ posts nếu có
+                            const postWithAuthor = posts.find(p => p.author === username);
+                            const displayName = postWithAuthor?.author_details?.display_name || username;
+                            return (
+                                <option key={username} value={username} className="bg-[#0a0a1a] text-white">
+                                    {displayName}
+                                </option>
+                            );
+                        })}
                     </select>
                     <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none group-hover:text-accent-primary transition-colors" />
                 </div>
@@ -265,7 +276,16 @@ function WikiCard({ post, isAdmin }: { post: WikiPost, isAdmin: boolean }) {
 
                     <div className="px-6 py-4 border-t border-white/5 flex items-center justify-between text-[10px] text-white/40 font-bold uppercase tracking-widest">
                         <div className="flex items-center gap-4">
-                            <span className="flex items-center gap-1.5"><User size={12} className="text-accent-primary" /> {post.author}</span>
+                            <span className="flex items-center gap-1.5">
+                                {post.author_details?.avatar_url ? (
+                                    <div className="w-4 h-4 rounded-full overflow-hidden border border-white/10">
+                                        <img src={post.author_details.avatar_url} className="w-full h-full object-cover" alt="" />
+                                    </div>
+                                ) : (
+                                    <User size={12} className="text-accent-primary" />
+                                )}
+                                {post.author_details?.display_name || post.author}
+                            </span>
                             <span className="flex items-center gap-1.5"><Clock size={12} className="text-accent-secondary" /> {post.read_time}</span>
                         </div>
                         <ArrowRight size={14} className="text-accent-secondary group-hover:translate-x-1 transition-transform" />
