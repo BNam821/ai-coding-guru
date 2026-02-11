@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import Link from 'next/link';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, ArrowLeft } from 'lucide-react';
 import rehypeHighlight from 'rehype-highlight';
 import 'highlight.js/styles/github-dark.css';
 import { AdminControls } from '@/components/learn/admin-controls';
@@ -38,16 +38,26 @@ export default async function LessonPage({ params }: PageProps) {
                     lesson_title: lesson.title
                 }}
             />
-            {/* Breadcrumbs */}
-            <nav className="flex items-center space-x-2 text-sm text-gray-500 mb-8 overflow-x-auto whitespace-nowrap pb-2">
-                <Link href="/learn" className="hover:text-white transition-colors">Học tập</Link>
-                <ChevronRight className="w-4 h-4 shrink-0" />
-                <Link href={`/learn/${courseSlug}`} className="hover:text-white transition-colors capitalize">
-                    {courseSlug.replace('-', ' ')}
+            {/* Navigation & Breadcrumbs */}
+            <div className="flex flex-col gap-4 mb-8">
+                <Link
+                    href={`/learn/${courseSlug}`}
+                    className="flex items-center gap-2 text-white/60 hover:text-accent-secondary transition-all group w-fit"
+                >
+                    <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
+                    <span className="text-sm font-bold uppercase tracking-wider">Quay lại khóa học</span>
                 </Link>
-                <ChevronRight className="w-4 h-4 shrink-0" />
-                <span className="text-gray-200 font-medium truncate">{lesson.title}</span>
-            </nav>
+
+                <nav className="flex items-center space-x-2 text-sm text-gray-500 overflow-x-auto whitespace-nowrap pb-2">
+                    <Link href="/learn" className="hover:text-white transition-colors">Học tập</Link>
+                    <ChevronRight className="w-4 h-4 shrink-0" />
+                    <Link href={`/learn/${courseSlug}`} className="hover:text-white transition-colors capitalize">
+                        {courseSlug.replace('-', ' ')}
+                    </Link>
+                    <ChevronRight className="w-4 h-4 shrink-0" />
+                    <span className="text-gray-200 font-medium truncate">{lesson.title}</span>
+                </nav>
+            </div>
 
             <article className="prose prose-invert prose-blue max-w-none w-full
         prose-headings:font-bold prose-headings:tracking-tight
