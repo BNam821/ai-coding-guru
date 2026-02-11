@@ -11,7 +11,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ success: false, error: "Bạn cần đăng nhập" }, { status: 401 });
         }
 
-        const { username, email, newPassword, oldPassword } = await req.json();
+        const { displayName, email, newPassword, oldPassword } = await req.json();
 
         // 1. Lấy thông tin người dùng hiện tại từ DB
         const { data: user, error: fetchError } = await supabase
@@ -30,27 +30,22 @@ export async function POST(req: Request) {
             return NextResponse.json({ success: false, error: "Mật khẩu cũ không chính xác" }, { status: 400 });
         }
 
-        // 3. Kiểm tra trùng lặp Email/Username mới (nếu thay đổi)
-        if (username !== user.username || email !== user.email) {
+        // 3. Kiểm tra trùng lặp Email mới (nếu thay đổi)
+        if (email !== user.email) {
             const { data: existingUser } = await supabase
                 .from("users")
-                .select("username, email")
-                .or(`username.eq.${username},email.eq.${email}`)
+                .select("email")
+                .eq("email", email)
                 .neq("id", user.id)
                 .maybeSingle();
 
             if (existingUser) {
-                if (existingUser.username === username) {
-                    return NextResponse.json({ success: false, error: "Tên đăng nhập đã tồn tại" }, { status: 400 });
-                }
-                if (existingUser.email === email) {
-                    return NextResponse.json({ success: false, error: "Email đã được sử dụng" }, { status: 400 });
-                }
+                return NextResponse.json({ success: false, error: "Email đã được sử dụng" }, { status: 400 });
             }
         }
 
         // 4. Chuẩn bị dữ liệu cập nhật
-        const updateData: any = { username, email };
+        const updateData: any = { display_name: displayName, email };
         if (newPassword) {
             const salt = await bcrypt.genSalt(10);
             updateData.password = await bcrypt.hash(newPassword, salt);
@@ -66,8 +61,8 @@ export async function POST(req: Request) {
             return NextResponse.json({ success: false, error: "Không thể cập nhật thông tin" }, { status: 500 });
         }
 
-        // 6. Cập nhật Session cookie
-        (await cookies()).set("session", JSON.stringify({ username, role: session.role }), {
+        // 6. Cập nhật Session cookie (Giữ nguyên username vì không thay đổi)
+        (await cookies()).set("session", JSON.stringify({ username: session.username, role: session.role }), {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
             maxAge: 60 * 60 * 24,

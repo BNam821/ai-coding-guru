@@ -24,7 +24,7 @@ export default async function AccountPage() {
                     .select("*", { count: 'exact', head: true }),
                 supabase
                     .from("users")
-                    .select("email")
+                    .select("email, display_name")
                     .eq("username", session.username)
                     .single()
             ]);
@@ -60,7 +60,7 @@ export default async function AccountPage() {
                     </div>
                 ) : (
                     <AccountContent
-                        session={{ ...session, email: userEmail }}
+                        session={{ ...session, email: userEmail, displayName: currentUserRes.data?.display_name }}
                         stats={{ postCount, memberCount }}
                     />
                 )}

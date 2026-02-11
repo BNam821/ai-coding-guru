@@ -10,12 +10,14 @@ interface EditProfileFormProps {
     initialData: {
         username: string;
         email: string;
+        displayName: string;
     };
     onCancel: () => void;
 }
 
 export function EditProfileForm({ initialData, onCancel }: EditProfileFormProps) {
-    const [username, setUsername] = useState(initialData.username);
+    const [username] = useState(initialData.username);
+    const [displayName, setDisplayName] = useState(initialData.displayName);
     const [email, setEmail] = useState(initialData.email);
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
@@ -47,7 +49,7 @@ export function EditProfileForm({ initialData, onCancel }: EditProfileFormProps)
             const res = await fetch("/api/auth/update-profile", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ username, email, newPassword, oldPassword }),
+                body: JSON.stringify({ displayName, email, newPassword, oldPassword }),
             });
 
             const data = await res.json();
@@ -90,17 +92,32 @@ export function EditProfileForm({ initialData, onCancel }: EditProfileFormProps)
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1">
-                    <label className="text-xs font-medium text-white/50 ml-1 uppercase tracking-wider">Tên đăng nhập</label>
+                    <label className="text-xs font-medium text-white/50 ml-1 uppercase tracking-wider">Tên hiển thị</label>
                     <div className="relative group">
                         <div className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 group-focus-within:text-accent-primary transition-colors">
                             <User size={16} />
                         </div>
                         <input
                             type="text"
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
+                            value={displayName}
+                            onChange={(e) => setDisplayName(e.target.value)}
                             className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-white focus:outline-none focus:border-accent-primary/50 transition-all text-sm"
-                            required
+                            placeholder="Nhập tên hiển thị..."
+                        />
+                    </div>
+                </div>
+
+                <div className="space-y-1">
+                    <label className="text-xs font-medium text-white/50 ml-1 uppercase tracking-wider">Tên đăng nhập (Không thể sửa)</label>
+                    <div className="relative group">
+                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 transition-colors">
+                            <Lock size={16} />
+                        </div>
+                        <input
+                            type="text"
+                            value={username}
+                            readOnly
+                            className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-white/40 cursor-not-allowed focus:outline-none text-sm"
                         />
                     </div>
                 </div>

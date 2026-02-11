@@ -12,6 +12,7 @@ interface AccountContentProps {
         username: string;
         role: string;
         email: string;
+        displayName?: string;
     };
     stats: {
         postCount: number;
@@ -43,7 +44,8 @@ export function AccountContent({ session, stats }: AccountContentProps) {
                     <EditProfileForm
                         initialData={{
                             username: session.username,
-                            email: session.email
+                            email: session.email,
+                            displayName: session.displayName || ""
                         }}
                         onCancel={() => setIsEditing(false)}
                     />
@@ -73,7 +75,7 @@ export function AccountContent({ session, stats }: AccountContentProps) {
                             <div className="flex-1 space-y-6">
                                 <div>
                                     <h2 className="text-3xl font-bold text-white flex items-center gap-3">
-                                        {session.username}
+                                        {session.displayName || session.username}
                                         {isAdmin ? (
                                             <span className="text-xs px-2 py-1 rounded bg-accent-secondary/20 text-accent-secondary font-mono">ADMIN</span>
                                         ) : (
