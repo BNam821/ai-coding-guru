@@ -18,6 +18,7 @@ export const metadata: Metadata = {
 };
 
 import { Navbar } from "@/components/ui/navbar";
+import { Footer } from "@/components/ui/footer";
 
 export default function RootLayout({
   children,
@@ -29,8 +30,13 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${outfit.variable} antialiased bg-deep-space text-starlight selection:bg-accent-primary selection:text-deep-space`}
       >
-        <Navbar />
-        {children}
+        <div className="min-h-screen flex flex-col relative">
+          <Navbar />
+          <main className="flex-1">
+            {children}
+          </main>
+          <Footer />
+        </div>
       </body>
     </html>
   );
