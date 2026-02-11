@@ -11,7 +11,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ success: false, error: "Bạn cần đăng nhập" }, { status: 401 });
         }
 
-        const { displayName, email, newPassword, oldPassword } = await req.json();
+        const { displayName, email, bio, newPassword, oldPassword } = await req.json();
 
         // 1. Lấy thông tin người dùng hiện tại từ DB
         const { data: user, error: fetchError } = await supabase
@@ -45,7 +45,11 @@ export async function POST(req: Request) {
         }
 
         // 4. Chuẩn bị dữ liệu cập nhật
-        const updateData: any = { display_name: displayName, email };
+        const updateData: any = {
+            display_name: displayName,
+            email,
+            bio: bio
+        };
         if (newPassword) {
             const salt = await bcrypt.genSalt(10);
             updateData.password = await bcrypt.hash(newPassword, salt);

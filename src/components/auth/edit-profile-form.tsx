@@ -11,6 +11,7 @@ interface EditProfileFormProps {
         username: string;
         email: string;
         displayName: string;
+        bio: string;
     };
     onCancel: () => void;
 }
@@ -19,6 +20,7 @@ export function EditProfileForm({ initialData, onCancel }: EditProfileFormProps)
     const [username] = useState(initialData.username);
     const [displayName, setDisplayName] = useState(initialData.displayName);
     const [email, setEmail] = useState(initialData.email);
+    const [bio, setBio] = useState(initialData.bio);
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [oldPassword, setOldPassword] = useState("");
@@ -49,7 +51,7 @@ export function EditProfileForm({ initialData, onCancel }: EditProfileFormProps)
             const res = await fetch("/api/auth/update-profile", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ displayName, email, newPassword, oldPassword }),
+                body: JSON.stringify({ displayName, email, bio, newPassword, oldPassword }),
             });
 
             const data = await res.json();
@@ -136,6 +138,16 @@ export function EditProfileForm({ initialData, onCancel }: EditProfileFormProps)
                             required
                         />
                     </div>
+                </div>
+
+                <div className="space-y-1 md:col-span-2">
+                    <label className="text-xs font-medium text-white/50 ml-1 uppercase tracking-wider">Mô tả cá nhân (Bio)</label>
+                    <textarea
+                        value={bio}
+                        onChange={(e) => setBio(e.target.value)}
+                        className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 px-4 text-white focus:outline-none focus:border-accent-primary/50 transition-all text-sm min-h-[100px] resize-none"
+                        placeholder="Giới thiệu một chút về bản thân bạn..."
+                    />
                 </div>
             </div>
 

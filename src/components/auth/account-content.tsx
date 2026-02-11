@@ -13,6 +13,7 @@ interface AccountContentProps {
         role: string;
         email: string;
         displayName?: string;
+        bio?: string;
     };
     stats: {
         postCount: number;
@@ -27,16 +28,7 @@ export function AccountContent({ session, stats }: AccountContentProps) {
     return (
         <div className="animate-in fade-in zoom-in-95 duration-500 text-left">
             <GlassCard className="p-10 border-white/10 relative overflow-hidden group">
-                <div className="absolute top-0 right-0 p-6 flex gap-2">
-                    {!isEditing && (
-                        <button
-                            onClick={() => setIsEditing(true)}
-                            className="p-2 hover:bg-white/5 rounded-full text-white/40 hover:text-accent-primary transition-colors"
-                            title="Chỉnh sửa thông tin"
-                        >
-                            <Edit3 size={20} />
-                        </button>
-                    )}
+                <div className="absolute top-0 right-0 p-6">
                     <LogoutButton />
                 </div>
 
@@ -45,7 +37,8 @@ export function AccountContent({ session, stats }: AccountContentProps) {
                         initialData={{
                             username: session.username,
                             email: session.email,
-                            displayName: session.displayName || ""
+                            displayName: session.displayName || "",
+                            bio: session.bio || ""
                         }}
                         onCancel={() => setIsEditing(false)}
                     />
@@ -81,9 +74,16 @@ export function AccountContent({ session, stats }: AccountContentProps) {
                                         ) : (
                                             <span className="text-xs px-2 py-1 rounded bg-blue-500/20 text-blue-400 font-mono">MEMBER</span>
                                         )}
+                                        <button
+                                            onClick={() => setIsEditing(true)}
+                                            className="p-1.5 hover:bg-white/5 rounded-full text-white/40 hover:text-accent-primary transition-colors ml-1"
+                                            title="Chỉnh sửa thông tin"
+                                        >
+                                            <Edit3 size={16} />
+                                        </button>
                                     </h2>
-                                    <p className="text-white/40 text-sm mt-1">
-                                        {isAdmin ? "Quản trị viên cấp cao của AI Coding Guru" : "Thành viên nhiệt huyết của cộng đồng"}
+                                    <p className="text-white/60 text-sm mt-2 leading-relaxed italic max-w-2xl">
+                                        {session.bio || (isAdmin ? "Quản trị viên cấp cao của AI Coding Guru" : "Thành viên nhiệt huyết của cộng đồng")}
                                     </p>
                                 </div>
 
