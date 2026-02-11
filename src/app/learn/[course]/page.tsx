@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { BookOpen, FileText, ArrowRight, ChevronRight, Edit, ArrowLeft, Plus, Trash2 } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import { DeleteCourseButton } from '@/components/learn/course-actions';
+import { toRoman } from '@/lib/utils';
 
 export default async function CourseDetailPage({ params }: { params: { course: string } }) {
     const { course: courseSlug } = await params;
@@ -99,7 +100,7 @@ export default async function CourseDetailPage({ params }: { params: { course: s
                                 <div className="px-6 py-5 border-b border-white/10 bg-gradient-to-r from-white/[0.03] to-transparent flex items-center justify-between group/chap">
                                     <div className="flex items-center gap-3">
                                         <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 shrink-0">
-                                            <span className="text-sm font-bold">{chapterIndex + 1}</span>
+                                            <span className="text-sm font-bold">{toRoman(chapterIndex + 1)}</span>
                                         </div>
                                         <h3 className="text-lg font-bold text-white group-hover/chap:text-blue-400 transition-colors">
                                             {chapter.title}
