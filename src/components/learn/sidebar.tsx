@@ -148,6 +148,10 @@ function ChapterItem({
     isAdmin: boolean;
 }) {
     const router = useRouter();
+    const [isOpen, setIsOpen] = useState(() => {
+        // Tự động mở nếu có bài học active trong chương này
+        return chapter.lessons?.some(lesson => pathname === `/learn/${courseSlug}/${lesson.slug}`) || false;
+    });
     const [isEditing, setIsEditing] = useState(false);
     const [editTitle, setEditTitle] = useState(chapter.title);
     const [isSaving, setIsSaving] = useState(false);
@@ -204,7 +208,7 @@ function ChapterItem({
     return (
         <div className="space-y-1">
             {/* Chapter Title */}
-            <div className="group flex items-center gap-1 mt-2">
+            <div className="group flex items-center gap-1 mt-3">
                 {isEditing ? (
                     <div className="flex items-center gap-1 w-full px-1">
                         <input
@@ -240,9 +244,21 @@ function ChapterItem({
                     </div>
                 ) : (
                     <>
-                        <div className="flex-1 px-2 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider truncate">
-                            {chapter.title}
-                        </div>
+                        <button
+                            onClick={() => setIsOpen(!isOpen)}
+                            className={cn(
+                                "flex-1 flex items-center gap-2 px-2 py-1.5 text-xs font-bold uppercase tracking-widest rounded-lg transition-all border",
+                                isOpen
+                                    ? "bg-blue-500/10 border-blue-500/20 text-blue-400"
+                                    : "bg-white/5 border-transparent text-gray-500 hover:bg-white/10 hover:text-gray-300"
+                            )}
+                        >
+                            <span className="shrink-0 transition-transform duration-200">
+                                {isOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                            </span>
+                            <span className="truncate">{chapter.title}</span>
+                        </button>
+
                         {isAdmin && (
                             <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
                                 <Link
@@ -265,27 +281,31 @@ function ChapterItem({
                 )}
             </div>
 
-            {/* Lessons */}
-            {chapter.lessons?.map((lesson) => {
-                const href = `/learn/${courseSlug}/${lesson.slug}`;
-                const isLessonActive = pathname === href;
+            {/* Lessons (Accordion Content) */}
+            {isOpen && (
+                <div className="space-y-1 animate-in slide-in-from-top-1 duration-200">
+                    {chapter.lessons?.map((lesson) => {
+                        const href = `/learn/${courseSlug}/${lesson.slug}`;
+                        const isLessonActive = pathname === href;
 
-                return (
-                    <Link
-                        key={lesson.id}
-                        href={href}
-                        className={cn(
-                            "flex items-center px-2 py-1.5 text-sm rounded-md transition-colors",
-                            isLessonActive
-                                ? "bg-blue-500/10 text-blue-400"
-                                : "text-gray-400 hover:text-white hover:bg-white/5"
-                        )}
-                    >
-                        <FileText className="w-3 h-3 mr-2 opacity-70" />
-                        <span className="truncate">{lesson.title}</span>
-                    </Link>
-                );
-            })}
+                        return (
+                            <Link
+                                key={lesson.id}
+                                href={href}
+                                className={cn(
+                                    "flex items-center px-4 py-1.5 text-sm rounded-md transition-colors",
+                                    isLessonActive
+                                        ? "bg-blue-500/10 text-blue-400"
+                                        : "text-gray-400 hover:text-white hover:bg-white/5"
+                                )}
+                            >
+                                <FileText className="w-3 h-3 mr-2 opacity-70" />
+                                <span className="truncate text-xs">{lesson.title}</span>
+                            </Link>
+                        );
+                    })}
+                </div>
+            )}
         </div>
     );
 }
