@@ -8,10 +8,10 @@ if (!apiKey) {
 
 const genAI = new GoogleGenerativeAI(apiKey);
 
-// Sử dụng model chuẩn, ổn định. 
-// Nếu gặp lỗi 404, hãy kiểm tra lại API KEY trong Settings > Environment Variables trên Vercel.
+// Cập nhật theo yêu cầu: Sử dụng Gemini 2.0 Flash (bản Experimental/Preview mới nhất)
+// Model này tối ưu tốc độ và chất lượng cho Quiz.
 export const geminiModel = genAI.getGenerativeModel({
-    model: "gemini-1.5-flash",
+    model: "gemini-2.0-flash-exp",
     generationConfig: {
         responseMimeType: "application/json",
     }
