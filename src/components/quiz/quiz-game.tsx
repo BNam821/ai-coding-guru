@@ -134,7 +134,7 @@ export function QuizGame() {
 
     if (error) {
         return (
-            <div className="text-center space-y-6">
+            <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-6">
                 <div className="bg-red-500/10 p-6 rounded-2xl border border-red-500/20 max-w-md mx-auto">
                     <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
                     <h3 className="text-xl font-bold text-white mb-2">Không thể tạo bài kiểm tra</h3>
