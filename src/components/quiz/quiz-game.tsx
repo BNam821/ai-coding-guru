@@ -27,14 +27,27 @@ export function QuizGame() {
     const [score, setScore] = useState(0);
     const [isFinished, setIsFinished] = useState(false);
     const [showExitModal, setShowExitModal] = useState(false);
+    const [estimatedSeconds, setEstimatedSeconds] = useState(10);
 
     useEffect(() => {
         fetchQuiz();
     }, []);
 
+    // Countdown logic for loading estimation
+    useEffect(() => {
+        let interval: NodeJS.Timeout;
+        if (loading && estimatedSeconds > 0) {
+            interval = setInterval(() => {
+                setEstimatedSeconds(prev => prev - 1);
+            }, 1000);
+        }
+        return () => clearInterval(interval);
+    }, [loading, estimatedSeconds]);
+
     const fetchQuiz = async () => {
         setLoading(true);
         setError("");
+        setEstimatedSeconds(10); // Khởi tạo 10 giây dự kiến
         try {
             const res = await fetch("/api/quiz/generate", { method: "POST" });
             const data = await res.json();
@@ -82,9 +95,25 @@ export function QuizGame() {
                         <span className="text-2xl">🧑‍💻</span>
                     </div>
                 </div>
-                <div className="space-y-2">
-                    <h2 className="text-2xl font-bold text-white animate-pulse">AI đang phân tích lịch sử học tập...</h2>
-                    <p className="text-gray-400">Đang soạn câu hỏi phù hợp nhất cho bạn</p>
+                <div className="space-y-4">
+                    <h2 className="text-2xl font-bold text-white animate-pulse italic">AI đang phân tích lịch sử học tập...</h2>
+                    <div className="space-y-2">
+                        <p className="text-gray-400">Đang soạn câu hỏi phù hợp nhất cho bạn</p>
+                        <p className="text-yellow-400/60 text-sm font-mono tracking-widest bg-yellow-400/5 py-1 px-3 rounded-full border border-yellow-400/10 inline-block">
+                            {estimatedSeconds > 0
+                                ? `Dự kiến: ~${estimatedSeconds} giây nữa`
+                                : "Sắp xong rồi, hãy kiên nhẫn một chút..."
+                            }
+                        </p>
+                    </div>
+
+                    {/* Mini loading progress bar */}
+                    <div className="w-48 h-1 bg-white/5 rounded-full mx-auto overflow-hidden">
+                        <div
+                            className="h-full bg-gradient-to-r from-yellow-600/40 to-yellow-400 transition-all duration-1000 ease-linear"
+                            style={{ width: `${Math.min(100, ((10 - estimatedSeconds) / 10) * 100)}%` }}
+                        />
+                    </div>
                 </div>
             </div>
         );
