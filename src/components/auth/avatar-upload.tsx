@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react";
 import { Upload, X, Image as ImageIcon, Loader2 } from "lucide-react";
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase-client";
 import imageCompression from "browser-image-compression";
 import Image from "next/image";
 
@@ -12,6 +12,7 @@ interface AvatarUploadProps {
 }
 
 export function AvatarUpload({ currentAvatarUrl, onUploadComplete }: AvatarUploadProps) {
+    const supabase = createClient();
     const [previewUrl, setPreviewUrl] = useState<string | null>(currentAvatarUrl || null);
     const [isUploading, setIsUploading] = useState(false);
     const [error, setError] = useState("");
@@ -58,7 +59,7 @@ export function AvatarUpload({ currentAvatarUrl, onUploadComplete }: AvatarUploa
                 .from("avatars")
                 .upload(filePath, compressedFile, {
                     cacheControl: "3600",
-                    upsert: false
+                    upsert: true
                 });
 
             if (uploadError) {
