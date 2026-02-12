@@ -38,12 +38,15 @@ export default async function LessonPage({ params }: PageProps) {
                     lesson_title: lesson.title
                 }}
             />
-            {/* Admin Controls - Top Right */}
-            {await isAdminAuthenticated() && (
-                <div className="absolute top-0 right-0 z-20">
-                    <AdminControls lessonId={lesson.id} courseSlug={courseSlug} lessonSlug={lessonSlug} />
-                </div>
-            )}
+            {/* Admin/Action Controls - Top Right */}
+            <div className="absolute top-0 right-0 z-20">
+                <AdminControls
+                    lessonId={lesson.id}
+                    courseSlug={courseSlug}
+                    lessonSlug={lessonSlug}
+                    isAdmin={await isAdminAuthenticated()}
+                />
+            </div>
 
             {/* Navigation & Breadcrumbs */}
             <div className="flex flex-col gap-4 mb-8">
