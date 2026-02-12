@@ -162,24 +162,29 @@ export default async function WikiDetailPage({ params }: { params: { slug: strin
                                 <ReactMarkdown
                                     rehypePlugins={[rehypeHighlight]}
                                     components={{
-                                        img: ({ node, ...props }) => <WikiImage {...props} />
+                                        img: ({ node, ...props }) => <WikiImage {...props} />,
+                                        p: ({ children }) => {
+                                            if (typeof children === 'string' && children.startsWith('//') && children.endsWith('//')) {
+                                                const tipContent = children.slice(2, -2);
+                                                return (
+                                                    <div className="glass-panel py-2.5 px-4 rounded-lg border-l-2 border-accent-secondary bg-accent-secondary/5 my-5 animate-in fade-in slide-in-from-left-4 duration-500 max-w-2xl">
+                                                        <div className="flex items-center gap-2.5">
+                                                            <Sparkles size={16} className="text-accent-secondary shrink-0" />
+                                                            <div className="text-white/90 italic leading-tight text-base">
+                                                                <span className="font-bold text-accent-secondary mr-2 uppercase tracking-tight text-sm">Mẹo:</span>
+                                                                "{tipContent}"
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            }
+                                            return <p>{children}</p>;
+                                        }
                                     }}
                                 >
                                     {post.content.trim()}
                                 </ReactMarkdown>
                             </div>
-
-                            {post.tips && (
-                                <div className="glass-panel py-2.5 px-4 rounded-lg border-l-2 border-accent-secondary bg-accent-secondary/5 my-5 animate-in fade-in slide-in-from-left-4 duration-500 max-w-2xl">
-                                    <div className="flex items-center gap-2.5">
-                                        <Sparkles size={16} className="text-accent-secondary shrink-0" />
-                                        <p className="text-white/90 italic leading-tight text-base">
-                                            <span className="font-bold text-accent-secondary mr-2 uppercase tracking-tight text-sm">Mẹo:</span>
-                                            "{post.tips}"
-                                        </p>
-                                    </div>
-                                </div>
-                            )}
                         </div>
 
                         {/* Article Actions (Share & Save) */}
