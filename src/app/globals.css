@@ -86,7 +86,7 @@ html {
 /* Inline code styles */
 .prose :not(pre)>code {
   background-color: rgba(0, 223, 154, 0.1);
-  color: #ffffff;
+  color: #f0e227;
   padding: 0.2rem 0.4rem;
   border-radius: 0.4rem;
   font-weight: 500;
