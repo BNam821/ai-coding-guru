@@ -8,9 +8,6 @@ import rehypeHighlight from "rehype-highlight";
 import "highlight.js/styles/atom-one-dark.css";
 // @ts-ignore
 import { WikiImage } from "@/components/wiki/wiki-image";
-
-const relatedPosts: any[] = [];
-
 import { supabase } from "@/lib/supabase";
 import { getSession, isUserAuthenticated } from "@/lib/auth";
 import { HistoryTracker } from "@/components/history/history-tracker";
@@ -20,6 +17,7 @@ export const revalidate = 60; // Tự động cập nhật dữ liệu sau mỗi
 export default async function WikiDetailPage({ params }: { params: { slug: string } }) {
     const { slug } = await params;
     let post: any = null;
+    let relatedPosts: any[] = [];
     const isLoggedIn = await isUserAuthenticated();
 
     try {
@@ -37,8 +35,25 @@ export default async function WikiDetailPage({ params }: { params: { slug: strin
         } else {
             post = data;
         }
+
+        // Fetch related posts (same category, different slug)
+        if (post) {
+            const { data: relatedData } = await supabase
+                .from("wiki_posts")
+                .select("slug, title, category")
+                .eq("category", post.category)
+                .neq("slug", slug)
+                .limit(10); // Get a small pool to shuffle
+
+            if (relatedData) {
+                // Simple random shuffle and pick 3
+                relatedPosts = relatedData
+                    .sort(() => Math.random() - 0.5)
+                    .slice(0, 3);
+            }
+        }
     } catch (e) {
-        console.error("Failed to fetch wiki post:", e);
+        console.error("Failed to fetch wiki post or related posts:", e);
     }
 
     if (!post) {
