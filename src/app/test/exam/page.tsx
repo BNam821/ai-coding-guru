@@ -6,7 +6,7 @@ export default async function QuizPage() {
     const session = await getSession();
 
     if (!session) {
-        redirect("/account?redirect=/test/quiz");
+        redirect("/account?redirect=/test/exam");
     }
 
     return (

@@ -29,7 +29,7 @@ export default function TestLandingPage() {
 
                 {/* Main Action Button */}
                 <div className="animate-fade-in-up delay-300 group">
-                    <Link href="/test/quiz" className="relative inline-block">
+                    <Link href="/test/exam" className="relative inline-block">
                         {/* Glow Effect */}
                         <div className="absolute inset-0 bg-yellow-400 rounded-2xl blur-xl opacity-20 group-hover:opacity-40 transition-opacity duration-500 animate-pulse" />
 

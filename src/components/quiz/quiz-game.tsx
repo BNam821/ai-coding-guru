@@ -239,10 +239,20 @@ export function QuizGame() {
                                     styleClass
                                 )}
                             >
-                                <div className="prose prose-invert prose-sm max-w-none font-bold text-white">
-                                    <ReactMarkdown>
-                                        {option}
-                                    </ReactMarkdown>
+                                <div className="flex items-center gap-3">
+                                    <span className={cn(
+                                        "w-8 h-8 shrink-0 rounded-lg border-2 flex items-center justify-center font-bold text-sm transition-colors",
+                                        showResult
+                                            ? (isCorrect ? "bg-green-500/20 border-green-500 text-green-400" : isSelected ? "bg-red-500/20 border-red-500 text-red-400" : "border-white/10 text-gray-500")
+                                            : (isSelected ? "bg-yellow-400 border-black text-black" : "border-white/20 text-gray-400 group-hover:border-yellow-400/50 group-hover:text-yellow-400")
+                                    )}>
+                                        {['A', 'B', 'C', 'D'][idx]}
+                                    </span>
+                                    <div className="prose prose-invert prose-sm max-w-none font-bold text-white">
+                                        <ReactMarkdown>
+                                            {option}
+                                        </ReactMarkdown>
+                                    </div>
                                 </div>
                                 {showResult && isCorrect && <CheckCircle2 className="text-green-400" />}
                                 {showResult && isSelected && !isCorrect && <XCircle className="text-red-400" />}
