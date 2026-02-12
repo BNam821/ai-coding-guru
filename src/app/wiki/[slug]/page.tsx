@@ -96,7 +96,7 @@ export default async function WikiDetailPage({ params }: { params: { slug: strin
                             </h1>
 
                             <div className="flex flex-wrap items-center gap-6 text-white text-sm border-y border-white/10 py-6">
-                                <div className="flex items-center gap-2">
+                                <Link href={`/profile/${post.author}`} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
                                     {post.author_details?.avatar_url ? (
                                         <div className="w-8 h-8 rounded-full overflow-hidden border border-white/10 shrink-0">
                                             <img
@@ -110,8 +110,8 @@ export default async function WikiDetailPage({ params }: { params: { slug: strin
                                             {(post.author_details?.display_name?.[0] || post.author?.[0] || 'A').toUpperCase()}
                                         </div>
                                     )}
-                                    <span>Tác giả: <b className="text-white">{post.author_details?.display_name || post.author}</b></span>
-                                </div>
+                                    <span>Tác giả: <b className="text-white hover:text-accent-secondary transition-colors underline decoration-white/20 underline-offset-4">{post.author_details?.display_name || post.author}</b></span>
+                                </Link>
                                 <div className="flex items-center gap-2">
                                     <Calendar size={16} />
                                     <span>{post.date}</span>

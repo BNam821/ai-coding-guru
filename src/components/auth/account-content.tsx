@@ -25,18 +25,21 @@ interface AccountContentProps {
         lessonCount: number;
         avgScore: string;
     };
+    isReadOnly?: boolean;
 }
 
-export function AccountContent({ session, stats }: AccountContentProps) {
+export function AccountContent({ session, stats, isReadOnly = false }: AccountContentProps) {
     const [isEditing, setIsEditing] = useState(false);
     const isAdmin = session?.role === "admin";
 
     return (
         <div className="animate-in fade-in zoom-in-95 duration-500 text-left">
             <GlassCard className="p-10 border-white/10 relative overflow-hidden group">
-                <div className="absolute top-0 right-0 p-6">
-                    <LogoutButton />
-                </div>
+                {!isReadOnly && (
+                    <div className="absolute top-0 right-0 p-6">
+                        <LogoutButton />
+                    </div>
+                )}
 
                 {isEditing ? (
                     <EditProfileForm
@@ -89,13 +92,15 @@ export function AccountContent({ session, stats }: AccountContentProps) {
                                         ) : (
                                             <span className="text-xs px-2 py-1 rounded bg-blue-500/20 text-blue-400 font-mono">MEMBER</span>
                                         )}
-                                        <button
-                                            onClick={() => setIsEditing(true)}
-                                            className="p-1.5 hover:bg-white/5 rounded-full text-white/40 hover:text-accent-primary transition-colors ml-1"
-                                            title="Chỉnh sửa thông tin"
-                                        >
-                                            <Edit3 size={16} />
-                                        </button>
+                                        {!isReadOnly && (
+                                            <button
+                                                onClick={() => setIsEditing(true)}
+                                                className="p-1.5 hover:bg-white/5 rounded-full text-white/40 hover:text-accent-primary transition-colors ml-1"
+                                                title="Chỉnh sửa thông tin"
+                                            >
+                                                <Edit3 size={16} />
+                                            </button>
+                                        )}
                                     </h2>
                                     <p className="text-white/60 text-sm mt-2 leading-relaxed italic max-w-2xl">
                                         {session.bio || (isAdmin ? "Quản trị viên cấp cao của AI Coding Guru" : "Thành viên nhiệt huyết của cộng đồng")}
@@ -137,7 +142,7 @@ export function AccountContent({ session, stats }: AccountContentProps) {
                 )}
             </GlassCard>
 
-            {!isEditing && <DeleteAccountSection />}
+            {!isEditing && !isReadOnly && <DeleteAccountSection />}
         </div>
     );
 }
