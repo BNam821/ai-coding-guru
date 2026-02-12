@@ -241,14 +241,21 @@ export function QuizGame() {
                             >
                                 <div className="flex items-center gap-3">
                                     <span className={cn(
-                                        "w-8 h-8 shrink-0 rounded-lg border-2 flex items-center justify-center font-bold text-sm transition-colors",
+                                        "w-8 h-8 shrink-0 rounded-lg border-2 flex items-center justify-center font-bold text-sm transition-all duration-300",
                                         showResult
-                                            ? (isCorrect ? "bg-green-500/20 border-green-500 text-green-400" : isSelected ? "bg-red-500/20 border-red-500 text-red-400" : "border-white/10 text-gray-500")
-                                            : (isSelected ? "bg-yellow-400 border-black text-black" : "border-white/20 text-gray-400 group-hover:border-yellow-400/50 group-hover:text-yellow-400")
+                                            ? (isCorrect ? "bg-green-500/20 border-green-500 text-green-400 shadow-[0_0_15px_rgba(34,197,94,0.3)]" : isSelected ? "bg-red-500/20 border-red-500 text-red-400" : "border-white/5 text-gray-600 opacity-50")
+                                            : isSelected
+                                                ? "bg-yellow-400 border-yellow-300 text-black shadow-[0_0_20px_rgba(250,204,21,0.4)] scale-110"
+                                                : [
+                                                    "border-blue-500/30 text-blue-400 bg-blue-500/5 group-hover:border-blue-400 group-hover:bg-blue-500/10",
+                                                    "border-emerald-500/30 text-emerald-400 bg-emerald-500/5 group-hover:border-emerald-400 group-hover:bg-emerald-500/10",
+                                                    "border-amber-500/30 text-amber-400 bg-amber-500/5 group-hover:border-amber-400 group-hover:bg-amber-500/10",
+                                                    "border-purple-500/30 text-purple-400 bg-purple-500/5 group-hover:border-purple-400 group-hover:bg-purple-500/10"
+                                                ][idx]
                                     )}>
                                         {['A', 'B', 'C', 'D'][idx]}
                                     </span>
-                                    <div className="prose prose-invert prose-sm max-w-none font-bold text-white">
+                                    <div className="prose prose-invert prose-sm max-w-none font-bold text-white group-hover:text-blue-50 transition-colors">
                                         <ReactMarkdown>
                                             {option}
                                         </ReactMarkdown>
