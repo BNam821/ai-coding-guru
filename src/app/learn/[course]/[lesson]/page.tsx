@@ -9,6 +9,8 @@ import 'highlight.js/styles/github-dark.css';
 import { AdminControls } from '@/components/learn/admin-controls';
 import { isAdminAuthenticated, isUserAuthenticated } from '@/lib/auth';
 import { HistoryTracker } from '@/components/history/history-tracker';
+// @ts-ignore
+import { WikiImage } from "@/components/wiki/wiki-image";
 
 interface PageProps {
     params: Promise<{
@@ -83,6 +85,9 @@ export default async function LessonPage({ params }: PageProps) {
                 <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
                     rehypePlugins={[rehypeHighlight]}
+                    components={{
+                        img: ({ node, ...props }) => <WikiImage {...props} />
+                    }}
                 >
                     {lesson.content || '*Nội dung đang được cập nhật...*'}
                 </ReactMarkdown>

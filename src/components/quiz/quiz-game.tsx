@@ -9,6 +9,8 @@ import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
+// @ts-ignore
+import { WikiImage } from "@/components/wiki/wiki-image";
 import "highlight.js/styles/atom-one-dark.css";
 
 interface Question {
@@ -276,7 +278,13 @@ export function QuizGame() {
                             <span className="text-lg">💡</span> Giải thích
                         </h4>
                         <div className="prose prose-invert prose-sm max-w-none text-gray-300">
-                            <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}>
+                            <ReactMarkdown
+                                remarkPlugins={[remarkGfm]}
+                                rehypePlugins={[rehypeHighlight]}
+                                components={{
+                                    img: ({ node, ...props }) => <WikiImage {...props} />
+                                }}
+                            >
                                 {currentQuestion.explanation}
                             </ReactMarkdown>
                         </div>
