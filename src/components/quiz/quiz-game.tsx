@@ -239,7 +239,7 @@ export function QuizGame() {
                                     styleClass
                                 )}
                             >
-                                <div className="prose prose-invert prose-sm max-w-none">
+                                <div className="prose prose-invert prose-sm max-w-none font-bold text-white">
                                     <ReactMarkdown>
                                         {option}
                                     </ReactMarkdown>
