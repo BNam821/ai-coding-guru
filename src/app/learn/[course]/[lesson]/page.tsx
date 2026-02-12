@@ -38,6 +38,13 @@ export default async function LessonPage({ params }: PageProps) {
                     lesson_title: lesson.title
                 }}
             />
+            {/* Admin Controls - Top Right */}
+            {await isAdminAuthenticated() && (
+                <div className="absolute top-0 right-0 z-20">
+                    <AdminControls lessonId={lesson.id} courseSlug={courseSlug} lessonSlug={lessonSlug} />
+                </div>
+            )}
+
             {/* Navigation & Breadcrumbs */}
             <div className="flex flex-col gap-4 mb-8">
                 <Link
@@ -80,11 +87,6 @@ export default async function LessonPage({ params }: PageProps) {
 
 
             <div className="mt-12 pt-8 border-t border-white/10 flex flex-col gap-4">
-                {/* Admin Controls */}
-                {await isAdminAuthenticated() && (
-                    <AdminControls lessonId={lesson.id} courseSlug={courseSlug} lessonSlug={lessonSlug} />
-                )}
-
                 {/* Navigation buttons could go here (Next/Prev lesson) - requiring logic to find next/prev */}
             </div>
         </div>

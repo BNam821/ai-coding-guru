@@ -39,7 +39,7 @@ export function AdminControls({ lessonId, courseSlug, lessonSlug }: AdminControl
     };
 
     return (
-        <div className="flex items-center gap-4 mt-8 pt-8 border-t border-white/10">
+        <div className="flex items-center gap-2">
             <Link
                 href={`/learn/${courseSlug}/${lessonSlug}/edit`}
                 className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 transition-colors text-sm font-medium"
