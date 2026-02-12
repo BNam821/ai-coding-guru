@@ -18,11 +18,20 @@ export default async function ProfilePage({ params }: { params: { username: stri
         const targetUserRes = await supabase
             .from("users")
             .select("username, role, display_name, bio, location, avatar_url")
-            .ilike("username", username)
+            .eq("username", username)
             .single();
 
+        if (targetUserRes.error) {
+            return (
+                <main className="min-h-screen pt-32 px-4 text-center text-white">
+                    <h1 className="text-2xl font-bold mb-4">Debug Info: {targetUserRes.error.message}</h1>
+                    <p>Code: {targetUserRes.error.code}</p>
+                    <p>Trying to find username: {username}</p>
+                </main>
+            );
+        }
+
         if (!targetUserRes.data) {
-            console.error("User not found:", username);
             return notFound();
         }
 

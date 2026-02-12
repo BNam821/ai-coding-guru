@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import bcrypt from "bcryptjs";
 import { supabase } from "./supabase";
 
-const ADMIN_SECRET_KEY = process.env.ADMIN_SECRET_KEY || "campha8@";
+const ADMIN_SECRET_KEY = process.env.ADMIN_SECRET_KEY;
 
 export async function loginUser(username: string, pass: string, adminKey?: string) {
     try {
