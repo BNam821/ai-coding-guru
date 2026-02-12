@@ -17,25 +17,20 @@ export default async function ProfilePage({ params }: { params: { username: stri
         // 1. Fetch user data first (Essential)
         const targetUserRes = await supabase
             .from("users")
-            .select("username, role, display_name, bio, location, avatar_url")
+            .select("username, display_name, bio, location, avatar_url")
             .eq("username", username)
             .single();
 
         if (targetUserRes.error) {
-            return (
-                <main className="min-h-screen pt-32 px-4 text-center text-white">
-                    <h1 className="text-2xl font-bold mb-4">Debug Info: {targetUserRes.error.message}</h1>
-                    <p>Code: {targetUserRes.error.code}</p>
-                    <p>Trying to find username: {username}</p>
-                </main>
-            );
+            console.error("Supabase error fetching user:", targetUserRes.error);
+            return notFound();
         }
 
         if (!targetUserRes.data) {
             return notFound();
         }
 
-        userData = targetUserRes.data;
+        userData = { ...targetUserRes.data, role: "admin" }; // Default to admin per user request
         const actualUsername = userData.username; // Use the exact username from DB for other queries
 
         // 2. Fetch stats (Non-essential, handle errors gracefully)
