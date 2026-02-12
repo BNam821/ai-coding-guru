@@ -164,8 +164,9 @@ export default async function WikiDetailPage({ params }: { params: { slug: strin
                                     components={{
                                         img: ({ node, ...props }) => <WikiImage {...props} />,
                                         p: ({ children }) => {
-                                            if (typeof children === 'string' && children.startsWith('//') && children.endsWith('//')) {
-                                                const tipContent = children.slice(2, -2);
+                                            const content = Array.isArray(children) ? children[0] : children;
+                                            if (typeof content === 'string' && content.trim().startsWith('//') && content.trim().endsWith('//')) {
+                                                const tipContent = content.trim().slice(2, -2);
                                                 return (
                                                     <div className="glass-panel py-2.5 px-4 rounded-lg border-l-2 border-accent-secondary bg-accent-secondary/5 my-5 animate-in fade-in slide-in-from-left-4 duration-500 max-w-2xl">
                                                         <div className="flex items-center gap-2.5">
@@ -178,7 +179,7 @@ export default async function WikiDetailPage({ params }: { params: { slug: strin
                                                     </div>
                                                 );
                                             }
-                                            return <p>{children}</p>;
+                                            return <p className="mb-4 last:mb-0 leading-relaxed">{children}</p>;
                                         }
                                     }}
                                 >
