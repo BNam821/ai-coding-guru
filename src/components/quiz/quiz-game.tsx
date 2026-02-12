@@ -6,6 +6,9 @@ import { NeonButton } from "@/components/ui/neon-button";
 import { GlassCard } from "@/components/ui/glass-card";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import ReactMarkdown from "react-markdown";
+import rehypeHighlight from "rehype-highlight";
+import "highlight.js/styles/atom-one-dark.css";
 
 interface Question {
     id: number;
@@ -203,9 +206,11 @@ export function QuizGame() {
 
             {/* Question Card */}
             <GlassCard className="p-8 md:p-10 space-y-8 animate-fade-in-right">
-                <h3 className="text-2xl font-bold text-white leading-relaxed">
-                    {currentQuestion.question}
-                </h3>
+                <div className="prose prose-invert max-w-none">
+                    <ReactMarkdown rehypePlugins={[rehypeHighlight]}>
+                        {currentQuestion.question}
+                    </ReactMarkdown>
+                </div>
 
                 <div className="space-y-3">
                     {currentQuestion.options.map((option, idx) => {
@@ -232,7 +237,11 @@ export function QuizGame() {
                                     styleClass
                                 )}
                             >
-                                <span className="font-medium text-lg">{option}</span>
+                                <div className="prose prose-invert prose-sm max-w-none">
+                                    <ReactMarkdown>
+                                        {option}
+                                    </ReactMarkdown>
+                                </div>
                                 {showResult && isCorrect && <CheckCircle2 className="text-green-400" />}
                                 {showResult && isSelected && !isCorrect && <XCircle className="text-red-400" />}
                             </button>
@@ -246,7 +255,11 @@ export function QuizGame() {
                         <h4 className="font-bold text-blue-400 mb-1 flex items-center gap-2">
                             <span className="text-lg">💡</span> Giải thích
                         </h4>
-                        <p className="text-gray-300">{currentQuestion.explanation}</p>
+                        <div className="prose prose-invert prose-sm max-w-none text-gray-300">
+                            <ReactMarkdown rehypePlugins={[rehypeHighlight]}>
+                                {currentQuestion.explanation}
+                            </ReactMarkdown>
+                        </div>
                     </div>
                 )}
             </GlassCard>
