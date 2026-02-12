@@ -55,7 +55,7 @@ export default async function LessonPage({ params }: PageProps) {
                         {courseSlug.replace('-', ' ')}
                     </Link>
                     <ChevronRight className="w-4 h-4 shrink-0" />
-                    <span className="text-gray-200 font-medium truncate">{lesson.title}</span>
+                    <span className="text-gray-200 font-medium truncate">Bài {lesson.order}: {lesson.title}</span>
                 </nav>
             </div>
 
@@ -67,7 +67,7 @@ export default async function LessonPage({ params }: PageProps) {
         prose-img:rounded-lg prose-img:border prose-img:border-white/10
         ">
                 <h1 className="text-3xl md:text-4xl font-extrabold mb-8 bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
-                    {lesson.title}
+                    Bài {lesson.order}: {lesson.title}
                 </h1>
 
                 <ReactMarkdown

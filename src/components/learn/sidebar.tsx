@@ -303,7 +303,7 @@ function ChapterItem({
                                 )}
                             >
                                 <FileText className="w-3 h-3 mr-2 opacity-70" />
-                                <span className="truncate text-xs">{lesson.title}</span>
+                                <span className="truncate text-xs">Bài {lesson.order}: {lesson.title}</span>
                             </Link>
                         );
                     })}

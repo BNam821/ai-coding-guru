@@ -130,7 +130,7 @@ export default async function CourseDetailPage({ params }: { params: { course: s
                                                     {lessonIndex + 1}
                                                 </div>
                                                 <span className="text-gray-300 group-hover:text-white transition-colors">
-                                                    {lesson.title}
+                                                    Bài {lesson.order}: {lesson.title}
                                                 </span>
                                             </div>
                                             <ArrowRight className="w-4 h-4 text-gray-500 group-hover:text-blue-400 group-hover:translate-x-1 transition-all" />
