@@ -13,6 +13,8 @@ export function Footer() {
                 <div className="flex items-center gap-4 order-1 md:order-2">
                     <a
                         href="https://www.facebook.com/bnam8210/"
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="hover:text-accent-primary text-[10px] tracking-widest uppercase transition-colors"
                     >
                         Liên hệ
