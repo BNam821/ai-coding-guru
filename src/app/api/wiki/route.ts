@@ -60,7 +60,6 @@ export async function POST(req: Request) {
                 author: session.username, // Tự động lấy từ session
                 category: newPost.category,
                 image_url: newPost.image_url,
-                tips: newPost.tips,
                 date: date,
                 read_time: readTime
             }])
@@ -90,7 +89,7 @@ export async function PUT(req: Request) {
 
     try {
         const session = await getSession();
-        const { slug, title, excerpt, content, category, image_url, tips } = await req.json();
+        const { slug, title, excerpt, content, category, image_url } = await req.json();
 
         if (!slug) {
             return NextResponse.json({ success: false, error: "Thiếu Slug" }, { status: 400 });
@@ -121,7 +120,6 @@ export async function PUT(req: Request) {
                 content,
                 category,
                 image_url,
-                tips,
                 read_time: readTime,
             })
             .eq("slug", slug);

@@ -12,7 +12,6 @@ export default function CreatePostPage() {
     const [title, setTitle] = useState("");
     const [excerpt, setExcerpt] = useState("");
     const [content, setContent] = useState("");
-    const [tips, setTips] = useState("");
     const [category, setCategory] = useState("Hướng dẫn");
     const [author, setAuthor] = useState(""); // 
     const [imageUrl, setImageUrl] = useState("");
@@ -40,7 +39,7 @@ export default function CreatePostPage() {
             const res = await fetch("/api/wiki", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ title, excerpt, content, tips, category, image_url: imageUrl }),
+                body: JSON.stringify({ title, excerpt, content, category, image_url: imageUrl }),
             });
 
             const data = await res.json();
@@ -165,17 +164,6 @@ export default function CreatePostPage() {
                                     </select>
                                 </div>
 
-                                <div className="space-y-4">
-                                    <label className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-white/40 text-accent-secondary">
-                                        <Sparkles size={14} /> Mẹo chuyên gia
-                                    </label>
-                                    <textarea
-                                        value={tips}
-                                        onChange={(e) => setTips(e.target.value)}
-                                        placeholder="Ví dụ: Hãy dùng phím tắt Ctrl+Alt+F để format nhanh..."
-                                        className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white text-sm focus:outline-none focus:border-accent-secondary/50 min-h-[100px] resize-none"
-                                    />
-                                </div>
 
                                 <div className="pt-6 border-t border-white/10">
                                     {error && <p className="text-red-500 text-xs mb-4 text-center">{error}</p>}
