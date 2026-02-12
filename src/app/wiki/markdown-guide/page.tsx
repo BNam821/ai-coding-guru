@@ -2,8 +2,22 @@ import { ArrowLeft, Sparkles, Code, Image as ImageIcon, Type, List, Quote } from
 import { GlassCard } from "@/components/ui/glass-card";
 import Link from "next/link";
 
+interface GuideItem {
+    label: string;
+    syntax: string;
+    description: string;
+    note?: string;
+    icon?: React.ReactNode;
+}
+
+interface GuideSection {
+    title: string;
+    icon: React.ReactNode;
+    items: GuideItem[];
+}
+
 export default function MarkdownGuidePage() {
-    const sections = [
+    const sections: GuideSection[] = [
         {
             title: "Quy tắc Độc quyền (AI Guru Features)",
             icon: <Sparkles className="text-yellow-400" />,
