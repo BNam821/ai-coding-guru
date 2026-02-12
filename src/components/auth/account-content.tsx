@@ -13,7 +13,7 @@ interface AccountContentProps {
     session: {
         username: string;
         role: string;
-        email: string;
+        email?: string;
         displayName?: string;
         bio?: string;
         location?: string;
@@ -45,7 +45,7 @@ export function AccountContent({ session, stats, isReadOnly = false }: AccountCo
                     <EditProfileForm
                         initialData={{
                             username: session.username,
-                            email: session.email,
+                            email: session.email || "",
                             displayName: session.displayName || "",
                             bio: session.bio || "",
                             location: session.location || "",
@@ -108,10 +108,12 @@ export function AccountContent({ session, stats, isReadOnly = false }: AccountCo
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div className="flex items-center gap-3 text-white/80">
-                                        <Mail size={18} className="text-accent-primary" />
-                                        <span>{session.email}</span>
-                                    </div>
+                                    {session.email && (
+                                        <div className="flex items-center gap-3 text-white/80">
+                                            <Mail size={18} className="text-accent-primary" />
+                                            <span>{session.email}</span>
+                                        </div>
+                                    )}
                                     <div className="flex items-center gap-3 text-white/80">
                                         <MapPin size={18} className="text-accent-secondary" />
                                         <span>{session.location || "Quảng Ninh, Việt Nam"}</span>

@@ -14,41 +14,47 @@ export default async function ProfilePage({ params }: { params: { username: stri
     let userData: any = null;
 
     try {
-        const [postsRes, usersRes, targetUserRes, historyRes, scoresRes] = await Promise.all([
-            supabase
-                .from("wiki_posts")
-                .select("*", { count: 'exact', head: true })
-                .eq("author", username),
-            supabase
-                .from("users")
-                .select("*", { count: 'exact', head: true }),
-            supabase
-                .from("users")
-                .select("username, role, email, display_name, bio, location, avatar_url")
-                .eq("username", username)
-                .single(),
-            supabase
-                .from("user_learning_history")
-                .select("lesson_slug", { count: 'exact' })
-                .eq("username", username),
-            supabase
-                .from("quiz_scores")
-                .select("score")
-                .eq("username", username)
-        ]);
+        // 1. Fetch user data first (Essential)
+        const targetUserRes = await supabase
+            .from("users")
+            .select("username, role, display_name, bio, location, avatar_url")
+            .ilike("username", username)
+            .single();
 
         if (!targetUserRes.data) {
+            console.error("User not found:", username);
             return notFound();
         }
 
         userData = targetUserRes.data;
-        postCount = postsRes.count || 0;
-        memberCount = usersRes.count || 0;
-        lessonCount = historyRes.count || 0;
+        const actualUsername = userData.username; // Use the exact username from DB for other queries
 
-        if (scoresRes.data && scoresRes.data.length > 0) {
-            const total = scoresRes.data.reduce((acc, curr) => acc + curr.score, 0);
-            avgScore = (total / scoresRes.data.length).toFixed(1);
+        // 2. Fetch stats (Non-essential, handle errors gracefully)
+        const [postsRes, usersRes, historyRes, scoresRes] = await Promise.allSettled([
+            supabase
+                .from("wiki_posts")
+                .select("*", { count: 'exact', head: true })
+                .eq("author", actualUsername),
+            supabase
+                .from("users")
+                .select("*", { count: 'exact', head: true }),
+            supabase
+                .from("user_learning_history")
+                .select("lesson_slug", { count: 'exact' })
+                .eq("username", actualUsername),
+            supabase
+                .from("quiz_scores")
+                .select("score")
+                .eq("username", actualUsername)
+        ]);
+
+        postCount = (postsRes.status === 'fulfilled' && postsRes.value.count) || 0;
+        memberCount = (usersRes.status === 'fulfilled' && usersRes.value.count) || 0;
+        lessonCount = (historyRes.status === 'fulfilled' && historyRes.value.count) || 0;
+
+        if (scoresRes.status === 'fulfilled' && scoresRes.value.data && scoresRes.value.data.length > 0) {
+            const total = scoresRes.value.data.reduce((acc, curr: any) => acc + curr.score, 0);
+            avgScore = (total / scoresRes.value.data.length).toFixed(1);
         }
     } catch (error) {
         console.error("Failed to fetch profile data:", error);
