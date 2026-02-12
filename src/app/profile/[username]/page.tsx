@@ -1,4 +1,5 @@
 import { AccountContent } from "@/components/auth/account-content";
+import { BackButton } from "@/components/ui/back-button";
 import { supabase } from "@/lib/supabase";
 import { notFound } from "next/navigation";
 
@@ -79,9 +80,14 @@ export default async function ProfilePage({ params }: { params: { username: stri
     }
 
     return (
-        <main className="min-h-screen pt-32 px-4 relative z-10">
-            <div className="container mx-auto text-center space-y-12 max-w-4xl">
-                <header className="space-y-4">
+        <main className="min-h-screen pt-32 pb-20 px-4 relative z-10">
+            <div className="container mx-auto max-w-4xl space-y-12">
+                {/* Back Button */}
+                <div className="flex justify-start">
+                    <BackButton />
+                </div>
+
+                <header className="space-y-4 text-center">
                     <h1 className="text-5xl font-bold text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.3)]">
                         Hồ sơ tác giả
                     </h1>
