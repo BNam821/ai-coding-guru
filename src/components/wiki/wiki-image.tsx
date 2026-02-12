@@ -13,6 +13,8 @@ export function WikiImage(props: any) {
     // Check if external url
     const isExternal = src.startsWith("http");
 
+    const displayCaption = title || alt;
+
     return (
         <figure className="my-8 block w-full rounded-xl overflow-hidden border border-white/10 bg-white/5">
             {isExternal ? (
@@ -32,9 +34,9 @@ export function WikiImage(props: any) {
                     />
                 </div>
             )}
-            {title && (
+            {displayCaption && (
                 <figcaption className="text-center text-sm text-white/60 mt-2 italic px-4 py-2 border-t border-white/5 bg-white/5">
-                    {title}
+                    {displayCaption}
                 </figcaption>
             )}
         </figure>
