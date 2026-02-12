@@ -206,10 +206,12 @@ export function QuizGame() {
 
             {/* Question Card */}
             <GlassCard className="p-8 md:p-10 space-y-8 animate-fade-in-right">
-                <div className="prose prose-invert max-w-none">
-                    <ReactMarkdown rehypePlugins={[rehypeHighlight]}>
-                        {currentQuestion.question}
-                    </ReactMarkdown>
+                <div className="p-6 md:p-8 rounded-2xl bg-yellow-400/5 border border-yellow-400/20 shadow-[0_0_30px_rgba(250,204,21,0.05)] mb-8">
+                    <div className="prose prose-invert prose-lg md:prose-xl max-w-none font-bold text-white tracking-tight leading-relaxed">
+                        <ReactMarkdown rehypePlugins={[rehypeHighlight]}>
+                            {currentQuestion.question}
+                        </ReactMarkdown>
+                    </div>
                 </div>
 
                 <div className="space-y-3">
