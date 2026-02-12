@@ -7,6 +7,7 @@ import { GlassCard } from "@/components/ui/glass-card";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import "highlight.js/styles/atom-one-dark.css";
 
@@ -208,7 +209,7 @@ export function QuizGame() {
             <GlassCard className="p-8 md:p-10 space-y-8 animate-fade-in-right">
                 <div className="p-6 md:p-8 rounded-2xl bg-yellow-400/5 border border-yellow-400/20 shadow-[0_0_30px_rgba(250,204,21,0.05)] mb-8">
                     <div className="prose prose-invert prose-lg md:prose-xl max-w-none font-bold text-white tracking-tight leading-relaxed">
-                        <ReactMarkdown rehypePlugins={[rehypeHighlight]}>
+                        <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}>
                             {currentQuestion.question}
                         </ReactMarkdown>
                     </div>
@@ -256,7 +257,7 @@ export function QuizGame() {
                                         {['A', 'B', 'C', 'D'][idx]}
                                     </span>
                                     <div className="prose prose-invert prose-sm max-w-none font-bold text-white group-hover:text-blue-50 transition-colors">
-                                        <ReactMarkdown>
+                                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
                                             {option}
                                         </ReactMarkdown>
                                     </div>
@@ -275,7 +276,7 @@ export function QuizGame() {
                             <span className="text-lg">💡</span> Giải thích
                         </h4>
                         <div className="prose prose-invert prose-sm max-w-none text-gray-300">
-                            <ReactMarkdown rehypePlugins={[rehypeHighlight]}>
+                            <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}>
                                 {currentQuestion.explanation}
                             </ReactMarkdown>
                         </div>
