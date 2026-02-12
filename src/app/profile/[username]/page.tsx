@@ -17,7 +17,7 @@ export default async function ProfilePage({ params }: { params: { username: stri
         // 1. Fetch user data first (Essential)
         const targetUserRes = await supabase
             .from("users")
-            .select("username, display_name, bio, location, avatar_url")
+            .select("username, email, display_name, bio, location, avatar_url")
             .eq("username", username)
             .single();
 
@@ -30,7 +30,20 @@ export default async function ProfilePage({ params }: { params: { username: stri
             return notFound();
         }
 
-        userData = { ...targetUserRes.data, role: "admin" }; // Default to admin per user request
+        // Logic mã hóa email: a****@gmail.com
+        const maskEmail = (email: string) => {
+            if (!email || !email.includes('@')) return email;
+            const [localPart, domain] = email.split('@');
+            if (localPart.length <= 1) return `*@${domain}`;
+            return `${localPart[0]}****@${domain}`;
+        };
+
+        const rawUserData = targetUserRes.data;
+        userData = {
+            ...rawUserData,
+            email: maskEmail(rawUserData.email),
+            role: "admin"
+        };
         const actualUsername = userData.username; // Use the exact username from DB for other queries
 
         // 2. Fetch stats (Non-essential, handle errors gracefully)
