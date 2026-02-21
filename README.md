@@ -24,8 +24,13 @@ _- Bùi Hải Nam - Lớp 10A4_
 
 _- Vũ Hoàng Nam - Lớp 10A5_
 
+_- Trần Minh Đức - Lớp 10A5_
+
 Dự án này được phát triển chủ yếu dựa trên [Google Antigravity](https://antigravity.google/), [Gemini](https://gemini.google.com/) và một số công cụ hỗ trợ khác. Do đó, một số nội dung chưa được triển khai và tối ưu đúng cách. Nhóm Cẩm Phả 8 sẽ tiếp tục phát triển và đưa ra các bản cập nhật trong thời gian sắp tới.
 
 ---
 
-# 
+## Tính năng
+![Trang chủ](https://raw.githubusercontent.com/BNam821/ai-coding-guru/refs/heads/main/public/home.png)
+- Trang web có giao diện tối giản và dễ sử dụng.
+- 
