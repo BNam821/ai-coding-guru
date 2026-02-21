@@ -17,18 +17,23 @@
 _lấy cảm hứng từ "AI Young Guru"  và coding._
 
 Sản phẩm này là bài dự thi của nhóm Cẩm Phả 8 - Trường THPT Cẩm Phả trong cuộc thi **[Sáng tạo cùng AI - AI YOUNG GURU](https://aiyoungguru.fpt.edu.vn/).**
+Đề tài: _ỨNG DỤNG TRÍ TUỆ NHÂN TẠO ĐỂ HỖ TRỢ HỌC LẬP TRÌNH TRONG VIỆC CỦNG CỐ KIẾN THỨC VÀ KỸ NĂNG_
 
 *Các tác giả:*
 
-_- Bùi Hải Nam - Lớp 10A4_
+_- Bùi Hải Nam (Lớp 10A4): xây dựng ý tưởng và phát triển tính năng._
 
-_- Vũ Hoàng Nam - Lớp 10A5_
+_- Vũ Hoàng Nam (Lớp 10A5): xây dựng tính năng kèm các nội dung học liệu của sản phẩm._
 
-_- Trần Minh Đức - Lớp 10A5_
+_- Trần Minh Đức (Lớp 10A5): thu thập và sáng tạo nội dung đa phương tiện (hình ảnh, logo,..)._
 
 Dự án này được phát triển chủ yếu dựa trên [Google Antigravity](https://antigravity.google/), [Gemini](https://gemini.google.com/) và một số công cụ hỗ trợ khác. Do đó, một số nội dung chưa được triển khai và tối ưu đúng cách. Nhóm Cẩm Phả 8 sẽ tiếp tục phát triển và đưa ra các bản cập nhật trong thời gian sắp tới.
 
 ---
+
+
+
+
 
 ### Trang chủ
 - Có giao diện hiện đại và tối giản, thân thiện với người dùng.
