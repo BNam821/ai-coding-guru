@@ -30,7 +30,27 @@ Dự án này được phát triển chủ yếu dựa trên [Google Antigravity
 
 ---
 
+### Trang chủ
+- Có giao diện hiện đại và tối giản, thân thiện với người dùng.
+- Bố cụ rõ ràng sắp xếp hợp lí.
+- Mang lại cảm giác gọn gàng dễ sử dụng. phù hợp với giới trẻ hiện nay.
+- Tại đây sẽ có đường dẫn tới các tính năng của trang Web:
+    [Blogs Kiến thức](https://ai-coding-guru.vercel.app/wiki)
+    [Học tập](https://ai-coding-guru.vercel.app/learn)
+    [Kiểm tra cùng AI](https://ai-coding-guru.vercel.app/test)
+
 ## Tính năng
-![Trang chủ](https://raw.githubusercontent.com/BNam821/ai-coding-guru/refs/heads/main/public/home.png)
-- Trang web có giao diện tối giản và dễ sử dụng.
-- 
+### Blogs Kiên thức
+- là một ***không gian cộng đồng*** để mọi người truyền đạt cho nhau **những kiến thức mới** thông qua nhiều bài đăng.
+- Đăng tải bài học của bản thân cũng như **đóng góp** giúp cho nhiều người cùng chung đam mê nâng cao kiến thức, hiểu biết. Đồng thời cải thiện cộng đồng **AI-Coding-Guru** ngày càng lớn mạnh và tích cực.
+- **Blogs Kiến thức** sử dụng cơ chế *markdown* để tạo thuận lợi cho người dùng viết bài đăng. Có thể gán **hình ảnh, links** dễ dàng trong việc biểu đạt ý kiến bản thân.
+> CHÚ Ý: Không được **LẠM DỤNG** bài đăng để phục vụ cho mục đích cá nhân gây ảnh hưởng tiêu cực đến cộng đồng văn minh của trang Web.
+
+### Học tập
+- Tại đây có nhiều bài học từ cơ bản đến nâng cao để người dùng có thể bổ sung kiến thức cho bản thân. Các bài học được sắp xếp gọn gàng và dễ quan sát tại cột **Danh sách khóa học** bên tay trái trang Web.
+- Khác với ***Blogs Kiến thức***, phần ***Học tập*** là nơi để các nhà phát triển đăng bài học và sắp xếp xử lí ngay ngắn cho người dùng.
+- Trang Web dựa trên những bài học mà ban đã học qua để triển khai tính năng ***Kiểm tra cùng AI***.
+
+### Kiểm tra cùng AI
+- Nghe có vẻ nặng nề nhưng đây chỉ là một hình thức mọi người dùng củng cố lại kiến thức của bản thân mà họ tìm hiểu được trong phần ***Học tập***.
+- Bài kiểm tra được tạo tự động bởi Gemini 2.0 Flash Lite. Trí tuệ nhân tạo trên sẽ dựa trên 3 bài học gần nhất của người dùng để tạo **một bài khảo sát trắc nghiệm** để củng cố kiến thức cho người dùng. Đồng thời chú thích bên dưới các câu trả lời để giải thích cho *đáp án đúng*.
