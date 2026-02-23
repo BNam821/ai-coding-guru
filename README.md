@@ -28,7 +28,7 @@ Sản phẩm này là bài dự thi của nhóm Cẩm Phả 8 - Trường THPT C
 
 - Trần Minh Đức (Lớp 10A5): _thu thập và sáng tạo nội dung đa phương tiện (hình ảnh, logo,..)._
 
-Dự án này được phát triển chủ yếu dựa trên [Google Antigravity](https://antigravity.google/), [Gemini](https://gemini.google.com/) và một số công cụ hỗ trợ khác. Do đó, một số nội dung chưa được triển khai và tối ưu đúng cách. Nhóm Cẩm Phả 8 sẽ tiếp tục phát triển và đưa ra các bản cập nhật trong thời gian sắp tới.
+###### Dự án này được phát triển chủ yếu dựa trên [Google Antigravity](https://antigravity.google/), [Gemini](https://gemini.google.com/) và một số công cụ hỗ trợ khác. Do đó, một số nội dung chưa được triển khai và tối ưu đúng cách. Nhóm Cẩm Phả 8 sẽ tiếp tục phát triển và đưa ra các bản cập nhật trong thời gian sắp tới.
 
 ---
 # Các tính năng chính
@@ -42,7 +42,7 @@ Dự án này được phát triển chủ yếu dựa trên [Google Antigravity
 
 
 # Thông tin sản phẩm
-<small>*Sản phẩm này được thực hiện trên đề xuất của AI-Agent tích hợp của IDE [Google Antigravity](https://antigravity.google/), kết hợp cùng các thông tin mà nhóm thu thập được, để tạo nên cấu trúc phần mềm như sau:*</small>
+##### *Sản phẩm này được thực hiện trên đề xuất của AI-Agent tích hợp của IDE [Google Antigravity](https://antigravity.google/), kết hợp cùng các thông tin mà nhóm thu thập được, để tạo nên cấu trúc phần mềm như sau:*
  ## 1. Frontend
 - Framework: Next.js v16.1.6.
 
