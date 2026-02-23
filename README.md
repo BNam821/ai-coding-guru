@@ -22,13 +22,65 @@ Sản phẩm này là bài dự thi của nhóm Cẩm Phả 8 - Trường THPT C
 
 *Các tác giả:*
 
-_- Bùi Hải Nam (Lớp 10A4): xây dựng ý tưởng và phát triển tính năng._
+- Bùi Hải Nam (Lớp 10A4): _xây dựng ý tưởng và phát triển tính năng._
 
-_- Vũ Hoàng Nam (Lớp 10A5): xây dựng tính năng kèm các nội dung học liệu của sản phẩm._
+- Vũ Hoàng Nam (Lớp 10A5): _xây dựng tính năng kèm các nội dung học liệu của sản phẩm._
 
-_- Trần Minh Đức (Lớp 10A5): thu thập và sáng tạo nội dung đa phương tiện (hình ảnh, logo,..)._
+- Trần Minh Đức (Lớp 10A5): _thu thập và sáng tạo nội dung đa phương tiện (hình ảnh, logo,..)._
 
 Dự án này được phát triển chủ yếu dựa trên [Google Antigravity](https://antigravity.google/), [Gemini](https://gemini.google.com/) và một số công cụ hỗ trợ khác. Do đó, một số nội dung chưa được triển khai và tối ưu đúng cách. Nhóm Cẩm Phả 8 sẽ tiếp tục phát triển và đưa ra các bản cập nhật trong thời gian sắp tới.
 
 ---
+# Các tính năng chính
+## 1. [Trang chủ]()
+## 2. [Blogs]()
+## 3. [Học Tập]()
+## 4. [Kiểm tra]()
+## 5. [Tài khoản]()
 
+---
+
+
+# Thông tin sản phẩm
+<small>*Sản phẩm này được thực hiện trên đề xuất của AI-Agent tích hợp của IDE [Google Antigravity](https://antigravity.google/), kết hợp cùng các thông tin mà nhóm thu thập được, để tạo nên cấu trúc phần mềm như sau:*</small>
+ ## 1. Frontend
+- Framework: Next.js v16.1.6.
+
+- Thư viện: React v19.2.3.
+
+- **Một số framework xây dựng giao diện**:
+
+  - Tailwind CSS v4: Utility-first CSS framework.
+
+  - Tailwind Typography: Tối ưu hiển thị văn bản và Markdown.
+
+- Animations: Framer Motion (v12.31.0) cho các hiệu ứng chuyển động mượt mà.
+
+- **Các công cụ xử lý nội dung**:
+
+  - React Markdown & Remark GFM: Hiển thị nội dung Markdown theo chuẩn GitHub.
+
+  - Highlight.js: Cú pháp highlight màu sắc cho các đoạn mã nguồn.
+
+- **Các công cụ khác**:
+
+  - Browser Image Compression: Tối ưu hóa dung lượng ảnh trực tiếp tại client trước khi upload.
+
+  - Tailwind-merge & Clsx: Quản lý CSS classes linh hoạt.
+##
+
+  ## 2. Backend
+- Ngôn ngữ: **Typescript** kết hợp **Javascript**, **CSS** và **Python**.
+- Cơ sở dữ liệu: **Supabase**:
+    
+    - Lưu trữ dữ liệu người dùng: tài khoản, ảnh đại diện, thông tin cá nhân, bài đăng.
+    - Lưu trữ mật khẩu, mã hoá bằng thư viện **Bcrypt.js**.
+- Runtime Environment: **Node.js**
+- AI Engine: **Gemini 2.0 FLash Lite** (tham gia trong việc tạo nội dung ở tính năng Blogs và Kiểm tra).
+- Môi trường triển khai (Deployment): **Vercel**.
+
+---
+
+
+
+  
