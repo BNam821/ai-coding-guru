@@ -32,11 +32,11 @@ Sản phẩm này là bài dự thi của nhóm Cẩm Phả 8 - Trường THPT C
 
 ---
 # Các tính năng chính
-## 1. [Trang chủ](https://github.com/BNam821/ai-coding-guru/blob/main/docs/landing.md)
-## 2. [Blogs](https://github.com/BNam821/ai-coding-guru/blob/main/docs/blogs.md)
-## 3. [Học Tập](https://github.com/BNam821/ai-coding-guru/blob/main/docs/learn.md)
-## 4. [Kiểm tra](https://github.com/BNam821/ai-coding-guru/blob/main/docs/test.md)
-## 5. [Tài khoản](https://github.com/BNam821/ai-coding-guru/blob/main/docs/account.md)
+### 1. [Trang chủ](https://github.com/BNam821/ai-coding-guru/blob/main/docs/landing.md)
+### 2. [Blogs](https://github.com/BNam821/ai-coding-guru/blob/main/docs/blogs.md)
+### 3. [Học Tập](https://github.com/BNam821/ai-coding-guru/blob/main/docs/learn.md)
+### 4. [Kiểm tra](https://github.com/BNam821/ai-coding-guru/blob/main/docs/test.md)
+### 5. [Tài khoản](https://github.com/BNam821/ai-coding-guru/blob/main/docs/account.md)
 
 ---
 
