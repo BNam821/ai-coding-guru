@@ -18,7 +18,7 @@ _lấy cảm hứng từ "AI Young Guru"  và coding._
 
 Sản phẩm này là bài dự thi của nhóm Cẩm Phả 8 - Trường THPT Cẩm Phả trong cuộc thi **[Sáng tạo cùng AI - AI YOUNG GURU](https://aiyoungguru.fpt.edu.vn/).**
 
-**Đề tài: _ỨNG DỤNG TRÍ TUỆ NHÂN TẠO ĐỂ HỖ TRỢ HỌC LẬP TRÌNH TRONG VIỆC CỦNG CỐ KIẾN THỨC VÀ KỸ NĂNG_**
+**Đề tài: _ỨNG DỤNG TRÍ TUỆ NHÂN TẠO ĐỂ HỖ TRỢ HỌC LẬP TRÌNH TRONG VIỆC CỦNG CỐ KIẾN THỨC VÀ KỸ NĂNG._**
 
 *Các tác giả:*
 
@@ -70,12 +70,12 @@ Sản phẩm này là bài dự thi của nhóm Cẩm Phả 8 - Trường THPT C
 ##
 
   ## 2. Backend
-- Ngôn ngữ: **Typescript** kết hợp **Javascript**, **CSS** và **Python**.
+- Ngôn ngữ: **Typescript** + **Javascript** kết hợp **CSS** và **HTML** *(chủ yếu là Typescript)*.
 - Cơ sở dữ liệu: **Supabase**:
     
     - Lưu trữ dữ liệu người dùng: tài khoản, ảnh đại diện, thông tin cá nhân, bài đăng.
     - Lưu trữ mật khẩu, mã hoá bằng thư viện **Bcrypt.js**.
-- Runtime Environment: **Node.js**
+- Runtime Environment: **Node.js**.
 - AI Engine: **Gemini 2.0 FLash Lite** (tham gia trong việc tạo nội dung ở tính năng Blogs và Kiểm tra).
 - Môi trường triển khai (Deployment): **Vercel**.
 
