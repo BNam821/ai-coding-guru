@@ -81,6 +81,7 @@ Sản phẩm này là bài dự thi của nhóm Cẩm Phả 8 - Trường THPT C
 
 ---
 
-
+Mọi chi tiết về sản phẩm xin liên hệ: <namkoi2010@gmail.com>.  
+Cảm ơn bạn đã sử dụng AI Coding Guru!
 
   
