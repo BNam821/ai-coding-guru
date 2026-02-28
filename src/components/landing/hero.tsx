@@ -44,7 +44,7 @@ export function Hero() {
                                 Bắt đầu Khám phá ngay
                             </NeonButton>
                         </div>
-                        <Link href="https://www.youtube.com/watch?v=dQw4w9WgXcQ" target="_blank" rel="noopener noreferrer">
+                        <Link href="https://youtu.be/bntMDGvrB2M" target="_blank" rel="noopener noreferrer">
                             <NeonButton variant="outline" icon={<Code className="w-5 h-5" />}>
                                 Hướng dẫn
                             </NeonButton>
