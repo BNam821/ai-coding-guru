@@ -103,8 +103,7 @@ export function SignupForm() {
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white focus:outline-none focus:border-accent-primary/50 transition-all"
-                            placeholder="example@gmail.com"
-                            required
+                            placeholder="example@email.com"
                         />
                     </div>
                 </div>
