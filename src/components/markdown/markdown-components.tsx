@@ -6,6 +6,54 @@ import { cn } from "@/lib/utils";
 import type { MarkdownComponentOptions } from "./markdown-types";
 import { MarkdownCodeBlock } from "./markdown-code-block";
 
+function normalizeLanguage(rawLanguage?: string): string | undefined {
+    if (!rawLanguage) {
+        return undefined;
+    }
+
+    const normalized = rawLanguage.toLowerCase();
+
+    if (normalized === "c++") return "cpp";
+    if (normalized === "c#") return "csharp";
+    if (normalized === "js") return "javascript";
+    if (normalized === "ts") return "typescript";
+    if (normalized === "py") return "python";
+    if (normalized === "sh") return "bash";
+
+    return normalized;
+}
+
+function getLanguageLabel(language?: string): string {
+    if (!language) {
+        return "Text";
+    }
+
+    const labels: Record<string, string> = {
+        bash: "Bash",
+        c: "C",
+        cpp: "C++",
+        csharp: "C#",
+        css: "CSS",
+        html: "HTML",
+        java: "Java",
+        javascript: "JavaScript",
+        json: "JSON",
+        jsx: "JSX",
+        markdown: "Markdown",
+        php: "PHP",
+        python: "Python",
+        ruby: "Ruby",
+        rust: "Rust",
+        sql: "SQL",
+        text: "Text",
+        tsx: "TSX",
+        typescript: "TypeScript",
+        yaml: "YAML",
+    };
+
+    return labels[language] || language.toUpperCase();
+}
+
 function extractText(children: ReactNode): string {
     if (typeof children === "string") {
         return children;
@@ -180,12 +228,14 @@ export function createMarkdownComponents(options: MarkdownComponentOptions = {})
             if (isValidElement(children)) {
                 const childProps = children.props as { className?: string; children?: ReactNode };
                 const code = extractText(childProps.children).replace(/\n$/, "");
-                const language = childProps.className?.replace(/^language-/, "").split(" ")[0];
+                const languageMatch = childProps.className?.match(/language-([a-zA-Z0-9#+-]+)/);
+                const language = normalizeLanguage(languageMatch?.[1]);
 
                 return (
                     <MarkdownCodeBlock
                         code={code}
                         language={language}
+                        languageLabel={getLanguageLabel(language)}
                         className={childProps.className}
                     >
                         {childProps.children}

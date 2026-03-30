@@ -1,18 +1,9 @@
+import GithubSlugger from "github-slugger";
 import type { MarkdownHeading } from "./markdown-toc";
-
-function slugify(text: string): string {
-    return text
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/[^\w\s-]/g, "")
-        .trim()
-        .replace(/\s+/g, "-");
-}
 
 export function extractMarkdownHeadings(content: string): MarkdownHeading[] {
     const lines = content.split(/\r?\n/);
-    const slugCounts = new Map<string, number>();
+    const slugger = new GithubSlugger();
     const headings: MarkdownHeading[] = [];
     let inFence = false;
 
@@ -41,14 +32,10 @@ export function extractMarkdownHeadings(content: string): MarkdownHeading[] {
             continue;
         }
 
-        const baseSlug = slugify(rawText);
-        const count = slugCounts.get(baseSlug) || 0;
-        slugCounts.set(baseSlug, count + 1);
-
         headings.push({
             depth,
             text: rawText,
-            slug: count === 0 ? baseSlug : `${baseSlug}-${count}`,
+            slug: slugger.slug(rawText),
         });
     }
 

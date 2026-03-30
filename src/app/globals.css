@@ -216,6 +216,58 @@ html {
 
 .markdown-content pre code {
   font-size: 0.95rem;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  color: inherit;
+}
+
+.markdown-content pre .hljs {
+  display: block;
+  background: transparent;
+  color: #d7dde7;
+}
+
+.markdown-content pre .hljs-keyword,
+.markdown-content pre .hljs-selector-tag,
+.markdown-content pre .hljs-literal {
+  color: #c792ea;
+}
+
+.markdown-content pre .hljs-title,
+.markdown-content pre .hljs-title.function_,
+.markdown-content pre .hljs-title.class_ {
+  color: #82aaff;
+}
+
+.markdown-content pre .hljs-string,
+.markdown-content pre .hljs-regexp,
+.markdown-content pre .hljs-symbol {
+  color: #c3e88d;
+}
+
+.markdown-content pre .hljs-number,
+.markdown-content pre .hljs-attr,
+.markdown-content pre .hljs-property,
+.markdown-content pre .hljs-variable.constant_ {
+  color: #f78c6c;
+}
+
+.markdown-content pre .hljs-type,
+.markdown-content pre .hljs-built_in,
+.markdown-content pre .hljs-params {
+  color: #ffcb6b;
+}
+
+.markdown-content pre .hljs-comment,
+.markdown-content pre .hljs-quote {
+  color: #637777;
+  font-style: italic;
+}
+
+.markdown-content pre .hljs-meta,
+.markdown-content pre .hljs-doctag {
+  color: #89ddff;
 }
 
 .markdown-content th,
