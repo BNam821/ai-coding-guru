@@ -50,7 +50,7 @@ export function MarkdownCodeBlock({
                     {copied ? "Copied" : "Copy"}
                 </button>
             </div>
-            <pre className="markdown-code-block-pre overflow-x-auto bg-[#171a20] px-4 py-4 text-sm leading-7">
+            <pre className="markdown-code-block-pre overflow-x-auto bg-[#171a20] px-3 py-2.5 text-sm leading-6">
                 <code className={cn(className)}>{children ?? code}</code>
             </pre>
         </div>
