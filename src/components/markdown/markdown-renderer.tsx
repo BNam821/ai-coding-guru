@@ -18,9 +18,9 @@ import { MarkdownToc } from "./markdown-toc";
 
 function getRehypePlugins(mode: MarkdownRenderMode): PluggableList {
     const sharedPlugins: PluggableList = [
+        [rehypeSanitize, markdownSanitizeSchema],
         [rehypeKatex, { output: "html" }],
         rehypeHighlight,
-        [rehypeSanitize, markdownSanitizeSchema],
     ];
 
     if (mode === "lite") {

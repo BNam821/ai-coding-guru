@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { useState } from "react";
 import { Check, Copy } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -8,12 +9,14 @@ interface MarkdownCodeBlockProps {
     code: string;
     language?: string;
     className?: string;
+    children?: ReactNode;
 }
 
 export function MarkdownCodeBlock({
     code,
     language,
     className,
+    children,
 }: MarkdownCodeBlockProps) {
     const [copied, setCopied] = useState(false);
 
@@ -43,7 +46,7 @@ export function MarkdownCodeBlock({
                 </button>
             </div>
             <pre className="overflow-x-auto bg-[#1e1e1e] p-4 text-sm leading-7">
-                <code className={cn(className)}>{code}</code>
+                <code className={cn(className)}>{children ?? code}</code>
             </pre>
         </div>
     );

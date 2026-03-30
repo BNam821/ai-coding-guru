@@ -11,8 +11,16 @@ function extractText(children: ReactNode): string {
         return children;
     }
 
+    if (typeof children === "number") {
+        return String(children);
+    }
+
     if (Array.isArray(children)) {
         return children.map(extractText).join("");
+    }
+
+    if (isValidElement(children)) {
+        return extractText((children.props as { children?: ReactNode }).children);
     }
 
     return "";
@@ -179,7 +187,9 @@ export function createMarkdownComponents(options: MarkdownComponentOptions = {})
                         code={code}
                         language={language}
                         className={childProps.className}
-                    />
+                    >
+                        {childProps.children}
+                    </MarkdownCodeBlock>
                 );
             }
 

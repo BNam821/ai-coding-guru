@@ -46,8 +46,9 @@
 :root {
   --background: #0b0d11;
   --foreground: #e2e8f0;
-  --font-inter: "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  --font-outfit: "Trebuchet MS", "Avenir Next", "Segoe UI", sans-serif;
+  --font-inter: "Google Sans Text", "Google Sans", "Product Sans", "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-outfit: "Google Sans", "Product Sans", "Avenir Next", "Segoe UI", sans-serif;
+  --font-code: "JetBrains Mono", "Fira Code", "Cascadia Code", "SFMono-Regular", Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
 body {
@@ -55,6 +56,7 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans), sans-serif;
   overflow-x: hidden;
+  text-rendering: optimizeLegibility;
 }
 
 html {
@@ -98,7 +100,7 @@ html {
   border-radius: 0.4rem;
   font-weight: 500;
   border: 1px solid rgba(0, 223, 154, 0.2);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-family: var(--font-code);
 }
 
 .prose :not(pre)>code::before,
@@ -127,6 +129,18 @@ html {
   overflow-x: auto;
   overflow-y: hidden;
   padding: 0.75rem 0.25rem;
+  margin: 1.25rem 0;
+  text-align: left;
+}
+
+.markdown-content .katex {
+  font-size: 1.08em;
+  line-height: 1.25;
+}
+
+.markdown-content .katex-display > .katex {
+  display: inline-block;
+  min-width: max-content;
 }
 
 .markdown-content .katex-display::-webkit-scrollbar {
@@ -191,6 +205,17 @@ html {
 
 .markdown-content .markdown-callout > :last-child {
   margin-bottom: 0;
+}
+
+.markdown-content pre,
+.markdown-content code,
+.markdown-content kbd,
+.markdown-content samp {
+  font-family: var(--font-code);
+}
+
+.markdown-content pre code {
+  font-size: 0.95rem;
 }
 
 .markdown-content th,
