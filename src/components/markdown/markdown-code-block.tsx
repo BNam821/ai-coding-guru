@@ -33,7 +33,7 @@ export function MarkdownCodeBlock({
     };
 
     return (
-        <div className="my-6 overflow-hidden rounded-2xl border border-white/10 bg-[#12151b] shadow-[0_0_18px_rgba(0,223,154,0.06)]">
+        <div className="my-6 overflow-hidden rounded-2xl border border-accent-secondary/75 bg-[#12151b] shadow-[0_0_0_1px_rgba(0,223,154,0.2),0_0_22px_rgba(0,223,154,0.18),0_0_48px_rgba(0,223,154,0.08)]">
             <div className="flex items-center justify-between border-b border-white/10 bg-white/5 px-4 py-3">
                 <div className="flex items-center gap-3">
                     <span className="h-2.5 w-2.5 rounded-full bg-accent-secondary/75 shadow-[0_0_10px_rgba(0,223,154,0.45)]" />
@@ -50,7 +50,7 @@ export function MarkdownCodeBlock({
                     {copied ? "Copied" : "Copy"}
                 </button>
             </div>
-            <pre className="overflow-x-auto bg-[#171a20] px-4 py-4 text-sm leading-7 shadow-[inset_0_1px_0_rgba(0,223,154,0.22)]">
+            <pre className="overflow-x-auto bg-[#171a20] px-4 py-4 text-sm leading-7">
                 <code className={cn(className)}>{children ?? code}</code>
             </pre>
         </div>
