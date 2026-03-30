@@ -5,6 +5,8 @@ import { Menu } from 'lucide-react';
 import Link from 'next/link';
 import { MobileSidebar } from '@/components/learn/mobile-sidebar';
 
+export const dynamic = 'force-dynamic';
+
 export default async function LearnLayout({
     children,
 }: {
@@ -36,4 +38,3 @@ export default async function LearnLayout({
         </div>
     );
 }
-

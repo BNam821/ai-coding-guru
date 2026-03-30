@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useEffect, Suspense, useState, useEffectEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { GlassCard } from "@/components/ui/glass-card";
 import { NeonButton } from "@/components/ui/neon-button";
@@ -27,7 +27,7 @@ function CreateLessonForm() {
     const [error, setError] = useState("");
 
     // Fetch Course Structure
-    const fetchStructure = async () => {
+    const fetchStructure = useEffectEvent(async () => {
         try {
             const res = await fetch("/api/learn/structure");
             const data = await res.json();
@@ -53,7 +53,7 @@ function CreateLessonForm() {
         } finally {
             setIsFetchingStructure(false);
         }
-    };
+    });
 
     useEffect(() => {
         fetchStructure();
@@ -61,7 +61,7 @@ function CreateLessonForm() {
         // Listen for structure changes (from sidebar/modals)
         window.addEventListener('learn-structure-changed', fetchStructure);
         return () => window.removeEventListener('learn-structure-changed', fetchStructure);
-    }, []); // Removed selectedCourseId from dependencies as initial selection is from searchParams
+    }, []);
 
     // Selection Logic: Auto-select chapter and calculate next order
     useEffect(() => {
@@ -190,7 +190,7 @@ function CreateLessonForm() {
                         <textarea
                             value={content}
                             onChange={(e) => setContent(e.target.value)}
-                            placeholder="# Nội dung bài học..."
+                            placeholder="Hỗ trợ Markdown mở rộng: # Heading, :::tip, bảng, checklist, $inline math$, $$block math$$ ..."
                             className="w-full bg-transparent p-4 text-white focus:outline-none placeholder:text-white/20 min-h-[400px] font-mono leading-relaxed"
                             required
                         />
@@ -274,6 +274,9 @@ function CreateLessonForm() {
                             >
                                 {isLoading ? "Đang lưu..." : <><Send size={16} /> Lưu bài học</>}
                             </NeonButton>
+                            <p className="mt-4 text-center text-[10px] text-white/30">
+                                Hỗ trợ công thức toán, callout chuẩn, code block có copy và mục lục tự động.
+                            </p>
                         </div>
                     </GlassCard>
                 </div>

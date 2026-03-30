@@ -1,4 +1,4 @@
-import { ArrowLeft, Sparkles, Code, Image as ImageIcon, Type, List, Quote } from "lucide-react";
+import { ArrowLeft, Sparkles, Code, Image as ImageIcon, Type, List, Quote, Sigma, Link2 } from "lucide-react";
 import { GlassCard } from "@/components/ui/glass-card";
 import Link from "next/link";
 
@@ -26,7 +26,13 @@ export default function MarkdownGuidePage() {
                     label: "Phần Mẹo (Tips)",
                     description: "Hiển thị một khung highlight nổi bật để cung cấp lời khuyên hoặc mẹo nhanh.",
                     syntax: "//Nội dung mẹo của bạn ở đây//",
-                    note: "Lưu ý: Viết trên một dòng riêng biệt để kích hoạt giao diện Mẹo."
+                    note: "Đây là cú pháp cũ và vẫn được hỗ trợ để tránh phá nội dung đã viết."
+                },
+                {
+                    label: "Callout chuẩn",
+                    description: "Dùng directive chuẩn cho tài liệu kỹ thuật mới. Hỗ trợ info, tip, warning, danger, success.",
+                    syntax: ":::tip[Nhắc nhanh]\nDùng `npm run build` trước khi deploy.\n:::",
+                    note: "Nên ưu tiên cú pháp này cho bài mới."
                 }
             ]
         },
@@ -46,6 +52,33 @@ export default function MarkdownGuidePage() {
                 { label: "Hình ảnh", syntax: "![Mô tả ảnh](URL_HÌNH_ẢNH)", description: "Chèn hình ảnh vào bài viết. Ảnh sẽ tự động được AI Guru tối ưu hiển thị." },
                 { label: "Code Snippets", syntax: "```javascript\nconsole.log('Hello');\n```", description: "Dùng 3 dấu backtick kèm tên ngôn ngữ để highlight code." },
                 { label: "Trích dẫn", syntax: "> Câu trích dẫn hay", icon: <Quote />, description: "Dùng dấu > ở đầu dòng để tạo khung trích dẫn." }
+            ]
+        },
+        {
+            title: "Toán học & Liên kết sâu",
+            icon: <Sigma className="text-emerald-400" />,
+            items: [
+                {
+                    label: "Công thức inline",
+                    syntax: "Năng lượng: $E = mc^2$",
+                    description: "Viết công thức ngắn ngay trong dòng văn bản bằng cặp dấu $...$."
+                },
+                {
+                    label: "Công thức block",
+                    syntax: "$$\n\\int_0^1 x^2\\,dx = \\frac{1}{3}\n$$",
+                    description: "Dùng $$...$$ cho công thức riêng một khối, phù hợp với nội dung kỹ thuật."
+                },
+                {
+                    label: "Heading anchor",
+                    syntax: "## Cài đặt môi trường",
+                    description: "Tiêu đề sẽ tự có slug và nút liên kết để bạn copy link trực tiếp tới từng phần.",
+                    icon: <Link2 />
+                },
+                {
+                    label: "Footnote",
+                    syntax: "Đây là nhận xét có chú thích.[^1]\n\n[^1]: Nội dung ghi chú ở cuối bài.",
+                    description: "Hữu ích cho tài liệu dài, trích dẫn và giải thích thêm."
+                }
             ]
         }
     ];

@@ -3,17 +3,26 @@ import { GlassCard } from "@/components/ui/glass-card";
 import { ArticleActions } from "@/components/wiki/article-actions";
 import Link from "next/link";
 import Image from "next/image";
-import ReactMarkdown from "react-markdown";
-import rehypeHighlight from "rehype-highlight";
-import remarkGfm from "remark-gfm";
 import "highlight.js/styles/atom-one-dark.css";
-// @ts-ignore
 import { WikiImage } from "@/components/wiki/wiki-image";
 import { supabase } from "@/lib/supabase";
 import { getSession, isUserAuthenticated } from "@/lib/auth";
 import { HistoryTracker } from "@/components/history/history-tracker";
+import { MarkdownRenderer } from "@/components/markdown/markdown-renderer";
 
 export const revalidate = 60; // Tự động cập nhật dữ liệu sau mỗi 60 giây
+export const dynamic = "force-dynamic";
+
+function getStableRelatedOrder(referenceSlug: string, candidateSlug: string) {
+    const seed = `${referenceSlug}:${candidateSlug}`;
+    let hash = 0;
+
+    for (let index = 0; index < seed.length; index += 1) {
+        hash = (hash * 31 + seed.charCodeAt(index)) % 2147483647;
+    }
+
+    return hash;
+}
 
 export default async function WikiDetailPage({ params }: { params: { slug: string } }) {
     const { slug } = await params;
@@ -47,9 +56,10 @@ export default async function WikiDetailPage({ params }: { params: { slug: strin
                 .limit(10); // Get a small pool to shuffle
 
             if (relatedData) {
-                // Simple random shuffle and pick 3
                 relatedPosts = relatedData
-                    .sort(() => Math.random() - 0.5)
+                    .sort((left, right) => (
+                        getStableRelatedOrder(slug, left.slug) - getStableRelatedOrder(slug, right.slug)
+                    ))
                     .slice(0, 3);
             }
         }
@@ -115,6 +125,7 @@ export default async function WikiDetailPage({ params }: { params: { slug: strin
                                 <Link href={`/profile/${post.author}`} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
                                     {post.author_details?.avatar_url ? (
                                         <div className="w-8 h-8 rounded-full overflow-hidden border border-white/10 shrink-0">
+                                            {/* eslint-disable-next-line @next/next/no-img-element */}
                                             <img
                                                 src={post.author_details.avatar_url}
                                                 alt={post.author_details.display_name || post.author}
@@ -144,6 +155,7 @@ export default async function WikiDetailPage({ params }: { params: { slug: strin
                             <div className="relative w-full aspect-video rounded-2xl overflow-hidden border border-white/10 mb-12 block">
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10" />
                                 {post.image_url ? (
+                                    /* eslint-disable-next-line @next/next/no-img-element */
                                     <img
                                         src={post.image_url}
                                         alt={post.title}
@@ -159,35 +171,14 @@ export default async function WikiDetailPage({ params }: { params: { slug: strin
                                 )}
                             </div>
 
-                            <div className="markdown-content text-white mb-12">
-                                <ReactMarkdown
-                                    remarkPlugins={[remarkGfm]}
-                                    rehypePlugins={[rehypeHighlight]}
-                                    components={{
-                                        img: ({ node, ...props }) => <WikiImage {...props} />,
-                                        p: ({ children }) => {
-                                            const content = Array.isArray(children) ? children[0] : children;
-                                            if (typeof content === 'string' && content.trim().startsWith('//') && content.trim().endsWith('//')) {
-                                                const tipContent = content.trim().slice(2, -2);
-                                                return (
-                                                    <div className="glass-panel py-2.5 px-4 rounded-lg border-l-2 border-accent-secondary bg-accent-secondary/5 my-5 animate-in fade-in slide-in-from-left-4 duration-500 max-w-2xl">
-                                                        <div className="flex items-center gap-2.5">
-                                                            <Sparkles size={16} className="text-accent-secondary shrink-0" />
-                                                            <div className="text-white/90 italic leading-tight text-base">
-                                                                <span className="font-bold text-accent-secondary mr-2 uppercase tracking-tight text-sm">Mẹo:</span>
-                                                                "{tipContent}"
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                );
-                                            }
-                                            return <p className="mb-4 last:mb-0 leading-relaxed">{children}</p>;
-                                        }
-                                    }}
-                                >
-                                    {post.content.trim()}
-                                </ReactMarkdown>
-                            </div>
+                            <MarkdownRenderer
+                                content={post.content.trim()}
+                                mode="full"
+                                className="mb-12 text-white"
+                                imageComponent={WikiImage}
+                                preserveWikiTips
+                                showToc
+                            />
                         </div>
 
                         {/* Article Actions (Share & Save) */}

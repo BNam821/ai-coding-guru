@@ -250,6 +250,7 @@ function WikiCard({ post, isAdmin }: { post: WikiPost, isAdmin: boolean }) {
                     {/* Article Thumbnail */}
                     <div className="relative w-full h-48 bg-white/5 border-b border-white/10 overflow-hidden">
                         {post.image_url ? (
+                            // eslint-disable-next-line @next/next/no-img-element
                             <img
                                 src={post.image_url}
                                 alt={post.title}
@@ -279,6 +280,7 @@ function WikiCard({ post, isAdmin }: { post: WikiPost, isAdmin: boolean }) {
                             <span className="flex items-center gap-1.5">
                                 {post.author_details?.avatar_url ? (
                                     <div className="w-4 h-4 rounded-full overflow-hidden border border-white/10">
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
                                         <img src={post.author_details.avatar_url} className="w-full h-full object-cover" alt="" />
                                     </div>
                                 ) : (

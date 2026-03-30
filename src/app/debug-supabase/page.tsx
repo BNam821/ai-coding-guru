@@ -1,16 +1,33 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase-client";
+import type { SupabaseClient } from "@supabase/supabase-js";
+
+const hasSupabaseClientEnv = Boolean(
+    process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+);
 
 export default function DebugSupabase() {
-    const supabase = createClient();
-    const [status, setStatus] = useState("Checking...");
+    const supabase = useMemo<SupabaseClient | null>(() => {
+        if (!hasSupabaseClientEnv) {
+            return null;
+        }
+
+        return createClient();
+    }, []);
+    const [status, setStatus] = useState(
+        hasSupabaseClientEnv ? "Checking..." : "Error: Supabase client env vars are missing."
+    );
     const [sessionInfo, setSessionInfo] = useState<any>(null);
     const [bucketInfo, setBucketInfo] = useState<any>(null);
     const [uploadTest, setUploadTest] = useState<string>("");
 
     useEffect(() => {
+        if (!supabase) {
+            return;
+        }
+
         const check = async () => {
             try {
                 // 1. Check Session
@@ -31,9 +48,14 @@ export default function DebugSupabase() {
             }
         };
         check();
-    }, []);
+    }, [supabase]);
 
     const testUpload = async () => {
+        if (!supabase) {
+            setUploadTest("Supabase client is unavailable.");
+            return;
+        }
+
         setUploadTest("Uploading test file...");
         try {
             // Create a dummy file
@@ -57,6 +79,7 @@ export default function DebugSupabase() {
     return (
         <div className="p-8 bg-gray-900 text-white min-h-screen space-y-6 font-mono">
             <h1 className="text-2xl font-bold text-red-400">Supabase Debugger</h1>
+            <p className="text-sm text-slate-400">{status}</p>
 
             <div className="bg-black/40 p-4 rounded border border-white/10">
                 <h2 className="font-bold text-blue-400 mb-2">1. Session Status</h2>

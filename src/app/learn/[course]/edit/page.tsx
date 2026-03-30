@@ -32,7 +32,7 @@ export default async function EditCoursePage({ params }: { params: { course: str
             {/* Header */}
             <div className="space-y-2">
                 <h1 className="text-3xl font-bold text-white">Chỉnh sửa khóa học</h1>
-                <p className="text-gray-400">Cập nhật thông tin khóa học "{course.title}"</p>
+                <p className="text-gray-400">Cập nhật thông tin khóa học &quot;{course.title}&quot;</p>
             </div>
 
             {/* Edit Form */}

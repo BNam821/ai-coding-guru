@@ -127,7 +127,7 @@ export default function CreatePostPage() {
                                 <textarea
                                     value={content}
                                     onChange={(e) => setContent(e.target.value)}
-                                    placeholder="Sử dụng Markdown để định dạng bài viết: # Tiêu đề, **In đậm**, [Link](url)..."
+                                    placeholder="Hỗ trợ Markdown mở rộng: # Tiêu đề, **In đậm**, [Link](url), $E=mc^2$, $$a^2+b^2=c^2$$ ..."
                                     className="w-full bg-transparent p-6 text-white focus:outline-none placeholder:text-white/20 min-h-[400px] leading-relaxed font-mono"
                                     required
                                 />
@@ -176,7 +176,7 @@ export default function CreatePostPage() {
                                         {isLoading ? "Đang đăng..." : <><Send size={18} /> Đăng bài</>}
                                     </NeonButton>
                                     <p className="text-[10px] text-white/30 text-center mt-4">
-                                        Vui lòng kiểm tra kỹ nội dung trước khi xuất bản.
+                                        Có thể dùng công thức toán, bảng, checklist và heading linkable.
                                     </p>
                                 </div>
                             </GlassCard>

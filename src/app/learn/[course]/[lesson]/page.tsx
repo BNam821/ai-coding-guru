@@ -1,16 +1,13 @@
 import { getLesson } from '@/lib/learn-db';
 import { notFound } from 'next/navigation';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
 import Link from 'next/link';
 import { ChevronRight, ArrowLeft } from 'lucide-react';
-import rehypeHighlight from 'rehype-highlight';
 import 'highlight.js/styles/github-dark.css';
 import { AdminControls } from '@/components/learn/admin-controls';
 import { isAdminAuthenticated, isUserAuthenticated } from '@/lib/auth';
 import { HistoryTracker } from '@/components/history/history-tracker';
-// @ts-ignore
 import { WikiImage } from "@/components/wiki/wiki-image";
+import { MarkdownRenderer } from '@/components/markdown/markdown-renderer';
 
 interface PageProps {
     params: Promise<{
@@ -82,15 +79,12 @@ export default async function LessonPage({ params }: PageProps) {
                     Bài {lesson.order}: {lesson.title}
                 </h1>
 
-                <ReactMarkdown
-                    remarkPlugins={[remarkGfm]}
-                    rehypePlugins={[rehypeHighlight]}
-                    components={{
-                        img: ({ node, ...props }) => <WikiImage {...props} />
-                    }}
-                >
-                    {lesson.content || '*Nội dung đang được cập nhật...*'}
-                </ReactMarkdown>
+                <MarkdownRenderer
+                    content={lesson.content || '*Nội dung đang được cập nhật...*'}
+                    mode="full"
+                    imageComponent={WikiImage}
+                    showToc
+                />
             </article>
 
 

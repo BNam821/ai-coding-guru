@@ -180,7 +180,7 @@ export default function EditPostPage({ params }: { params: Promise<{ slug: strin
                                 <textarea
                                     value={content}
                                     onChange={(e) => setContent(e.target.value)}
-                                    placeholder="Nội dung bài viết..."
+                                    placeholder="Hỗ trợ Markdown mở rộng: # Tiêu đề, bảng, checklist, $inline math$, $$block math$$ ..."
                                     className="w-full bg-transparent p-6 text-white focus:outline-none placeholder:text-white/20 min-h-[400px] leading-relaxed font-mono"
                                     required
                                 />

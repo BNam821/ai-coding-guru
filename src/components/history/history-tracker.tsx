@@ -16,6 +16,8 @@ interface HistoryTrackerProps {
 }
 
 export function HistoryTracker({ type, data, isLoggedIn }: HistoryTrackerProps) {
+    const { lesson_id, course_slug, lesson_slug, lesson_title, post_slug, post_title } = data;
+
     useEffect(() => {
         console.log(`[HistoryTracker] Component mounted for ${type}`, { isLoggedIn, data });
 
@@ -24,10 +26,10 @@ export function HistoryTracker({ type, data, isLoggedIn }: HistoryTrackerProps) 
             if (type === 'lesson') {
                 // Hybrid track for lessons
                 const trackData = {
-                    lesson_id: data.lesson_id,
-                    course_slug: data.course_slug,
-                    lesson_slug: data.lesson_slug,
-                    lesson_title: data.lesson_title
+                    lesson_id,
+                    course_slug,
+                    lesson_slug,
+                    lesson_title
                 };
 
                 // Guest tracking
@@ -58,8 +60,8 @@ export function HistoryTracker({ type, data, isLoggedIn }: HistoryTrackerProps) 
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            post_slug: data.post_slug,
-                            post_title: data.post_title
+                            post_slug,
+                            post_title
                         }),
                     });
                     const resData = await response.json();
@@ -73,7 +75,7 @@ export function HistoryTracker({ type, data, isLoggedIn }: HistoryTrackerProps) 
         // Tracking after 1 second
         const timer = setTimeout(trackHistory, 1000);
         return () => clearTimeout(timer);
-    }, [type, isLoggedIn, data.lesson_id, data.post_slug]);
+    }, [type, isLoggedIn, data, lesson_id, course_slug, lesson_slug, lesson_title, post_slug, post_title]);
 
     return null;
 }

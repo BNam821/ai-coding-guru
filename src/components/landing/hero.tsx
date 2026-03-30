@@ -97,12 +97,12 @@ export function Hero() {
 
                         <div className="space-y-1">
                             <div className="flex"><span className="text-purple-400 mr-2">const</span> <span className="text-yellow-400">coder</span> <span className="text-starlight mx-2">=</span> <span className="text-blue-400">await</span> <span className="text-accent-secondary">CodingGuru</span>.<span className="text-blue-300">init</span>();</div>
-                            <div className="text-slate-500 italic">// Analyzing skills...</div>
-                            <div className="flex"><span className="text-purple-400 mr-2">if</span> (<span className="text-starlight">status</span> === <span className="text-green-400">'beginner'</span>) {"{"}</div>
+                            <div className="text-slate-500 italic">{"// Analyzing skills..."}</div>
+                            <div className="flex"><span className="text-purple-400 mr-2">if</span> (<span className="text-starlight">status</span> === <span className="text-green-400">&apos;beginner&apos;</span>) {"{"}</div>
                             <div className="pl-4 flex"><span className="text-blue-400 mr-2">await</span> <span className="text-yellow-400">coder</span>.<span className="text-blue-300">boostLevel</span>(<span className="text-orange-400">100</span>);</div>
-                            <div className="pl-4 text-slate-500 italic">// AI assistance activated 🚀</div>
+                            <div className="pl-4 text-slate-500 italic">{"// AI assistance activated 🚀"}</div>
                             <div className="text-purple-400">{"}"}</div>
-                            <div className="mt-4 flex"><span className="text-accent-primary">console</span>.<span className="text-blue-300">log</span>(<span className="text-green-400">"Hello World, Vibe Coding!"</span>);</div>
+                            <div className="mt-4 flex"><span className="text-accent-primary">console</span>.<span className="text-blue-300">log</span>(<span className="text-green-400">&quot;Hello World, Vibe Coding!&quot;</span>);</div>
                         </div>
                     </div>
 

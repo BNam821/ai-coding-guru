@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { notFound } from "next/navigation";
 
 export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 export default async function ProfilePage({ params }: { params: { username: string } }) {
     const { username } = await params;

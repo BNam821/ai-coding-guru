@@ -1,16 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Outfit } from "next/font/google";
 import "./globals.css";
-
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-});
-
-const outfit = Outfit({
-  variable: "--font-outfit",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: "AI Coding Guru | THPT Cẩm Phả",
@@ -28,7 +17,7 @@ export default function RootLayout({
   return (
     <html lang="vi">
       <body
-        className={`${inter.variable} ${outfit.variable} antialiased bg-deep-space text-starlight selection:bg-accent-primary selection:text-deep-space`}
+        className="antialiased bg-deep-space text-starlight selection:bg-accent-primary selection:text-deep-space"
       >
         <div className="min-h-screen flex flex-col relative">
           <Navbar />

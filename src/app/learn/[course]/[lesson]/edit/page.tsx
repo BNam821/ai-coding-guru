@@ -195,6 +195,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ course: s
                             <textarea
                                 value={content}
                                 onChange={(e) => setContent(e.target.value)}
+                                placeholder="Hỗ trợ Markdown mở rộng: :::info, bảng, checklist, $inline math$, $$block math$$ ..."
                                 className="w-full bg-transparent p-4 text-white focus:outline-none placeholder:text-white/20 min-h-[400px] font-mono leading-relaxed"
                                 required
                             />
@@ -262,6 +263,9 @@ export default function EditLessonPage({ params }: { params: Promise<{ course: s
                                 >
                                     {isSaving ? "Đang lưu..." : <><Save size={16} /> Lưu Thay Đổi</>}
                                 </NeonButton>
+                                <p className="mt-4 text-center text-[10px] text-white/30">
+                                    Markdown mới hỗ trợ math, callout chuẩn, footnote và code block nâng cao.
+                                </p>
                             </div>
                         </GlassCard>
                     </div>

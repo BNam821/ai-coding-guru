@@ -3,6 +3,8 @@ import { AdminLoginForm } from "@/components/auth/login-form";
 import { AccountContent } from "@/components/auth/account-content";
 import { supabase } from "@/lib/supabase";
 
+export const dynamic = "force-dynamic";
+
 export default async function AccountPage() {
     const session = await getSession();
     const isAdmin = session?.role === "admin";

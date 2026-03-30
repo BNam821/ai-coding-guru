@@ -3,8 +3,7 @@
 import Link from "next/link";
 import { GlassCard } from "@/components/ui/glass-card";
 import { BookOpen, GraduationCap, BrainCircuit, ArrowRight } from "lucide-react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+import { MarkdownRenderer } from "@/components/markdown/markdown-renderer";
 
 interface FeatureCardProps {
     title: string;
@@ -28,7 +27,7 @@ function FeatureCard({ title, icon, description, href, buttonText, accentColor }
 
             {/* Description with Markdown */}
             <div className="prose prose-invert prose-sm max-w-none flex-1 mb-6 text-white/70 leading-relaxed">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>{description}</ReactMarkdown>
+                <MarkdownRenderer content={description} mode="lite" />
             </div>
 
             {/* CTA Button */}

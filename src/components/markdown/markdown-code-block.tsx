@@ -1,0 +1,50 @@
+"use client";
+
+import { useState } from "react";
+import { Check, Copy } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+interface MarkdownCodeBlockProps {
+    code: string;
+    language?: string;
+    className?: string;
+}
+
+export function MarkdownCodeBlock({
+    code,
+    language,
+    className,
+}: MarkdownCodeBlockProps) {
+    const [copied, setCopied] = useState(false);
+
+    const handleCopy = async () => {
+        try {
+            await navigator.clipboard.writeText(code);
+            setCopied(true);
+            window.setTimeout(() => setCopied(false), 1500);
+        } catch {
+            setCopied(false);
+        }
+    };
+
+    return (
+        <div className="my-6 overflow-hidden rounded-2xl border border-white/10 bg-[#12151b] shadow-[0_0_24px_rgba(0,223,154,0.08)]">
+            <div className="flex items-center justify-between border-b border-white/10 bg-white/5 px-4 py-2.5">
+                <span className="text-[11px] font-bold uppercase tracking-[0.24em] text-white/45">
+                    {language || "text"}
+                </span>
+                <button
+                    type="button"
+                    onClick={handleCopy}
+                    className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-black/20 px-3 py-1.5 text-xs font-medium text-white/75 transition-colors hover:border-accent-secondary/30 hover:text-white"
+                >
+                    {copied ? <Check size={14} className="text-accent-secondary" /> : <Copy size={14} />}
+                    {copied ? "Copied" : "Copy"}
+                </button>
+            </div>
+            <pre className="overflow-x-auto bg-[#1e1e1e] p-4 text-sm leading-7">
+                <code className={cn(className)}>{code}</code>
+            </pre>
+        </div>
+    );
+}
