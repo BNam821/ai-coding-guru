@@ -270,6 +270,16 @@ html {
   color: #89ddff;
 }
 
+.markdown-content .markdown-code-block-pre {
+  border: 0;
+  box-shadow: none;
+}
+
+.markdown-content .markdown-code-block-pre:hover {
+  border: 0;
+  box-shadow: none;
+}
+
 .markdown-content th,
 .markdown-content td {
   border: 1px solid rgba(255, 255, 255, 0.1);
