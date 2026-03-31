@@ -21,8 +21,9 @@ export function MarkdownCodeBlock({
     children,
 }: MarkdownCodeBlockProps) {
     const [copied, setCopied] = useState(false);
-    const lineCount = Math.max(code.split("\n").length, 1);
-    const lineNumbers = Array.from({ length: lineCount }, (_, index) => index + 1);
+    const normalizedCode = code.replace(/\n$/, "");
+    const lines = normalizedCode.split("\n");
+    const lineNumbers = Array.from({ length: Math.max(lines.length, 1) }, (_, index) => index + 1);
 
     const handleCopy = async () => {
         try {
@@ -52,17 +53,17 @@ export function MarkdownCodeBlock({
                     {copied ? "Copied" : "Copy"}
                 </button>
             </div>
-            <div className="grid grid-cols-[auto,minmax(0,1fr)] bg-[#171a20] text-sm leading-6">
+            <div className="flex bg-[#171a20] text-sm leading-6">
                 <div
                     aria-hidden="true"
-                    className="select-none border-r border-white/8 bg-black/20 px-3 py-2.5 text-right font-medium text-white/28"
+                    className="flex shrink-0 select-none flex-col border-r border-white/8 bg-black/20 px-3 py-2.5 text-right font-medium text-white/28"
                 >
                     {lineNumbers.map((lineNumber) => (
                         <div key={lineNumber}>{lineNumber}</div>
                     ))}
                 </div>
-                <pre className="markdown-code-block-pre overflow-x-auto px-4 py-2.5">
-                    <code className={cn(className)}>{children ?? code}</code>
+                <pre className="markdown-code-block-pre min-w-0 flex-1 overflow-x-auto px-4 py-2.5">
+                    <code className={cn("block min-w-max", className)}>{children ?? normalizedCode}</code>
                 </pre>
             </div>
         </div>
