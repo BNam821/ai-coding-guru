@@ -13,6 +13,7 @@ import { createMarkdownComponents } from "./markdown-components";
 import type { MarkdownRenderMode, MarkdownRendererProps } from "./markdown-types";
 import { markdownSanitizeSchema } from "./markdown-sanitize-schema";
 import { remarkCallouts } from "./markdown-remark-callouts";
+import { remarkHeadingIds } from "./markdown-remark-heading-ids";
 
 function getRehypePlugins(mode: MarkdownRenderMode): PluggableList {
     const sharedPlugins: PluggableList = [
@@ -62,7 +63,11 @@ export function MarkdownRenderer({
     return (
         <div className={cn("markdown-content", className)}>
             <ReactMarkdown
-                remarkPlugins={mode === "lite" ? [remarkGfm] : [remarkGfm, remarkMath, remarkDirective, remarkCallouts]}
+                remarkPlugins={
+                    mode === "lite"
+                        ? [remarkGfm]
+                        : [remarkGfm, remarkMath, remarkDirective, remarkHeadingIds, remarkCallouts]
+                }
                 rehypePlugins={getRehypePlugins(mode)}
                 components={mergedComponents}
             >
