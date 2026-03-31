@@ -13,5 +13,4 @@ export interface MarkdownRendererProps extends MarkdownComponentOptions {
     mode?: MarkdownRenderMode;
     className?: string;
     components?: Components;
-    showToc?: boolean;
 }

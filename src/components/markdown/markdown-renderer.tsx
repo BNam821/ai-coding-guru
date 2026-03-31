@@ -13,8 +13,6 @@ import { createMarkdownComponents } from "./markdown-components";
 import type { MarkdownRenderMode, MarkdownRendererProps } from "./markdown-types";
 import { markdownSanitizeSchema } from "./markdown-sanitize-schema";
 import { remarkCallouts } from "./markdown-remark-callouts";
-import { extractMarkdownHeadings } from "./markdown-utils";
-import { MarkdownToc } from "./markdown-toc";
 
 function getRehypePlugins(mode: MarkdownRenderMode): PluggableList {
     const sharedPlugins: PluggableList = [
@@ -52,9 +50,7 @@ export function MarkdownRenderer({
     components,
     imageComponent,
     preserveWikiTips = false,
-    showToc = false,
 }: MarkdownRendererProps) {
-    const headings = showToc ? extractMarkdownHeadings(content) : [];
     const mergedComponents = {
         ...createMarkdownComponents({
             imageComponent,
@@ -65,7 +61,6 @@ export function MarkdownRenderer({
 
     return (
         <div className={cn("markdown-content", className)}>
-            {showToc && mode === "full" ? <MarkdownToc headings={headings} /> : null}
             <ReactMarkdown
                 remarkPlugins={mode === "lite" ? [remarkGfm] : [remarkGfm, remarkMath, remarkDirective, remarkCallouts]}
                 rehypePlugins={getRehypePlugins(mode)}

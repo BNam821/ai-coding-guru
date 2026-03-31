@@ -177,7 +177,6 @@ export default async function WikiDetailPage({ params }: { params: { slug: strin
                                 className="mb-12 text-white"
                                 imageComponent={WikiImage}
                                 preserveWikiTips
-                                showToc
                             />
                         </div>
 

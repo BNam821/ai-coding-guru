@@ -83,7 +83,6 @@ export default async function LessonPage({ params }: PageProps) {
                     content={lesson.content || '*Nội dung đang được cập nhật...*'}
                     mode="full"
                     imageComponent={WikiImage}
-                    showToc
                 />
             </article>
 
