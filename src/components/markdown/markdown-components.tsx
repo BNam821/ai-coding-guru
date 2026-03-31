@@ -16,6 +16,7 @@ function normalizeLanguage(rawLanguage?: string): string | undefined {
     if (normalized === "c++") return "cpp";
     if (normalized === "c#") return "csharp";
     if (normalized === "js") return "javascript";
+    if (normalized === "md") return "markdown";
     if (normalized === "ts") return "typescript";
     if (normalized === "py") return "python";
     if (normalized === "sh") return "bash";
@@ -224,6 +225,52 @@ export function createMarkdownComponents(options: MarkdownComponentOptions = {})
                 </p>
             );
         },
+        ul: ({ className, children, ...props }) => (
+            <ul className={cn("mb-4 ml-6 list-disc space-y-2 marker:text-white/65", className)} {...props}>
+                {children}
+            </ul>
+        ),
+        ol: ({ className, children, ...props }) => (
+            <ol className={cn("mb-4 ml-6 list-decimal space-y-2 marker:text-white/65", className)} {...props}>
+                {children}
+            </ol>
+        ),
+        li: ({ className, children, ...props }) => {
+            const hasCheckbox = isValidElement(children)
+                ? children.type === "input"
+                : Array.isArray(children) && children.some((child) => isValidElement(child) && child.type === "input");
+
+            return (
+                <li
+                    className={cn(
+                        hasCheckbox && "list-none ml-[-1.5rem] flex items-start gap-3 marker:content-none",
+                        className
+                    )}
+                    {...props}
+                >
+                    {children}
+                </li>
+            );
+        },
+        input: ({ className, type, checked, disabled, ...props }) => {
+            if (type === "checkbox") {
+                return (
+                    <input
+                        type="checkbox"
+                        checked={checked}
+                        disabled={disabled}
+                        className={cn(
+                            "mt-1 h-4 w-4 shrink-0 rounded border border-white/40 bg-white/10 accent-emerald-400",
+                            checked && "border-emerald-400/90 bg-emerald-400/15 shadow-[0_0_0_1px_rgba(74,222,128,0.35)]",
+                            className
+                        )}
+                        {...props}
+                    />
+                );
+            }
+
+            return <input className={className} type={type} checked={checked} disabled={disabled} {...props} />;
+        },
         pre: ({ children }) => {
             if (isValidElement(children)) {
                 const childProps = children.props as { className?: string; children?: ReactNode };
@@ -247,10 +294,35 @@ export function createMarkdownComponents(options: MarkdownComponentOptions = {})
         },
         table: ({ className, children, ...props }) => (
             <div className="my-6 w-full overflow-x-auto">
-                <table className={cn("w-full border-collapse", className)} {...props}>
+                <table className={cn("w-full border-collapse border border-white/80", className)} {...props}>
                     {children}
                 </table>
             </div>
+        ),
+        thead: ({ className, children, ...props }) => (
+            <thead className={cn("bg-white/8", className)} {...props}>
+                {children}
+            </thead>
+        ),
+        tbody: ({ className, children, ...props }) => (
+            <tbody className={cn("divide-y divide-white/80", className)} {...props}>
+                {children}
+            </tbody>
+        ),
+        tr: ({ className, children, ...props }) => (
+            <tr className={cn("border-b border-white/80", className)} {...props}>
+                {children}
+            </tr>
+        ),
+        th: ({ className, children, ...props }) => (
+            <th className={cn("border border-white/80 px-4 py-2 text-left font-semibold text-white", className)} {...props}>
+                {children}
+            </th>
+        ),
+        td: ({ className, children, ...props }) => (
+            <td className={cn("border border-white/80 px-4 py-2 align-top text-white/90", className)} {...props}>
+                {children}
+            </td>
         ),
         div: ({ className, children, title, ...props }) => {
             const calloutType = Object.keys(calloutMeta).find((type) => className?.includes(`markdown-callout-${type}`));
