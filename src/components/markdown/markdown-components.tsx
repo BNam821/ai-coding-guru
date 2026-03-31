@@ -1,6 +1,6 @@
 import { isValidElement, type ReactNode } from "react";
 import Link from "next/link";
-import { AlertTriangle, CheckCircle2, Info, Lightbulb, Sparkles } from "lucide-react";
+import { AlertTriangle, Check, CheckCircle2, Info, Lightbulb, Sparkles } from "lucide-react";
 import type { Components } from "react-markdown";
 import { cn } from "@/lib/utils";
 import type { MarkdownComponentOptions } from "./markdown-types";
@@ -255,17 +255,21 @@ export function createMarkdownComponents(options: MarkdownComponentOptions = {})
         input: ({ className, type, checked, disabled, ...props }) => {
             if (type === "checkbox") {
                 return (
-                    <input
-                        type="checkbox"
-                        checked={checked}
-                        disabled={disabled}
+                    <span
+                        role="checkbox"
+                        aria-checked={checked}
+                        aria-disabled={disabled}
                         className={cn(
-                            "mt-1 h-4 w-4 shrink-0 rounded border border-white/40 bg-white/10 accent-emerald-400",
-                            checked && "border-emerald-400/90 bg-emerald-400/15 shadow-[0_0_0_1px_rgba(74,222,128,0.35)]",
+                            "mt-1 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors",
+                            checked
+                                ? "border-emerald-400 bg-emerald-500 text-emerald-950 shadow-[0_0_0_1px_rgba(74,222,128,0.35)]"
+                                : "border-white/40 bg-white/10 text-transparent",
                             className
                         )}
                         {...props}
-                    />
+                    >
+                        <Check size={12} strokeWidth={3} />
+                    </span>
                 );
             }
 

@@ -21,6 +21,8 @@ export function MarkdownCodeBlock({
     children,
 }: MarkdownCodeBlockProps) {
     const [copied, setCopied] = useState(false);
+    const lineCount = Math.max(code.split("\n").length, 1);
+    const lineNumbers = Array.from({ length: lineCount }, (_, index) => index + 1);
 
     const handleCopy = async () => {
         try {
@@ -50,9 +52,19 @@ export function MarkdownCodeBlock({
                     {copied ? "Copied" : "Copy"}
                 </button>
             </div>
-            <pre className="markdown-code-block-pre overflow-x-auto bg-[#171a20] px-3 py-2.5 text-sm leading-6">
-                <code className={cn(className)}>{children ?? code}</code>
-            </pre>
+            <div className="grid grid-cols-[auto,minmax(0,1fr)] bg-[#171a20] text-sm leading-6">
+                <div
+                    aria-hidden="true"
+                    className="select-none border-r border-white/8 bg-black/20 px-3 py-2.5 text-right font-medium text-white/28"
+                >
+                    {lineNumbers.map((lineNumber) => (
+                        <div key={lineNumber}>{lineNumber}</div>
+                    ))}
+                </div>
+                <pre className="markdown-code-block-pre overflow-x-auto px-4 py-2.5">
+                    <code className={cn(className)}>{children ?? code}</code>
+                </pre>
+            </div>
         </div>
     );
 }
