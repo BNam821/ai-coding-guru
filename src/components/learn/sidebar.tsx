@@ -25,7 +25,7 @@ export function LearnSidebar({
     const [isCollapsed, setIsCollapsed] = useState(false);
 
     const asideClassName = cn(
-        'shrink-0 border-r border-white/10 bg-black/20 backdrop-blur-md h-[calc(100vh-6rem)] sticky top-24 overflow-y-auto no-scrollbar transition-[width] duration-300',
+        'shrink-0 border-r border-white/10 bg-black/20 backdrop-blur-md h-[calc(100vh-6rem)] sticky top-24 overflow-y-auto no-scrollbar transition-[width] duration-200 ease-out motion-reduce:transition-none',
         collapsible ? (isCollapsed ? 'w-20' : 'w-full md:w-64') : 'w-full md:w-64',
         className
     );
@@ -54,12 +54,11 @@ export function LearnSidebar({
                             {collapsible && (
                                 <button
                                     onClick={() => setIsCollapsed(true)}
-                                    className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-gray-300 transition-colors hover:border-blue-400/40 hover:bg-blue-500/10 hover:text-white"
+                                    className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-gray-300 transition-colors hover:border-blue-400/40 hover:bg-blue-500/10 hover:text-white"
                                     title="Thu nhỏ danh sách khoá học"
                                     aria-label="Thu nhỏ danh sách khoá học"
                                 >
                                     <ChevronLeft className="h-4 w-4" />
-                                    <span>Thu nhỏ</span>
                                 </button>
                             )}
                         </>
@@ -112,6 +111,7 @@ export function LearnSidebar({
                                     course={course}
                                     pathname={pathname}
                                     isAdmin={isAdmin}
+                                    onLessonClick={collapsible ? () => setIsCollapsed(true) : undefined}
                                 />
                             ))}
 
@@ -131,11 +131,13 @@ export function LearnSidebar({
 function CourseItem({
     course,
     pathname,
-    isAdmin
+    isAdmin,
+    onLessonClick,
 }: {
     course: CourseWithChapters;
     pathname: string;
     isAdmin: boolean;
+    onLessonClick?: () => void;
 }) {
     const [isOpen, setIsOpen] = useState(() => {
         // Chỉ tự động mở nếu đang ở trong khóa học này
@@ -192,6 +194,7 @@ function CourseItem({
                             courseSlug={course.slug}
                             pathname={pathname}
                             isAdmin={isAdmin}
+                            onLessonClick={onLessonClick}
                         />
                     ))}
 
@@ -212,12 +215,14 @@ function ChapterItem({
     courseSlug,
     pathname,
     isAdmin,
+    onLessonClick,
 }: {
     chapter: CourseWithChapters['chapters'][0];
     courseId: string;
     courseSlug: string;
     pathname: string;
     isAdmin: boolean;
+    onLessonClick?: () => void;
 }) {
     const router = useRouter();
     const [isOpen, setIsOpen] = useState(() => {
@@ -355,7 +360,7 @@ function ChapterItem({
 
             {/* Lessons (Accordion Content) */}
             {isOpen && (
-                <div className="space-y-1 animate-in slide-in-from-top-1 duration-200">
+                <div className="space-y-1">
                     {chapter.lessons?.map((lesson) => {
                         const href = `/learn/${courseSlug}/${lesson.slug}`;
                         const isLessonActive = pathname === href;
@@ -364,6 +369,7 @@ function ChapterItem({
                             <Link
                                 key={lesson.id}
                                 href={href}
+                                onClick={onLessonClick}
                                 className={cn(
                                     "flex items-center px-4 py-1.5 text-sm rounded-md transition-colors",
                                     isLessonActive
