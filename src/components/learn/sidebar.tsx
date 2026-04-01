@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, useRef, useEffect } from 'react';
-import { ChevronDown, ChevronRight, FileText, Plus, Pencil, Check, X, Loader2 } from 'lucide-react';
+import { ChevronDown, ChevronLeft, ChevronRight, FileText, GraduationCap, Plus, Pencil, Check, X, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { CourseWithChapters } from '@/lib/learn-db';
 import { AddCourseButton, EditCourseButton, DeleteCourseButton } from './course-actions';
@@ -11,49 +11,118 @@ import { AddCourseButton, EditCourseButton, DeleteCourseButton } from './course-
 interface LearnSidebarProps {
     courses: CourseWithChapters[];
     isAdmin?: boolean;
+    className?: string;
+    collapsible?: boolean;
 }
 
-export function LearnSidebar({ courses, isAdmin = false }: LearnSidebarProps) {
+export function LearnSidebar({
+    courses,
+    isAdmin = false,
+    className,
+    collapsible = true,
+}: LearnSidebarProps) {
     const pathname = usePathname();
+    const [isCollapsed, setIsCollapsed] = useState(false);
+
+    const asideClassName = cn(
+        'shrink-0 border-r border-white/10 bg-black/20 backdrop-blur-md h-[calc(100vh-6rem)] sticky top-24 overflow-y-auto no-scrollbar transition-[width] duration-300',
+        collapsible ? (isCollapsed ? 'w-20' : 'w-full md:w-64') : 'w-full md:w-64',
+        className
+    );
 
     return (
-        <aside className="w-full md:w-64 shrink-0 border-r border-white/10 bg-black/20 backdrop-blur-md hidden md:block h-[calc(100vh-6rem)] sticky top-24 overflow-y-auto no-scrollbar">
-            <div className="p-4 space-y-4">
-                <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600 px-2">
-                    DANH SÁCH<br /> KHÓA HỌC
-                </h2>
-
-                {isAdmin && (
-                    <div className="px-2 pt-2">
-                        <Link
-                            href="/learn/create"
-                            className="flex items-center gap-2 w-full p-3 text-sm font-bold rounded-xl transition-all bg-blue-500 hover:bg-blue-600 text-white shadow-lg shadow-blue-500/20 group"
+        <aside className={asideClassName}>
+            <div className={cn('space-y-4', isCollapsed ? 'p-3' : 'p-4')}>
+                <div className={cn('flex items-start', isCollapsed ? 'justify-center' : 'justify-between gap-3')}>
+                    {isCollapsed ? (
+                        <button
+                            onClick={() => setIsCollapsed(false)}
+                            className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-blue-300 transition-colors hover:border-blue-400/40 hover:bg-blue-500/10 hover:text-blue-200"
+                            title="Mở rộng danh sách khoá học"
+                            aria-label="Mở rộng danh sách khoá học"
                         >
-                            <div className="bg-white/20 p-1 rounded-md group-hover:scale-110 transition-transform">
-                                <Plus className="w-4 h-4" />
+                            <ChevronRight className="h-5 w-5" />
+                        </button>
+                    ) : (
+                        <>
+                            <div className="px-2">
+                                <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600">
+                                    DANH SÁCH<br /> KHÓA HỌC
+                                </h2>
                             </div>
-                            <span>Tạo bài học mới</span>
-                        </Link>
-                    </div>
-                )}
 
-                <div className="space-y-2">
-                    {courses.map((course) => (
-                        <CourseItem
-                            key={course.id}
-                            course={course}
-                            pathname={pathname}
-                            isAdmin={isAdmin}
-                        />
-                    ))}
-
-                    {/* Admin: Add Course Button */}
-                    {isAdmin && (
-                        <div className="pt-2">
-                            <AddCourseButton />
-                        </div>
+                            {collapsible && (
+                                <button
+                                    onClick={() => setIsCollapsed(true)}
+                                    className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-gray-300 transition-colors hover:border-blue-400/40 hover:bg-blue-500/10 hover:text-white"
+                                    title="Thu nhỏ danh sách khoá học"
+                                    aria-label="Thu nhỏ danh sách khoá học"
+                                >
+                                    <ChevronLeft className="h-4 w-4" />
+                                    <span>Thu nhỏ</span>
+                                </button>
+                            )}
+                        </>
                     )}
                 </div>
+
+                {isCollapsed ? (
+                    <div className="space-y-3">
+                        {courses.map((course) => {
+                            const isActive = pathname.startsWith(`/learn/${course.slug}`);
+
+                            return (
+                                <Link
+                                    key={course.id}
+                                    href={`/learn/${course.slug}`}
+                                    className={cn(
+                                        'flex h-12 w-12 items-center justify-center rounded-2xl border transition-all',
+                                        isActive
+                                            ? 'border-amber-400/60 bg-amber-400/15 text-amber-300 shadow-[0_0_18px_rgba(251,191,36,0.18)]'
+                                            : 'border-white/10 bg-white/5 text-gray-400 hover:border-blue-400/40 hover:bg-blue-500/10 hover:text-blue-200'
+                                    )}
+                                    title={course.title}
+                                    aria-label={course.title}
+                                >
+                                    <GraduationCap className="h-5 w-5" />
+                                </Link>
+                            );
+                        })}
+                    </div>
+                ) : (
+                    <>
+                        {isAdmin && (
+                            <div className="px-2 pt-2">
+                                <Link
+                                    href="/learn/create"
+                                    className="flex items-center gap-2 w-full p-3 text-sm font-bold rounded-xl transition-all bg-blue-500 hover:bg-blue-600 text-white shadow-lg shadow-blue-500/20 group"
+                                >
+                                    <div className="bg-white/20 p-1 rounded-md group-hover:scale-110 transition-transform">
+                                        <Plus className="w-4 h-4" />
+                                    </div>
+                                    <span>Tạo bài học mới</span>
+                                </Link>
+                            </div>
+                        )}
+
+                        <div className="space-y-2">
+                            {courses.map((course) => (
+                                <CourseItem
+                                    key={course.id}
+                                    course={course}
+                                    pathname={pathname}
+                                    isAdmin={isAdmin}
+                                />
+                            ))}
+
+                            {isAdmin && (
+                                <div className="pt-2">
+                                    <AddCourseButton />
+                                </div>
+                            )}
+                        </div>
+                    </>
+                )}
             </div>
         </aside>
     );
