@@ -22,7 +22,8 @@ export function LearnSidebar({
     collapsible = true,
 }: LearnSidebarProps) {
     const pathname = usePathname();
-    const [isCollapsed, setIsCollapsed] = useState(false);
+    const isLessonPath = /^\/learn\/[^/]+\/[^/]+$/.test(pathname);
+    const [isCollapsed, setIsCollapsed] = useState(() => collapsible && isLessonPath);
 
     const asideClassName = cn(
         'shrink-0 border-r border-white/10 bg-black/20 backdrop-blur-md h-[calc(100vh-6rem)] sticky top-24 overflow-y-auto no-scrollbar transition-[width] duration-200 ease-out motion-reduce:transition-none',
