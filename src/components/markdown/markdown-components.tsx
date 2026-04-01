@@ -4,6 +4,7 @@ import { AlertTriangle, Check, CheckCircle2, Info, Lightbulb, Sparkles } from "l
 import type { Components } from "react-markdown";
 import { cn } from "@/lib/utils";
 import type { MarkdownComponentOptions } from "./markdown-types";
+import { MarkdownAnchorLink } from "./markdown-anchor-link";
 import { MarkdownCodeBlock } from "./markdown-code-block";
 
 function normalizeLanguage(rawLanguage?: string): string | undefined {
@@ -114,9 +115,9 @@ export function createMarkdownComponents(options: MarkdownComponentOptions = {})
 
             if (href.startsWith("#")) {
                 return (
-                    <a href={href} className={linkClassName} {...props}>
+                    <MarkdownAnchorLink href={href} className={linkClassName} {...props}>
                         {children}
-                    </a>
+                    </MarkdownAnchorLink>
                 );
             }
 

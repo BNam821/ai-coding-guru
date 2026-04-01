@@ -10,6 +10,7 @@ import rehypeSanitize from "rehype-sanitize";
 import type { PluggableList } from "unified";
 import { cn } from "@/lib/utils";
 import { createMarkdownComponents } from "./markdown-components";
+import { MarkdownHashScrollManager } from "./markdown-hash-scroll-manager";
 import type { MarkdownRenderMode, MarkdownRendererProps } from "./markdown-types";
 import { markdownSanitizeSchema } from "./markdown-sanitize-schema";
 import { remarkCallouts } from "./markdown-remark-callouts";
@@ -62,6 +63,7 @@ export function MarkdownRenderer({
 
     return (
         <div className={cn("markdown-content", className)}>
+            <MarkdownHashScrollManager enabled={mode === "full"} />
             <ReactMarkdown
                 remarkPlugins={
                     mode === "lite"
