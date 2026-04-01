@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { MarkdownAnchorLink } from '@/components/markdown/markdown-anchor-link';
 import { useLearnSidebarState } from './learn-sidebar-state';
@@ -24,8 +24,22 @@ function resolveTocItems(items: LearnTocItem[]): LearnTocItem[] {
 
 export function LessonRightToc({ items }: LessonRightTocProps) {
     const { isSidebarCollapsed } = useLearnSidebarState();
-    const resolvedItems = useMemo(() => resolveTocItems(items), [items]);
-    const [activeId, setActiveId] = useState<string | null>(resolvedItems[0]?.id ?? null);
+    const [resolvedItems, setResolvedItems] = useState<LearnTocItem[]>([]);
+    const [activeId, setActiveId] = useState<string | null>(null);
+
+    useEffect(() => {
+        let frameId = 0;
+
+        const syncItems = () => {
+            setResolvedItems(resolveTocItems(items));
+        };
+
+        frameId = window.requestAnimationFrame(syncItems);
+
+        return () => {
+            window.cancelAnimationFrame(frameId);
+        };
+    }, [items]);
 
     useEffect(() => {
         if (!isSidebarCollapsed || resolvedItems.length === 0) {
@@ -79,6 +93,8 @@ export function LessonRightToc({ items }: LessonRightTocProps) {
         return null;
     }
 
+    const currentActiveId = activeId ?? resolvedItems[0]?.id ?? null;
+
     return (
         <aside className="hidden lg:block lg:w-64 xl:w-72">
             <div className="sticky top-28">
@@ -89,7 +105,7 @@ export function LessonRightToc({ items }: LessonRightTocProps) {
 
                     <nav className="space-y-1.5" aria-label="Mục lục bài học">
                         {resolvedItems.map((item) => {
-                            const isActive = activeId === item.id;
+                            const isActive = currentActiveId === item.id;
 
                             return (
                                 <MarkdownAnchorLink
