@@ -7,6 +7,7 @@ import { ChevronDown, ChevronLeft, ChevronRight, FileText, GraduationCap, Plus, 
 import { cn } from '@/lib/utils';
 import type { CourseWithChapters } from '@/lib/learn-db';
 import { AddCourseButton, EditCourseButton, DeleteCourseButton } from './course-actions';
+import { useLearnSidebarState } from './learn-sidebar-state';
 
 interface LearnSidebarProps {
     courses: CourseWithChapters[];
@@ -22,8 +23,9 @@ export function LearnSidebar({
     collapsible = true,
 }: LearnSidebarProps) {
     const pathname = usePathname();
-    const isLessonPath = /^\/learn\/[^/]+\/[^/]+$/.test(pathname);
-    const [isCollapsed, setIsCollapsed] = useState(() => collapsible && isLessonPath);
+    const sidebarState = useLearnSidebarState();
+    const isCollapsed = collapsible ? !!sidebarState?.isSidebarCollapsed : false;
+    const setIsCollapsed = sidebarState?.setSidebarCollapsed;
 
     const asideClassName = cn(
         'shrink-0 border-r border-white/10 bg-black/20 backdrop-blur-md h-[calc(100vh-6rem)] sticky top-24 overflow-y-auto no-scrollbar transition-[width] duration-200 ease-out motion-reduce:transition-none',
@@ -33,12 +35,12 @@ export function LearnSidebar({
 
     return (
         <aside className={asideClassName}>
-            <div className={cn('space-y-4', isCollapsed ? 'p-3' : 'p-4')}>
+            <div className={cn('space-y-4', isCollapsed ? 'px-3 py-4' : 'p-4')}>
                 <div className={cn('flex items-start', isCollapsed ? 'justify-center' : 'justify-between gap-3')}>
                     {isCollapsed ? (
                         <button
-                            onClick={() => setIsCollapsed(false)}
-                            className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-blue-300 transition-colors hover:border-blue-400/40 hover:bg-blue-500/10 hover:text-blue-200"
+                            onClick={() => setIsCollapsed?.(false)}
+                            className="flex h-12 w-12 shrink-0 items-center justify-center self-center rounded-2xl border border-white/10 bg-white/5 text-blue-300 transition-colors hover:border-blue-400/40 hover:bg-blue-500/10 hover:text-blue-200"
                             title="Mở rộng danh sách khoá học"
                             aria-label="Mở rộng danh sách khoá học"
                         >
@@ -54,7 +56,7 @@ export function LearnSidebar({
 
                             {collapsible && (
                                 <button
-                                    onClick={() => setIsCollapsed(true)}
+                                    onClick={() => setIsCollapsed?.(true)}
                                     className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-gray-300 transition-colors hover:border-blue-400/40 hover:bg-blue-500/10 hover:text-white"
                                     title="Thu nhỏ danh sách khoá học"
                                     aria-label="Thu nhỏ danh sách khoá học"
@@ -67,7 +69,7 @@ export function LearnSidebar({
                 </div>
 
                 {isCollapsed ? (
-                    <div className="space-y-3">
+                    <div className="flex flex-col items-center gap-3">
                         {courses.map((course) => {
                             const isActive = pathname.startsWith(`/learn/${course.slug}`);
 
@@ -75,8 +77,9 @@ export function LearnSidebar({
                                 <Link
                                     key={course.id}
                                     href={`/learn/${course.slug}`}
+                                    onClick={() => setIsCollapsed?.(false)}
                                     className={cn(
-                                        'flex h-12 w-12 items-center justify-center rounded-2xl border transition-all',
+                                        'flex h-12 w-12 shrink-0 items-center justify-center self-center rounded-2xl border transition-all',
                                         isActive
                                             ? 'border-amber-400/60 bg-amber-400/15 text-amber-300 shadow-[0_0_18px_rgba(251,191,36,0.18)]'
                                             : 'border-white/10 bg-white/5 text-gray-400 hover:border-blue-400/40 hover:bg-blue-500/10 hover:text-blue-200'
@@ -112,7 +115,7 @@ export function LearnSidebar({
                                     course={course}
                                     pathname={pathname}
                                     isAdmin={isAdmin}
-                                    onLessonClick={collapsible ? () => setIsCollapsed(true) : undefined}
+                                    onLessonClick={collapsible ? () => setIsCollapsed?.(true) : undefined}
                                 />
                             ))}
 
