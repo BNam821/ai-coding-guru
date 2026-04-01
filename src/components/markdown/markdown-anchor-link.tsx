@@ -30,8 +30,6 @@ export function MarkdownAnchorLink({
 
         event.preventDefault();
         scrollToHashTarget(href, "smooth");
-
-        window.history.replaceState(null, "", href);
     };
 
     return (
