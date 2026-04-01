@@ -1,11 +1,31 @@
-export function getHashTarget(hash: string): HTMLElement | null {
+const SANITIZED_ID_PREFIX = "user-content-";
+
+function getCandidateIds(hash: string): string[] {
     const decodedHash = decodeURIComponent(hash.startsWith("#") ? hash.slice(1) : hash);
 
     if (!decodedHash) {
-        return null;
+        return [];
     }
 
-    return document.getElementById(decodedHash);
+    if (decodedHash.startsWith(SANITIZED_ID_PREFIX)) {
+        return [decodedHash];
+    }
+
+    return [decodedHash, `${SANITIZED_ID_PREFIX}${decodedHash}`];
+}
+
+export function getHashTarget(hash: string): HTMLElement | null {
+    const candidateIds = getCandidateIds(hash);
+
+    for (const candidateId of candidateIds) {
+        const element = document.getElementById(candidateId);
+
+        if (element) {
+            return element;
+        }
+    }
+
+    return null;
 }
 
 export function scrollToHashTarget(hash: string, behavior: ScrollBehavior): boolean {
