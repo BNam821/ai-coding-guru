@@ -45,6 +45,7 @@ export function WikiClientPage({ initialData }: WikiClientPageProps) {
     const [isAdmin, setIsAdmin] = useState(initialData?.isAdmin || false);
     const [isLoggedIn, setIsLoggedIn] = useState(initialData?.isLoggedIn || false);
     const [loading, setLoading] = useState(!initialData);
+    const [notice, setNotice] = useState("");
 
     // State cho filters (Client-side - không reload trang)
     const [categoryFilter, setCategoryFilter] = useState<string>("");
@@ -57,6 +58,16 @@ export function WikiClientPage({ initialData }: WikiClientPageProps) {
             fetchData();
         }
     }, [initialData]);
+
+    useEffect(() => {
+        const flashNotice = sessionStorage.getItem("wiki_notice");
+        if (!flashNotice) {
+            return;
+        }
+
+        setNotice(flashNotice);
+        sessionStorage.removeItem("wiki_notice");
+    }, []);
 
     const fetchData = async () => {
         setLoading(true);
@@ -144,6 +155,12 @@ export function WikiClientPage({ initialData }: WikiClientPageProps) {
                     </div>
                 )}
             </header>
+
+            {notice && (
+                <GlassCard className="mb-8 border-emerald-400/20 bg-emerald-400/10 text-center text-emerald-100" hoverEffect={false}>
+                    {notice}
+                </GlassCard>
+            )}
 
             {/* Client-side Filter Bar */}
             <div className="flex flex-wrap items-center gap-4 mb-12 animate-in fade-in slide-in-from-top-4 duration-700">

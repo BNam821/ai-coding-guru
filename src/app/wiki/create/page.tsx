@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, CheckCircle2, FileText, Send, Tag, Type, User } from "lucide-react";
+import { ArrowLeft, FileText, Send, Tag, Type, User } from "lucide-react";
 import { GlassCard } from "@/components/ui/glass-card";
 import { NeonButton } from "@/components/ui/neon-button";
 import { AuthorRoleBadge } from "@/components/wiki/author-role-badge";
@@ -24,7 +24,6 @@ export default function CreatePostPage() {
     const [isCheckingSession, setIsCheckingSession] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
-    const [successMessage, setSuccessMessage] = useState("");
     const router = useRouter();
 
     useEffect(() => {
@@ -65,7 +64,6 @@ export default function CreatePostPage() {
 
         setIsLoading(true);
         setError("");
-        setSuccessMessage("");
 
         try {
             const res = await fetch("/api/wiki", {
@@ -86,12 +84,12 @@ export default function CreatePostPage() {
                 return;
             }
 
-            setSuccessMessage(data.message || "Bài viết đã được gửi thành công và đang chờ duyệt.");
-            setTitle("");
-            setExcerpt("");
-            setContent("");
-            setCategory("Hướng dẫn");
-            setImageUrl("");
+            sessionStorage.setItem(
+                "wiki_notice",
+                data.message || "Bài viết đã được gửi thành công và đang chờ duyệt."
+            );
+            router.push("/wiki");
+            router.refresh();
         } catch {
             setError("Đã có lỗi xảy ra khi kết nối server.");
         } finally {
@@ -113,18 +111,6 @@ export default function CreatePostPage() {
                     <h1 className="text-4xl font-bold text-white">Soạn bài viết mới</h1>
                     <p className="text-white/60 max-w-3xl">{helperText}</p>
                 </header>
-
-                {successMessage && (
-                    <GlassCard className="mb-8 border-emerald-400/20 bg-emerald-400/10" hoverEffect={false}>
-                        <div className="flex items-start gap-3 text-emerald-200">
-                            <CheckCircle2 className="mt-0.5 shrink-0" size={20} />
-                            <div className="space-y-2">
-                                <p className="font-semibold">Submission đã được gửi.</p>
-                                <p className="text-sm text-emerald-100/90">{successMessage}</p>
-                            </div>
-                        </div>
-                    </GlassCard>
-                )}
 
                 <form onSubmit={handleSubmit} className="space-y-8">
                     <div className="grid md:grid-cols-[1fr_250px] gap-8">
@@ -247,4 +233,3 @@ export default function CreatePostPage() {
         </main>
     );
 }
-
