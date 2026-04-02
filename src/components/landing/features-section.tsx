@@ -60,9 +60,9 @@ const features = [
         icon: <GraduationCap size={28} className="text-black" />,
         description: `Học lập trình **có hệ thống** với lộ trình rõ ràng:
 
-- Bài giảng video & văn bản
+- Bài giảng chi tiết & văn bản
 - Bài tập thực hành
-- Chứng nhận hoàn thành
+- Học theo phong cách riêng
 - Theo dõi tiến độ`,
         href: "/learn",
         buttonText: "Bắt đầu học",

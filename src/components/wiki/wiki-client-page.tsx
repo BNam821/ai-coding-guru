@@ -3,9 +3,10 @@
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { GlassCard } from "@/components/ui/glass-card";
-import { BookOpen, Clock, User, ArrowRight, Bookmark, Filter, ChevronDown, X } from "lucide-react";
+import { BookOpen, Clock, User, ArrowRight, Bookmark, Filter, ChevronDown, X, ShieldCheck } from "lucide-react";
 import { DeleteButton } from "@/components/wiki/delete-button";
 import { LoadingScreen } from "@/components/ui/loading-screen";
+import { AuthorRoleBadge } from "@/components/wiki/author-role-badge";
 
 interface WikiPost {
     slug: string;
@@ -21,6 +22,7 @@ interface WikiPost {
     image_url?: string;
     read_time: string;
     created_at: string;
+    author_role?: string;
 }
 
 interface WikiClientPageProps {
@@ -123,14 +125,22 @@ export function WikiClientPage({ initialData }: WikiClientPageProps) {
                     </p>
                 </div>
 
-                {isAdmin && (
+                {isLoggedIn && (
                     <div className="flex justify-center gap-4 animate-in fade-in zoom-in-95 duration-500">
                         <Link href="/wiki/create">
                             <button className="px-8 py-3 rounded-xl bg-accent-secondary text-black text-sm font-bold hover:bg-white transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(0,255,163,0.3)]">
                                 <BookOpen size={18} />
-                                Viết bài mới
+                                {isAdmin ? "Đăng bài mới" : "Gửi bài để duyệt"}
                             </button>
                         </Link>
+                        {isAdmin && (
+                            <Link href="/wiki/review">
+                                <button className="px-8 py-3 rounded-xl bg-white/10 border border-white/10 text-white text-sm font-bold hover:border-accent-primary/40 hover:bg-white/15 transition-all flex items-center gap-2">
+                                    <ShieldCheck size={18} />
+                                    Duyệt bài viết
+                                </button>
+                            </Link>
+                        )}
                     </div>
                 )}
             </header>
@@ -267,6 +277,7 @@ function WikiCard({ post, isAdmin }: { post: WikiPost, isAdmin: boolean }) {
                     </div>
 
                     <div className="p-6 space-y-4 flex-1">
+                        <AuthorRoleBadge role={post.author_role} />
                         <h2 className="text-xl font-bold text-white group-hover:text-accent-secondary transition-colors line-clamp-2 leading-tight">
                             {post.title}
                         </h2>

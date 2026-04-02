@@ -1,9 +1,53 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
-import { isAdminAuthenticated, isUserAuthenticated, getSession } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
+import { supabase } from "@/lib/supabase";
+import { getSession, isAdminAuthenticated, isUserAuthenticated } from "@/lib/auth";
+import {
+    calculateWikiReadTime,
+    generateWikiSlug,
+    getWikiAuthorRole,
+    getWikiPublishDate,
+} from "@/lib/wiki";
 
-// GET: Lấy danh sách bài viết từ Supabase
+function validateWikiPayload(payload: Record<string, unknown>) {
+    const title = String(payload.title || "").trim();
+    const excerpt = String(payload.excerpt || "").trim();
+    const content = String(payload.content || "").trim();
+    const category = String(payload.category || "").trim();
+    const image_url = String(payload.image_url || "").trim();
+
+    if (!title || !excerpt || !content || !category) {
+        return { error: "Thiếu thông tin bài viết bắt buộc" };
+    }
+
+    return {
+        title,
+        excerpt,
+        content,
+        category,
+        image_url: image_url || null,
+    };
+}
+
+async function hasSlugConflict(slug: string) {
+    const [{ data: publishedPost }, { data: activeSubmission }] = await Promise.all([
+        supabase
+            .from("wiki_posts")
+            .select("slug")
+            .eq("slug", slug)
+            .maybeSingle(),
+        supabase
+            .from("wiki_submissions")
+            .select("id")
+            .eq("slug", slug)
+            .in("status", ["pending", "approved"])
+            .maybeSingle(),
+    ]);
+
+    return !!publishedPost || !!activeSubmission;
+}
+
+// GET: Lấy danh sách bài viết đã xuất bản
 export async function GET() {
     try {
         const { data: posts, error } = await supabase
@@ -17,14 +61,14 @@ export async function GET() {
         }
 
         return NextResponse.json(posts);
-    } catch (error) {
+    } catch {
         return NextResponse.json({ success: false, error: "Internal Server Error" }, { status: 500 });
     }
 }
 
-// POST: Lưu bài viết mới (Chỉ dành cho Admin)
+// POST: Admin đăng trực tiếp, Member gửi bài chờ duyệt
 export async function POST(req: Request) {
-    if (!(await isAdminAuthenticated())) {
+    if (!(await isUserAuthenticated())) {
         return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
     }
 
@@ -34,54 +78,88 @@ export async function POST(req: Request) {
             return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
         }
 
-        const newPost = await req.json();
-
-        // Tạo slug từ title nếu không có
-        if (!newPost.slug) {
-            newPost.slug = newPost.title
-                .toLowerCase()
-                .normalize("NFD")
-                .replace(/[\u0300-\u036f]/g, "")
-                .replace(/[^\w\s-]/g, "")
-                .replace(/[\s_-]+/g, "-")
-                .replace(/^-+|-+$/g, "");
+        const payload = validateWikiPayload(await req.json());
+        if ("error" in payload) {
+            return NextResponse.json({ success: false, error: payload.error }, { status: 400 });
         }
 
-        const date = new Date().toLocaleDateString("vi-VN");
-        const readTime = `${Math.ceil((newPost.content || "").split(" ").length / 200)} phút`;
+        const slug = generateWikiSlug(payload.title);
+        if (!slug) {
+            return NextResponse.json({ success: false, error: "Không thể tạo slug hợp lệ từ tiêu đề" }, { status: 400 });
+        }
+
+        if (await hasSlugConflict(slug)) {
+            return NextResponse.json({ success: false, error: "Slug này đã tồn tại hoặc đang chờ duyệt" }, { status: 400 });
+        }
+
+        const authorRole = getWikiAuthorRole(session.role);
+        const readTime = calculateWikiReadTime(payload.content);
+
+        if (authorRole === "admin") {
+            const { data, error } = await supabase
+                .from("wiki_posts")
+                .insert([{
+                    ...payload,
+                    slug,
+                    author: session.username,
+                    author_role: authorRole,
+                    date: getWikiPublishDate(),
+                    read_time: readTime,
+                }])
+                .select()
+                .single();
+
+            if (error) {
+                if (error.code === "23505") {
+                    return NextResponse.json({ success: false, error: "Slug này đã tồn tại" }, { status: 400 });
+                }
+                return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+            }
+
+            revalidatePath("/wiki");
+            revalidatePath(`/wiki/${slug}`);
+
+            return NextResponse.json({
+                success: true,
+                moderationStatus: "published",
+                post: data,
+            });
+        }
 
         const { data, error } = await supabase
-            .from("wiki_posts")
+            .from("wiki_submissions")
             .insert([{
-                title: newPost.title,
-                slug: newPost.slug,
-                excerpt: newPost.excerpt,
-                content: newPost.content,
-                author: session.username, // Tự động lấy từ session
-                category: newPost.category,
-                image_url: newPost.image_url,
-                date: date,
-                read_time: readTime
+                ...payload,
+                slug,
+                author: session.username,
+                author_role: authorRole,
+                read_time: readTime,
+                status: "pending",
             }])
-            .select();
+            .select()
+            .single();
 
         if (error) {
             if (error.code === "23505") {
-                return NextResponse.json({ success: false, error: "Slug này đã tồn tại" }, { status: 400 });
+                return NextResponse.json({ success: false, error: "Slug này đã tồn tại hoặc đang chờ duyệt" }, { status: 400 });
             }
             return NextResponse.json({ success: false, error: error.message }, { status: 500 });
         }
 
-        // Revalidate danh sách bài viết
-        revalidatePath('/wiki');
+        revalidatePath("/wiki/review");
 
-        return NextResponse.json({ success: true, post: data[0] });
-    } catch (error) {
+        return NextResponse.json({
+            success: true,
+            moderationStatus: "pending",
+            message: "Bài viết đã được gửi để chờ duyệt trước khi đăng lên Wiki.",
+            submission: data,
+        });
+    } catch {
         return NextResponse.json({ success: false, error: "Internal Server Error" }, { status: 500 });
     }
 }
 
-// PUT: Cập nhật bài viết (Chỉ tác giả)
+// PUT: Cập nhật bài viết đã xuất bản
 export async function PUT(req: Request) {
     if (!(await isUserAuthenticated())) {
         return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
@@ -95,7 +173,6 @@ export async function PUT(req: Request) {
             return NextResponse.json({ success: false, error: "Thiếu Slug" }, { status: 400 });
         }
 
-        // Check ownership
         const { data: post, error: fetchError } = await supabase
             .from("wiki_posts")
             .select("author")
@@ -106,11 +183,11 @@ export async function PUT(req: Request) {
             return NextResponse.json({ success: false, error: "Bài viết không tồn tại" }, { status: 404 });
         }
 
-        if (post.author !== session.username && session.role !== 'admin') {
+        if (post.author !== session?.username && session?.role !== "admin") {
             return NextResponse.json({ success: false, error: "Bạn không có quyền sửa bài này" }, { status: 403 });
         }
 
-        const readTime = `${Math.ceil((content || "").split(" ").length / 200)} phút`;
+        const readTime = calculateWikiReadTime(String(content || ""));
 
         const { error: updateError } = await supabase
             .from("wiki_posts")
@@ -128,17 +205,16 @@ export async function PUT(req: Request) {
             return NextResponse.json({ success: false, error: updateError.message }, { status: 500 });
         }
 
-        // Revalidate danh sách và bài viết cụ thể
-        revalidatePath('/wiki');
+        revalidatePath("/wiki");
         revalidatePath(`/wiki/${slug}`);
 
         return NextResponse.json({ success: true });
-    } catch (error) {
+    } catch {
         return NextResponse.json({ success: false, error: "Internal Server Error" }, { status: 500 });
     }
 }
 
-// DELETE: Xóa bài viết (Chỉ dành cho Admin)
+// DELETE: Chỉ admin được xóa bài đã xuất bản
 export async function DELETE(req: Request) {
     if (!(await isAdminAuthenticated())) {
         return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
@@ -161,12 +237,11 @@ export async function DELETE(req: Request) {
             return NextResponse.json({ success: false, error: error.message }, { status: 500 });
         }
 
-        // Revalidate danh sách và bài viết cụ thể (để xóa cache cũ của bài viết)
-        revalidatePath('/wiki');
+        revalidatePath("/wiki");
         revalidatePath(`/wiki/${slug}`);
 
         return NextResponse.json({ success: true, message: "Xóa bài thành công" });
-    } catch (error) {
+    } catch {
         return NextResponse.json({ success: false, error: "Internal Server Error" }, { status: 500 });
     }
 }
