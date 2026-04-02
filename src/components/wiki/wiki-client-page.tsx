@@ -67,6 +67,14 @@ export function WikiClientPage({ initialData }: WikiClientPageProps) {
 
         setNotice(flashNotice);
         sessionStorage.removeItem("wiki_notice");
+
+        const timeoutId = window.setTimeout(() => {
+            setNotice("");
+        }, 3000);
+
+        return () => {
+            window.clearTimeout(timeoutId);
+        };
     }, []);
 
     const fetchData = async () => {
