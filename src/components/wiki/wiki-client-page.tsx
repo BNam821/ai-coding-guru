@@ -70,7 +70,7 @@ export function WikiClientPage({ initialData }: WikiClientPageProps) {
 
         const timeoutId = window.setTimeout(() => {
             setNotice("");
-        }, 3000);
+        }, 8000);
 
         return () => {
             window.clearTimeout(timeoutId);
