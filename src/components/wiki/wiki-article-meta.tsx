@@ -115,8 +115,14 @@ export function WikiArticleMeta({
                 </button>
             </div>
 
-            {isHistoryOpen && (
-                <div id={panelId} className="rounded-2xl border border-[#00ff9d]/20 bg-white/5 p-4 shadow-[0_0_30px_rgba(0,255,157,0.06)] backdrop-blur-md sm:p-5">
+            <div
+                id={panelId}
+                aria-hidden={!isHistoryOpen}
+                className={cn(
+                    "rounded-2xl border border-[#00ff9d]/20 bg-white/5 p-4 shadow-[0_0_30px_rgba(0,255,157,0.06)] backdrop-blur-md sm:p-5",
+                    !isHistoryOpen && "hidden"
+                )}
+            >
                     {formattedHistory.length > 0 ? (
                         <div className="overflow-x-auto">
                             <table className="w-full min-w-[640px] border-collapse border border-white/10 text-left">
@@ -155,8 +161,7 @@ export function WikiArticleMeta({
                             Chưa có lịch sử chỉnh sửa.
                         </p>
                     )}
-                </div>
-            )}
+            </div>
         </div>
     );
 }
