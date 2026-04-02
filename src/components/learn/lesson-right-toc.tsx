@@ -10,15 +10,39 @@ interface LessonRightTocProps {
     items: LearnTocItem[];
 }
 
+function normalizeHeadingLabel(value: string) {
+    return value
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .replace(/^\s*\d+[\.\)\-:]*\s*/, '')
+        .replace(/[^\p{L}\p{N}\s]/gu, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
 function resolveTocItems(items: LearnTocItem[]): LearnTocItem[] {
     return items.flatMap((item) => {
-        const element = document.getElementById(item.id);
+        const exactMatch = document.getElementById(item.id);
 
-        if (!element || element.tagName !== 'H2') {
+        if (exactMatch?.tagName === 'H2') {
+            return [item];
+        }
+
+        const normalizedLabel = normalizeHeadingLabel(item.label);
+        const headingByLabel = Array.from(document.querySelectorAll('h2[id]')).find((heading) => {
+            return normalizeHeadingLabel(heading.textContent || '') === normalizedLabel;
+        });
+
+        if (!headingByLabel || !(headingByLabel instanceof HTMLElement)) {
             return [];
         }
 
-        return [item];
+        return [{
+            ...item,
+            id: headingByLabel.id,
+            href: `#${headingByLabel.id}`,
+        }];
     });
 }
 
