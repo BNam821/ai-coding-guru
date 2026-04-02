@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { GlassCard } from "@/components/ui/glass-card";
-import { BookOpen, Clock, User, ArrowRight, Bookmark, Filter, ChevronDown, X, ShieldCheck } from "lucide-react";
+import { BookOpen, Clock, User, ArrowRight, Bookmark, Filter, ChevronDown, X, ShieldCheck, Settings2 } from "lucide-react";
 import { DeleteButton } from "@/components/wiki/delete-button";
 import { LoadingScreen } from "@/components/ui/loading-screen";
 import { AuthorRoleBadge } from "@/components/wiki/author-role-badge";
@@ -134,6 +134,17 @@ export function WikiClientPage({ initialData }: WikiClientPageProps) {
 
     return (
         <>
+            {isLoggedIn && (
+                <div className="mb-6 flex justify-end">
+                    <Link href="/wiki/manage">
+                        <button className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-bold text-white hover:border-accent-secondary/30 hover:bg-white/10 transition-all">
+                            <Settings2 size={18} />
+                            Quản lý bài viết
+                        </button>
+                    </Link>
+                </div>
+            )}
+
             <header className="mb-14 text-center space-y-8">
                 <div className="space-y-4">
                     <h1 className="text-5xl lg:text-7xl font-bold text-white drop-shadow-[0_0_30px_rgba(255,255,255,0.4)] transition-all duration-500 hover:drop-shadow-[0_0_50px_rgba(255,255,255,0.6)]">

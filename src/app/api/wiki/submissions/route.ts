@@ -97,6 +97,7 @@ export async function PATCH(req: Request) {
                 return NextResponse.json({ success: false, error: rejectError.message }, { status: 500 });
             }
 
+            revalidatePath("/wiki/manage");
             revalidatePath("/wiki/review");
 
             return NextResponse.json({ success: true, moderationStatus: "rejected" });
@@ -138,6 +139,7 @@ export async function PATCH(req: Request) {
         }
 
         revalidatePath("/wiki");
+        revalidatePath("/wiki/manage");
         revalidatePath("/wiki/review");
         revalidatePath(`/wiki/${publishedPost.slug}`);
 

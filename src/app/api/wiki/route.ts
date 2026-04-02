@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { supabase } from "@/lib/supabase";
-import { getSession, isAdminAuthenticated, isUserAuthenticated } from "@/lib/auth";
+import { getSession, isUserAuthenticated } from "@/lib/auth";
 import {
     calculateWikiReadTime,
     generateWikiSlug,
@@ -127,6 +127,7 @@ export async function POST(req: Request) {
             }
 
             revalidatePath("/wiki");
+            revalidatePath("/wiki/manage");
             revalidatePath(`/wiki/${slug}`);
 
             return NextResponse.json({
@@ -156,6 +157,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ success: false, error: error.message }, { status: 500 });
         }
 
+        revalidatePath("/wiki/manage");
         revalidatePath("/wiki/review");
 
         return NextResponse.json({
@@ -253,6 +255,7 @@ export async function PUT(req: Request) {
         }
 
         revalidatePath("/wiki");
+        revalidatePath("/wiki/manage");
         revalidatePath(`/wiki/${slug}`);
 
         return NextResponse.json({ success: true });
@@ -261,18 +264,37 @@ export async function PUT(req: Request) {
     }
 }
 
-// DELETE: Chỉ admin được xóa bài đã xuất bản
+// DELETE: Tác giả hoặc admin có thể xóa bài đã xuất bản
 export async function DELETE(req: Request) {
-    if (!(await isAdminAuthenticated())) {
+    if (!(await isUserAuthenticated())) {
         return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
     }
 
     try {
+        const session = await getSession();
+        if (!session) {
+            return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+        }
+
         const { searchParams } = new URL(req.url);
         const slug = searchParams.get("slug");
 
         if (!slug) {
             return NextResponse.json({ success: false, error: "Thiếu Slug" }, { status: 400 });
+        }
+
+        const { data: post, error: fetchError } = await supabase
+            .from("wiki_posts")
+            .select("author")
+            .eq("slug", slug)
+            .single();
+
+        if (fetchError || !post) {
+            return NextResponse.json({ success: false, error: "Bài viết không tồn tại" }, { status: 404 });
+        }
+
+        if (post.author !== session.username && session.role !== "admin") {
+            return NextResponse.json({ success: false, error: "Bạn không có quyền xóa bài này" }, { status: 403 });
         }
 
         const { error } = await supabase
@@ -285,6 +307,7 @@ export async function DELETE(req: Request) {
         }
 
         revalidatePath("/wiki");
+        revalidatePath("/wiki/manage");
         revalidatePath(`/wiki/${slug}`);
 
         return NextResponse.json({ success: true, message: "Xóa bài thành công" });
