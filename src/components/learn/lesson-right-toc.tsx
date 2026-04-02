@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { MarkdownAnchorLink } from '@/components/markdown/markdown-anchor-link';
 import { useLearnSidebarState } from './learn-sidebar-state';
@@ -50,6 +50,8 @@ export function LessonRightToc({ items }: LessonRightTocProps) {
     const { isSidebarCollapsed } = useLearnSidebarState();
     const [resolvedItems, setResolvedItems] = useState<LearnTocItem[]>([]);
     const [activeId, setActiveId] = useState<string | null>(null);
+    const [panelStyle, setPanelStyle] = useState<{ left: number; width: number } | null>(null);
+    const containerRef = useRef<HTMLElement | null>(null);
 
     useEffect(() => {
         let frameId = 0;
@@ -64,6 +66,57 @@ export function LessonRightToc({ items }: LessonRightTocProps) {
             window.cancelAnimationFrame(frameId);
         };
     }, [items]);
+
+    useEffect(() => {
+        if (!isSidebarCollapsed) {
+            return;
+        }
+
+        let frameId = 0;
+
+        const syncPanelPosition = () => {
+            const container = containerRef.current;
+
+            if (!container) {
+                return;
+            }
+
+            const rect = container.getBoundingClientRect();
+
+            setPanelStyle((current) => {
+                if (current && current.left === rect.left && current.width === rect.width) {
+                    return current;
+                }
+
+                return {
+                    left: rect.left,
+                    width: rect.width,
+                };
+            });
+        };
+
+        const scheduleSync = () => {
+            window.cancelAnimationFrame(frameId);
+            frameId = window.requestAnimationFrame(syncPanelPosition);
+        };
+
+        const resizeObserver = new ResizeObserver(scheduleSync);
+
+        if (containerRef.current) {
+            resizeObserver.observe(containerRef.current);
+        }
+
+        scheduleSync();
+        window.addEventListener('resize', scheduleSync);
+        window.addEventListener('scroll', scheduleSync, { passive: true });
+
+        return () => {
+            window.cancelAnimationFrame(frameId);
+            resizeObserver.disconnect();
+            window.removeEventListener('resize', scheduleSync);
+            window.removeEventListener('scroll', scheduleSync);
+        };
+    }, [isSidebarCollapsed]);
 
     useEffect(() => {
         if (!isSidebarCollapsed || resolvedItems.length === 0) {
@@ -120,9 +173,19 @@ export function LessonRightToc({ items }: LessonRightTocProps) {
     const currentActiveId = activeId ?? resolvedItems[0]?.id ?? null;
 
     return (
-        <aside className="hidden lg:block lg:w-64 xl:w-72">
-            <div className="sticky top-28">
-                <div className="space-y-3 border-l border-white/10 pl-5">
+        <aside ref={containerRef} className="hidden lg:block lg:w-64 xl:w-72">
+            <div
+                className="space-y-3 border-l border-white/10 pl-5"
+                style={panelStyle ? {
+                    position: 'fixed',
+                    top: '7rem',
+                    left: `${panelStyle.left}px`,
+                    width: `${panelStyle.width}px`,
+                    maxHeight: 'calc(100vh - 8.5rem)',
+                    overflowY: 'auto',
+                } : undefined}
+            >
+                <div className="space-y-3">
                     <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-white/35">
                         Mục lục
                     </p>
