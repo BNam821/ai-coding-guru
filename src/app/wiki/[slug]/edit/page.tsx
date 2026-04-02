@@ -4,7 +4,7 @@ import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import { GlassCard } from "@/components/ui/glass-card";
 import { NeonButton } from "@/components/ui/neon-button";
-import { ArrowLeft, Send, Save, Type, FileText, User, Tag, Sparkles } from "lucide-react";
+import { ArrowLeft, Save, Type, FileText, User, Tag, PencilLine } from "lucide-react";
 import Link from "next/link";
 import { createClient } from "@supabase/supabase-js";
 
@@ -17,8 +17,10 @@ export default function EditPostPage({ params }: { params: Promise<{ slug: strin
     const [category, setCategory] = useState("Hướng dẫn");
     const [author, setAuthor] = useState("");
     const [imageUrl, setImageUrl] = useState("");
+    const [editReason, setEditReason] = useState("");
     const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState("");
+    const [pageError, setPageError] = useState("");
+    const [formError, setFormError] = useState("");
     const router = useRouter();
 
     useEffect(() => {
@@ -47,13 +49,13 @@ export default function EditPostPage({ params }: { params: Promise<{ slug: strin
                     .single();
 
                 if (error || !post) {
-                    setError("Không tìm thấy bài viết");
+                    setPageError("Không tìm thấy bài viết");
                     return;
                 }
 
                 // Check if user is author
                 if (post.author !== sessionData.username && sessionData.role !== 'admin') {
-                    setError("Bạn không có quyền sửa bài viết này");
+                    setPageError("Bạn không có quyền sửa bài viết này");
                     setTimeout(() => router.push(`/wiki/${slug}`), 3000);
                     return;
                 }
@@ -64,9 +66,9 @@ export default function EditPostPage({ params }: { params: Promise<{ slug: strin
                 setCategory(post.category);
                 setImageUrl(post.image_url || "");
 
-            } catch (err) {
-                console.error(err);
-                setError("Lỗi tải dữ liệu");
+            } catch (loadError) {
+                console.error(loadError);
+                setPageError("Lỗi tải dữ liệu");
             }
         };
         fetchData();
@@ -74,14 +76,21 @@ export default function EditPostPage({ params }: { params: Promise<{ slug: strin
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        const normalizedEditReason = editReason.trim();
+
+        if (!normalizedEditReason) {
+            setFormError("Vui lòng nhập lí do chỉnh sửa trước khi lưu.");
+            return;
+        }
+
         setIsLoading(true);
-        setError("");
+        setFormError("");
 
         try {
             const res = await fetch("/api/wiki", {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ slug, title, excerpt, content, category, image_url: imageUrl }),
+                body: JSON.stringify({ slug, title, excerpt, content, category, image_url: imageUrl, edit_reason: normalizedEditReason }),
             });
 
             const data = await res.json();
@@ -89,20 +98,20 @@ export default function EditPostPage({ params }: { params: Promise<{ slug: strin
                 router.push(`/wiki/${slug}`);
                 router.refresh();
             } else {
-                setError(data.error || "Không thể cập nhật bài viết.");
+                setFormError(data.error || "Không thể cập nhật bài viết.");
             }
-        } catch (err) {
-            setError("Đã có lỗi xảy ra khi kết nối server.");
+        } catch {
+            setFormError("Đã có lỗi xảy ra khi kết nối server.");
         } finally {
             setIsLoading(false);
         }
     };
 
-    if (error) {
+    if (pageError) {
         return (
             <main className="min-h-screen pt-32 pb-20 px-4 relative z-10 text-center">
                 <GlassCard className="p-8 inline-block">
-                    <h1 className="text-2xl font-bold text-red-500 mb-4">⚠️ Lỗi: {error}</h1>
+                    <h1 className="text-2xl font-bold text-red-500 mb-4">⚠️ Lỗi: {pageError}</h1>
                     <Link href={`/wiki/${slug}`} className="text-white hover:underline">Quay lại bài viết</Link>
                 </GlassCard>
             </main>
@@ -126,6 +135,12 @@ export default function EditPostPage({ params }: { params: Promise<{ slug: strin
                 </header>
 
                 <form onSubmit={handleSubmit} className="space-y-8">
+                    {formError && (
+                        <div className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+                            {formError}
+                        </div>
+                    )}
+
                     <div className="grid md:grid-cols-[1fr_250px] gap-8">
                         {/* Left: Main Editor */}
                         <div className="space-y-6">
@@ -182,6 +197,20 @@ export default function EditPostPage({ params }: { params: Promise<{ slug: strin
                                     onChange={(e) => setContent(e.target.value)}
                                     placeholder="Hỗ trợ Markdown mở rộng: # Tiêu đề, bảng, checklist, $inline math$, $$block math$$ ..."
                                     className="w-full bg-transparent p-6 text-white focus:outline-none placeholder:text-white/20 min-h-[400px] leading-relaxed font-mono"
+                                    required
+                                />
+                            </GlassCard>
+
+                            <GlassCard className="p-1 border-white/10 overflow-hidden">
+                                <div className="flex items-center gap-3 px-4 py-3 border-b border-white/10 bg-white/5">
+                                    <PencilLine size={18} className="text-accent-secondary" />
+                                    <span className="text-xs font-bold uppercase tracking-wider text-white/40">Lí do chỉnh sửa</span>
+                                </div>
+                                <textarea
+                                    value={editReason}
+                                    onChange={(e) => setEditReason(e.target.value)}
+                                    placeholder="Ví dụ: Cập nhật ví dụ code, sửa lỗi nội dung, bổ sung giải thích..."
+                                    className="w-full bg-transparent p-6 text-white focus:outline-none placeholder:text-white/20 min-h-[120px] resize-none"
                                     required
                                 />
                             </GlassCard>

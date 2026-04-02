@@ -1,15 +1,16 @@
-import { Calendar, Clock, ArrowLeft, Sparkles, Edit } from "lucide-react";
+import { ArrowLeft, Sparkles, Edit } from "lucide-react";
 import { GlassCard } from "@/components/ui/glass-card";
 import { ArticleActions } from "@/components/wiki/article-actions";
 import Link from "next/link";
 import Image from "next/image";
 import "highlight.js/styles/atom-one-dark.css";
 import { WikiImage } from "@/components/wiki/wiki-image";
-import { AuthorRoleBadge } from "@/components/wiki/author-role-badge";
+import { WikiArticleMeta } from "@/components/wiki/wiki-article-meta";
 import { supabase } from "@/lib/supabase";
 import { getSession, isUserAuthenticated } from "@/lib/auth";
 import { HistoryTracker } from "@/components/history/history-tracker";
 import { MarkdownRenderer } from "@/components/markdown/markdown-renderer";
+import type { WikiEditHistoryEntry } from "@/lib/wiki";
 
 export const revalidate = 60; // Tự động cập nhật dữ liệu sau mỗi 60 giây
 export const dynamic = "force-dynamic";
@@ -29,6 +30,7 @@ export default async function WikiDetailPage({ params }: { params: { slug: strin
     const { slug } = await params;
     let post: any = null;
     let relatedPosts: any[] = [];
+    let editHistory: WikiEditHistoryEntry[] = [];
     const isLoggedIn = await isUserAuthenticated();
     const session = await getSession();
 
@@ -46,6 +48,18 @@ export default async function WikiDetailPage({ params }: { params: { slug: strin
             post = fallback.data;
         } else {
             post = data;
+        }
+
+        const { data: historyData, error: historyError } = await supabase
+            .from("wiki_post_edit_history")
+            .select("edited_at, editor_username, editor_display_name, edit_reason")
+            .eq("post_slug", slug)
+            .order("edited_at", { ascending: false });
+
+        if (historyError) {
+            console.error("Error fetching wiki edit history:", historyError);
+        } else {
+            editHistory = historyData || [];
         }
 
         // Fetch related posts (same category, different slug)
@@ -123,34 +137,15 @@ export default async function WikiDetailPage({ params }: { params: { slug: strin
                                 {post.title}
                             </h1>
 
-                            <div className="flex flex-wrap items-center gap-6 text-white text-sm border-y border-white/10 py-6">
-                                <Link href={`/profile/${post.author}`} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-                                    {post.author_details?.avatar_url ? (
-                                        <div className="w-8 h-8 rounded-full overflow-hidden border border-white/10 shrink-0">
-                                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                                            <img
-                                                src={post.author_details.avatar_url}
-                                                alt={post.author_details.display_name || post.author}
-                                                className="w-full h-full object-cover"
-                                            />
-                                        </div>
-                                    ) : (
-                                        <div className="w-8 h-8 rounded-full bg-accent-primary/20 flex items-center justify-center text-accent-primary font-bold shrink-0">
-                                            {(post.author_details?.display_name?.[0] || post.author?.[0] || 'A').toUpperCase()}
-                                        </div>
-                                    )}
-                                    <span>Tác giả: <b className="text-white hover:text-accent-secondary transition-colors underline decoration-white/20 underline-offset-4">{post.author_details?.display_name || post.author}</b></span>
-                                </Link>
-                                <AuthorRoleBadge role={post.author_role} />
-                                <div className="flex items-center gap-2">
-                                    <Calendar size={16} />
-                                    <span>{post.date}</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <Clock size={16} />
-                                    <span>{post.read_time} đọc</span>
-                                </div>
-                            </div>
+                            <WikiArticleMeta
+                                authorUsername={post.author}
+                                authorDisplayName={post.author_details?.display_name || post.author}
+                                authorAvatarUrl={post.author_details?.avatar_url}
+                                authorRole={post.author_role}
+                                date={post.date}
+                                readTime={post.read_time}
+                                editHistory={editHistory}
+                            />
                         </header>
 
                         {/* Article Content */}

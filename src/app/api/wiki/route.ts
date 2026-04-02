@@ -47,6 +47,16 @@ async function hasSlugConflict(slug: string) {
     return !!publishedPost || !!activeSubmission;
 }
 
+function validateEditReason(value: unknown) {
+    const editReason = String(value || "").trim();
+
+    if (!editReason) {
+        return { error: "Lí do chỉnh sửa là bắt buộc" };
+    }
+
+    return { editReason };
+}
+
 // GET: Lấy danh sách bài viết đã xuất bản
 export async function GET() {
     try {
@@ -167,42 +177,79 @@ export async function PUT(req: Request) {
 
     try {
         const session = await getSession();
-        const { slug, title, excerpt, content, category, image_url } = await req.json();
+        if (!session) {
+            return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+        }
+
+        const body = await req.json();
+        const slug = String(body.slug || "").trim();
+        const payload = validateWikiPayload(body);
+        const editReasonResult = validateEditReason(body.edit_reason);
 
         if (!slug) {
             return NextResponse.json({ success: false, error: "Thiếu Slug" }, { status: 400 });
         }
 
-        const { data: post, error: fetchError } = await supabase
-            .from("wiki_posts")
-            .select("author")
-            .eq("slug", slug)
-            .single();
+        if ("error" in payload) {
+            return NextResponse.json({ success: false, error: payload.error }, { status: 400 });
+        }
+
+        if ("error" in editReasonResult) {
+            return NextResponse.json({ success: false, error: editReasonResult.error }, { status: 400 });
+        }
+
+        const [{ data: post, error: fetchError }, { data: editorProfile }] = await Promise.all([
+            supabase
+                .from("wiki_posts")
+                .select("author")
+                .eq("slug", slug)
+                .single(),
+            supabase
+                .from("users")
+                .select("display_name")
+                .eq("username", session.username)
+                .maybeSingle(),
+        ]);
 
         if (fetchError || !post) {
             return NextResponse.json({ success: false, error: "Bài viết không tồn tại" }, { status: 404 });
         }
 
-        if (post.author !== session?.username && session?.role !== "admin") {
+        if (post.author !== session.username && session.role !== "admin") {
             return NextResponse.json({ success: false, error: "Bạn không có quyền sửa bài này" }, { status: 403 });
         }
 
-        const readTime = calculateWikiReadTime(String(content || ""));
+        const readTime = calculateWikiReadTime(payload.content);
 
         const { error: updateError } = await supabase
             .from("wiki_posts")
             .update({
-                title,
-                excerpt,
-                content,
-                category,
-                image_url,
+                title: payload.title,
+                excerpt: payload.excerpt,
+                content: payload.content,
+                category: payload.category,
+                image_url: payload.image_url,
                 read_time: readTime,
             })
             .eq("slug", slug);
 
         if (updateError) {
             return NextResponse.json({ success: false, error: updateError.message }, { status: 500 });
+        }
+
+        const editorDisplayName = String(editorProfile?.display_name || "").trim() || session.username;
+
+        const { error: historyError } = await supabase
+            .from("wiki_post_edit_history")
+            .insert([{
+                post_slug: slug,
+                editor_username: session.username,
+                editor_display_name: editorDisplayName,
+                edit_reason: editReasonResult.editReason,
+            }]);
+
+        if (historyError) {
+            return NextResponse.json({ success: false, error: historyError.message }, { status: 500 });
         }
 
         revalidatePath("/wiki");
