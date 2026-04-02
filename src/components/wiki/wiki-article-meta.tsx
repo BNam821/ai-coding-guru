@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useMemo, useState } from "react";
+import { memo, useId, useMemo, useState } from "react";
 import Link from "next/link";
 import { Calendar, ChevronDown, Clock, History } from "lucide-react";
 import { AuthorRoleBadge } from "@/components/wiki/author-role-badge";
@@ -15,6 +15,11 @@ interface WikiArticleMetaProps {
     date: string;
     readTime: string;
     editHistory: WikiEditHistoryEntry[];
+}
+
+interface FormattedWikiEditHistoryEntry extends WikiEditHistoryEntry {
+    formattedEditedAt: string;
+    displayEditor: string;
 }
 
 function formatEditedAt(value: string) {
@@ -41,6 +46,66 @@ function formatEditedAt(value: string) {
     return `${time}, ${day}`;
 }
 
+const WikiEditHistoryPanel = memo(function WikiEditHistoryPanel({
+    panelId,
+    isOpen,
+    history,
+}: {
+    panelId: string;
+    isOpen: boolean;
+    history: FormattedWikiEditHistoryEntry[];
+}) {
+    return (
+        <div
+            id={panelId}
+            aria-hidden={!isOpen}
+            className={cn(
+                "rounded-2xl border border-[#00ff9d]/20 bg-[#06120d] p-4 sm:p-5 [contain:layout_paint]",
+                !isOpen && "hidden"
+            )}
+        >
+            {history.length > 0 ? (
+                <div className="overflow-x-auto">
+                    <table className="w-full min-w-[640px] border-collapse border border-white/10 text-left">
+                        <thead className="bg-[#00ff9d]/10">
+                            <tr className="border-b border-white/10">
+                                <th className="border border-white/10 px-4 py-3 text-xs font-bold uppercase tracking-[0.14em] text-[#bfffe6]">
+                                    Thời gian
+                                </th>
+                                <th className="border border-white/10 px-4 py-3 text-xs font-bold uppercase tracking-[0.14em] text-[#bfffe6]">
+                                    Người chỉnh sửa
+                                </th>
+                                <th className="border border-white/10 px-4 py-3 text-xs font-bold uppercase tracking-[0.14em] text-[#bfffe6]">
+                                    Lí do chỉnh sửa
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-white/10">
+                            {history.map((entry) => (
+                                <tr key={`${entry.edited_at}-${entry.editor_username}-${entry.edit_reason}`} className="border-b border-white/10">
+                                    <td className="border border-white/10 px-4 py-3 align-top text-sm text-white/90">
+                                        {entry.formattedEditedAt}
+                                    </td>
+                                    <td className="border border-white/10 px-4 py-3 align-top text-sm font-semibold text-white">
+                                        {entry.displayEditor}
+                                    </td>
+                                    <td className="border border-white/10 px-4 py-3 align-top text-sm text-white/85">
+                                        {entry.edit_reason}
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            ) : (
+                <p className="rounded-xl border border-dashed border-white/10 bg-black/10 px-4 py-5 text-sm text-white/70">
+                    Chưa có lịch sử chỉnh sửa.
+                </p>
+            )}
+        </div>
+    );
+});
+
 export function WikiArticleMeta({
     authorUsername,
     authorDisplayName,
@@ -52,7 +117,7 @@ export function WikiArticleMeta({
 }: WikiArticleMetaProps) {
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
     const panelId = useId();
-    const formattedHistory = useMemo(
+    const formattedHistory = useMemo<FormattedWikiEditHistoryEntry[]>(
         () => editHistory.map((entry) => ({
             ...entry,
             formattedEditedAt: formatEditedAt(entry.edited_at),
@@ -104,7 +169,7 @@ export function WikiArticleMeta({
                     aria-expanded={isHistoryOpen}
                     aria-controls={panelId}
                     onClick={() => setIsHistoryOpen((value) => !value)}
-                    className="ml-auto inline-flex items-center gap-2 rounded-full border border-[#6cffc9]/60 bg-[#00ff9d]/12 px-3.5 py-2 text-[11px] font-black uppercase tracking-[0.18em] text-[#8bffd7] shadow-[0_0_24px_rgba(0,255,157,0.18)] transition-all duration-300 hover:border-[#8bffd7]/90 hover:bg-[#00ff9d]/18 hover:text-[#c5ffea] hover:shadow-[0_0_32px_rgba(0,255,157,0.28)]"
+                    className="ml-auto inline-flex items-center gap-2 rounded-full border border-[#6cffc9]/60 bg-[#00ff9d]/12 px-3.5 py-2 text-[11px] font-black uppercase tracking-[0.18em] text-[#8bffd7] transition-[background-color,border-color,color] duration-150 hover:border-[#8bffd7]/90 hover:bg-[#00ff9d]/18 hover:text-[#c5ffea]"
                 >
                     <History size={14} />
                     <span>Lịch sử chỉnh sửa</span>
@@ -115,53 +180,7 @@ export function WikiArticleMeta({
                 </button>
             </div>
 
-            <div
-                id={panelId}
-                aria-hidden={!isHistoryOpen}
-                className={cn(
-                    "rounded-2xl border border-[#00ff9d]/20 bg-white/5 p-4 shadow-[0_0_30px_rgba(0,255,157,0.06)] backdrop-blur-md sm:p-5",
-                    !isHistoryOpen && "hidden"
-                )}
-            >
-                    {formattedHistory.length > 0 ? (
-                        <div className="overflow-x-auto">
-                            <table className="w-full min-w-[640px] border-collapse border border-white/10 text-left">
-                                <thead className="bg-[#00ff9d]/10">
-                                    <tr className="border-b border-white/10">
-                                        <th className="border border-white/10 px-4 py-3 text-xs font-bold uppercase tracking-[0.14em] text-[#bfffe6]">
-                                            Thời gian
-                                        </th>
-                                        <th className="border border-white/10 px-4 py-3 text-xs font-bold uppercase tracking-[0.14em] text-[#bfffe6]">
-                                            Người chỉnh sửa
-                                        </th>
-                                        <th className="border border-white/10 px-4 py-3 text-xs font-bold uppercase tracking-[0.14em] text-[#bfffe6]">
-                                            Lí do chỉnh sửa
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-white/10">
-                                    {formattedHistory.map((entry) => (
-                                        <tr key={`${entry.edited_at}-${entry.editor_username}-${entry.edit_reason}`} className="border-b border-white/10">
-                                            <td className="border border-white/10 px-4 py-3 align-top text-sm text-white/90">
-                                                {entry.formattedEditedAt}
-                                            </td>
-                                            <td className="border border-white/10 px-4 py-3 align-top text-sm font-semibold text-white">
-                                                {entry.displayEditor}
-                                            </td>
-                                            <td className="border border-white/10 px-4 py-3 align-top text-sm text-white/85">
-                                                {entry.edit_reason}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    ) : (
-                        <p className="rounded-xl border border-dashed border-white/10 bg-black/10 px-4 py-5 text-sm text-white/70">
-                            Chưa có lịch sử chỉnh sửa.
-                        </p>
-                    )}
-            </div>
+            <WikiEditHistoryPanel panelId={panelId} isOpen={isHistoryOpen} history={formattedHistory} />
         </div>
     );
 }
