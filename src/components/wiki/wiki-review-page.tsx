@@ -8,7 +8,7 @@ import { NeonButton } from "@/components/ui/neon-button";
 import { LoadingScreen } from "@/components/ui/loading-screen";
 import { AuthorRoleBadge } from "@/components/wiki/author-role-badge";
 
-type SubmissionStatus = "pending" | "approved" | "rejected";
+type SubmissionStatus = "pending" | "rejected";
 
 interface WikiSubmission {
     id: number;
@@ -25,7 +25,6 @@ interface WikiSubmission {
     review_notes?: string | null;
     reviewed_by?: string | null;
     reviewed_at?: string | null;
-    published_post_slug?: string | null;
     created_at: string;
     author_details?: {
         display_name?: string | null;
@@ -35,7 +34,6 @@ interface WikiSubmission {
 
 const FILTERS: Array<{ label: string; value: SubmissionStatus | "all" }> = [
     { label: "Chờ duyệt", value: "pending" },
-    { label: "Đã duyệt", value: "approved" },
     { label: "Đã từ chối", value: "rejected" },
     { label: "Tất cả", value: "all" },
 ];
@@ -88,7 +86,6 @@ export function WikiReviewPage({ dashboardUrl }: { dashboardUrl: string | null }
     const summary = useMemo(() => {
         return {
             pending: submissions.filter((item) => item.status === "pending").length,
-            approved: submissions.filter((item) => item.status === "approved").length,
             rejected: submissions.filter((item) => item.status === "rejected").length,
         };
     }, [submissions]);
@@ -142,7 +139,7 @@ export function WikiReviewPage({ dashboardUrl }: { dashboardUrl: string | null }
                         </span>
                     </div>
                     <p className="max-w-3xl text-white/60">
-                        Bài do MEMBER gửi sẽ nằm trong bảng <code>wiki_submissions</code> trên Supabase cho tới khi được duyệt.
+                        Bài do MEMBER gửi sẽ nằm trong bảng <code>wiki_submissions</code> khi đang chờ duyệt. Sau khi Admin duyệt và đăng bài, bản ghi chờ duyệt sẽ được xóa tự động để giảm dữ liệu tồn đọng.
                     </p>
                 </div>
 
@@ -169,9 +166,8 @@ export function WikiReviewPage({ dashboardUrl }: { dashboardUrl: string | null }
                 </div>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-2">
                 <SummaryCard label="Đang chờ duyệt" value={summary.pending} tone="pending" />
-                <SummaryCard label="Đã duyệt trong bộ lọc" value={summary.approved} tone="approved" />
                 <SummaryCard label="Đã từ chối trong bộ lọc" value={summary.rejected} tone="rejected" />
             </div>
 
@@ -222,15 +218,6 @@ export function WikiReviewPage({ dashboardUrl }: { dashboardUrl: string | null }
                                         <h2 className="text-2xl font-bold text-white">{submission.title}</h2>
                                         <p className="max-w-4xl text-sm leading-7 text-white/70">{submission.excerpt}</p>
                                     </div>
-
-                                    {submission.published_post_slug && (
-                                        <Link
-                                            href={`/wiki/${submission.published_post_slug}`}
-                                            className="rounded-xl border border-accent-primary/20 bg-accent-primary/10 px-4 py-3 text-sm font-semibold text-accent-primary hover:bg-accent-primary/15"
-                                        >
-                                            Xem bài đã đăng
-                                        </Link>
-                                    )}
                                 </div>
 
                                 <div className="grid gap-3 text-sm text-white/60 md:grid-cols-3">
@@ -317,11 +304,10 @@ function SummaryCard({
 }: {
     label: string;
     value: number;
-    tone: "pending" | "approved" | "rejected";
+    tone: "pending" | "rejected";
 }) {
     const toneClassName = {
         pending: "text-amber-300 border-amber-400/20 bg-amber-400/10",
-        approved: "text-emerald-300 border-emerald-400/20 bg-emerald-400/10",
         rejected: "text-red-300 border-red-400/20 bg-red-400/10",
     }[tone];
 
@@ -339,10 +325,6 @@ function StatusBadge({ status }: { status: SubmissionStatus }) {
             label: "Chờ duyệt",
             className: "border-amber-400/20 bg-amber-400/10 text-amber-300",
         },
-        approved: {
-            label: "Đã duyệt",
-            className: "border-emerald-400/20 bg-emerald-400/10 text-emerald-300",
-        },
         rejected: {
             label: "Đã từ chối",
             className: "border-red-400/20 bg-red-400/10 text-red-300",
@@ -355,4 +337,3 @@ function StatusBadge({ status }: { status: SubmissionStatus }) {
         </span>
     );
 }
-

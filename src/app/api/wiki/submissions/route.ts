@@ -127,20 +127,14 @@ export async function PATCH(req: Request) {
             return NextResponse.json({ success: false, error: insertError.message }, { status: 500 });
         }
 
-        const { error: updateSubmissionError } = await supabase
+        const { error: deleteSubmissionError } = await supabase
             .from("wiki_submissions")
-            .update({
-                status: "approved",
-                review_notes: normalizedReviewNotes,
-                reviewed_by: session.username,
-                reviewed_at: new Date().toISOString(),
-                published_post_slug: publishedPost.slug,
-            })
+            .delete()
             .eq("id", id);
 
-        if (updateSubmissionError) {
+        if (deleteSubmissionError) {
             await supabase.from("wiki_posts").delete().eq("slug", publishedPost.slug);
-            return NextResponse.json({ success: false, error: updateSubmissionError.message }, { status: 500 });
+            return NextResponse.json({ success: false, error: deleteSubmissionError.message }, { status: 500 });
         }
 
         revalidatePath("/wiki");

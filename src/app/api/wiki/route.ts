@@ -40,7 +40,7 @@ async function hasSlugConflict(slug: string) {
             .from("wiki_submissions")
             .select("id")
             .eq("slug", slug)
-            .in("status", ["pending", "approved"])
+            .eq("status", "pending")
             .maybeSingle(),
     ]);
 
