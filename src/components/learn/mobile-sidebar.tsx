@@ -31,7 +31,12 @@ export function MobileSidebar({ courses, isAdmin = false }: { courses: CourseWit
                     }`}
             >
                 <div className="h-full overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-                    <LearnSidebar courses={courses} isAdmin={isAdmin} />
+                    <LearnSidebar
+                        courses={courses}
+                        isAdmin={isAdmin}
+                        className="block w-full"
+                        collapsible={false}
+                    />
                 </div>
             </div>
         </>
