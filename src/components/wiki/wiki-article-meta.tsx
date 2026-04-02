@@ -115,56 +115,48 @@ export function WikiArticleMeta({
                 </button>
             </div>
 
-            <div
-                id={panelId}
-                className={cn(
-                    "grid transition-[grid-template-rows,opacity] duration-300 ease-out",
-                    isHistoryOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
-                )}
-            >
-                <div className="overflow-hidden">
-                    <div className="rounded-2xl border border-[#00ff9d]/20 bg-white/5 p-4 shadow-[0_0_30px_rgba(0,255,157,0.06)] backdrop-blur-md sm:p-5">
-                        {formattedHistory.length > 0 ? (
-                            <div className="overflow-x-auto">
-                                <table className="w-full min-w-[640px] border-collapse border border-white/10 text-left">
-                                    <thead className="bg-[#00ff9d]/10">
-                                        <tr className="border-b border-white/10">
-                                            <th className="border border-white/10 px-4 py-3 text-xs font-bold uppercase tracking-[0.14em] text-[#bfffe6]">
-                                                Thời gian
-                                            </th>
-                                            <th className="border border-white/10 px-4 py-3 text-xs font-bold uppercase tracking-[0.14em] text-[#bfffe6]">
-                                                Người chỉnh sửa
-                                            </th>
-                                            <th className="border border-white/10 px-4 py-3 text-xs font-bold uppercase tracking-[0.14em] text-[#bfffe6]">
-                                                Lí do chỉnh sửa
-                                            </th>
+            {isHistoryOpen && (
+                <div id={panelId} className="rounded-2xl border border-[#00ff9d]/20 bg-white/5 p-4 shadow-[0_0_30px_rgba(0,255,157,0.06)] backdrop-blur-md sm:p-5">
+                    {formattedHistory.length > 0 ? (
+                        <div className="overflow-x-auto">
+                            <table className="w-full min-w-[640px] border-collapse border border-white/10 text-left">
+                                <thead className="bg-[#00ff9d]/10">
+                                    <tr className="border-b border-white/10">
+                                        <th className="border border-white/10 px-4 py-3 text-xs font-bold uppercase tracking-[0.14em] text-[#bfffe6]">
+                                            Thời gian
+                                        </th>
+                                        <th className="border border-white/10 px-4 py-3 text-xs font-bold uppercase tracking-[0.14em] text-[#bfffe6]">
+                                            Người chỉnh sửa
+                                        </th>
+                                        <th className="border border-white/10 px-4 py-3 text-xs font-bold uppercase tracking-[0.14em] text-[#bfffe6]">
+                                            Lí do chỉnh sửa
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-white/10">
+                                    {formattedHistory.map((entry) => (
+                                        <tr key={`${entry.edited_at}-${entry.editor_username}-${entry.edit_reason}`} className="border-b border-white/10">
+                                            <td className="border border-white/10 px-4 py-3 align-top text-sm text-white/90">
+                                                {entry.formattedEditedAt}
+                                            </td>
+                                            <td className="border border-white/10 px-4 py-3 align-top text-sm font-semibold text-white">
+                                                {entry.displayEditor}
+                                            </td>
+                                            <td className="border border-white/10 px-4 py-3 align-top text-sm text-white/85">
+                                                {entry.edit_reason}
+                                            </td>
                                         </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-white/10">
-                                        {formattedHistory.map((entry) => (
-                                            <tr key={`${entry.edited_at}-${entry.editor_username}-${entry.edit_reason}`} className="border-b border-white/10">
-                                                <td className="border border-white/10 px-4 py-3 align-top text-sm text-white/90">
-                                                    {entry.formattedEditedAt}
-                                                </td>
-                                                <td className="border border-white/10 px-4 py-3 align-top text-sm font-semibold text-white">
-                                                    {entry.displayEditor}
-                                                </td>
-                                                <td className="border border-white/10 px-4 py-3 align-top text-sm text-white/85">
-                                                    {entry.edit_reason}
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        ) : (
-                            <p className="rounded-xl border border-dashed border-white/10 bg-black/10 px-4 py-5 text-sm text-white/70">
-                                Chưa có lịch sử chỉnh sửa.
-                            </p>
-                        )}
-                    </div>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    ) : (
+                        <p className="rounded-xl border border-dashed border-white/10 bg-black/10 px-4 py-5 text-sm text-white/70">
+                            Chưa có lịch sử chỉnh sửa.
+                        </p>
+                    )}
                 </div>
-            </div>
+            )}
         </div>
     );
 }
