@@ -10,6 +10,7 @@ import { WikiImage } from "@/components/wiki/wiki-image";
 import { MarkdownRenderer } from '@/components/markdown/markdown-renderer';
 import { parseLearnLessonContent } from '@/lib/learn-toc';
 import { LessonContentLayout } from '@/components/learn/lesson-content-layout';
+import { LessonScrollReset } from '@/components/learn/lesson-scroll-reset';
 
 interface PageProps {
     params: Promise<{
@@ -32,6 +33,7 @@ export default async function LessonPage({ params }: PageProps) {
     return (
         <LessonContentLayout tocItems={parsedLessonContent.tocItems}>
             <div className="max-w-none relative z-10 w-full">
+                <LessonScrollReset />
                 <HistoryTracker
                     type="lesson"
                     isLoggedIn={isLoggedIn}
