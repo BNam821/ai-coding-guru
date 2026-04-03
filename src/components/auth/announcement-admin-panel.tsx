@@ -64,6 +64,19 @@ export function AnnouncementAdminPanel() {
         void loadAnnouncements();
     }, []);
 
+    useEffect(() => {
+        if (!feedback && !error) {
+            return;
+        }
+
+        const timeoutId = window.setTimeout(() => {
+            setFeedback(null);
+            setError(null);
+        }, 5000);
+
+        return () => window.clearTimeout(timeoutId);
+    }, [feedback, error]);
+
     const resetFeedback = () => {
         setFeedback(null);
         setError(null);
