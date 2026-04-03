@@ -22,6 +22,7 @@ export function AnnouncementWidget() {
     const [announcements, setAnnouncements] = useState<SiteAnnouncement[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [logoSrc, setLogoSrc] = useState("/announcement_logo.png");
 
     useEffect(() => {
         let isMounted = true;
@@ -142,11 +143,12 @@ export function AnnouncementWidget() {
                 <span className="absolute inset-0 rounded-full bg-white/15 opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
                 <span className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border border-black/10 bg-white/15 shadow-inner">
                     <Image
-                        src="/announcement_logo.png"
+                        src={logoSrc}
                         alt="Logo thông báo"
                         width={34}
                         height={34}
                         className="h-8 w-8 object-contain"
+                        onError={() => setLogoSrc("/real_logo.png")}
                     />
                 </span>
                 <span className="absolute right-1.5 top-1.5 h-3.5 w-3.5 rounded-full bg-red-500 shadow-[0_0_16px_rgba(239,68,68,0.9)]" />
