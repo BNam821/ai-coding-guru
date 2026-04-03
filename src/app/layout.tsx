@@ -7,6 +7,7 @@ export const metadata: Metadata = {
 };
 
 import { Navbar } from "@/components/ui/navbar";
+import { AnnouncementWidget } from "@/components/ui/announcement-widget";
 import { Footer } from "@/components/ui/footer";
 
 export default function RootLayout({
@@ -24,6 +25,7 @@ export default function RootLayout({
           <main className="flex-1">
             {children}
           </main>
+          <AnnouncementWidget />
           <Footer />
         </div>
       </body>

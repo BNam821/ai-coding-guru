@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { AnnouncementAdminPanel } from "@/components/auth/announcement-admin-panel";
 import { GlassCard } from "@/components/ui/glass-card";
 import { LogoutButton } from "@/components/auth/logout-button";
 import { EditProfileForm } from "@/components/auth/edit-profile-form";
@@ -143,6 +144,8 @@ export function AccountContent({ session, stats, isReadOnly = false }: AccountCo
                     </>
                 )}
             </GlassCard>
+
+            {!isEditing && !isReadOnly && isAdmin && <AnnouncementAdminPanel />}
 
             {!isEditing && !isReadOnly && <DeleteAccountSection />}
         </div>
