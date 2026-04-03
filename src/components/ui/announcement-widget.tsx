@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import { Megaphone, X } from "lucide-react";
+import { MarkdownRenderer } from "@/components/markdown/markdown-renderer";
 import { cn } from "@/lib/utils";
 import type { SiteAnnouncement } from "@/lib/announcements";
 
@@ -116,9 +117,13 @@ export function AnnouncementWidget() {
                                             <Megaphone className="h-3.5 w-3.5" />
                                             <span>Thông báo {index + 1}</span>
                                         </div>
-                                        <p className="whitespace-pre-wrap text-sm leading-6 text-white/85">
-                                            {announcement.message}
-                                        </p>
+                                        <div className="prose prose-invert prose-sm max-w-none text-white/85">
+                                            <MarkdownRenderer
+                                                content={announcement.message}
+                                                mode="safe"
+                                                preserveWikiTips
+                                            />
+                                        </div>
                                         <p className="mt-3 text-xs text-white/40">
                                             Cập nhật: {formatAnnouncementTime(announcement.updated_at)}
                                         </p>

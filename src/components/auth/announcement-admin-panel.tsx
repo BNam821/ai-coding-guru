@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Edit3, LoaderCircle, Plus, Save, Trash2, X } from "lucide-react";
+import { MarkdownRenderer } from "@/components/markdown/markdown-renderer";
 import { GlassCard } from "@/components/ui/glass-card";
 import {
     ANNOUNCEMENT_LIMIT,
@@ -208,6 +209,24 @@ export function AnnouncementAdminPanel() {
                         Bạn đã đạt giới hạn 2 thông báo. Hãy xóa bớt hoặc sửa thông báo hiện có trước khi thêm mới.
                     </p>
                 )}
+                <div className="mt-5 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+                    <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-white/45">
+                        Xem trước Markdown
+                    </p>
+                    {draftMessage.trim() ? (
+                        <div className="prose prose-invert prose-sm max-w-none text-white/85">
+                            <MarkdownRenderer
+                                content={draftMessage}
+                                mode="safe"
+                                preserveWikiTips
+                            />
+                        </div>
+                    ) : (
+                        <p className="text-sm text-white/40">
+                            Nhập nội dung để xem trước markdown như ở trang wiki.
+                        </p>
+                    )}
+                </div>
             </div>
 
             {(feedback || error) && (
@@ -303,17 +322,41 @@ export function AnnouncementAdminPanel() {
                                 </div>
 
                                 {isEditing ? (
-                                    <textarea
-                                        value={editingMessage}
-                                        onChange={(event) => setEditingMessage(event.target.value)}
-                                        rows={4}
-                                        maxLength={ANNOUNCEMENT_MAX_LENGTH}
-                                        className="mt-4 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition-colors focus:border-accent-secondary/40"
-                                    />
+                                    <>
+                                        <textarea
+                                            value={editingMessage}
+                                            onChange={(event) => setEditingMessage(event.target.value)}
+                                            rows={4}
+                                            maxLength={ANNOUNCEMENT_MAX_LENGTH}
+                                            className="mt-4 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition-colors focus:border-accent-secondary/40"
+                                        />
+                                        <div className="mt-4 rounded-2xl border border-white/10 bg-black/20 p-4">
+                                            <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-white/45">
+                                                Xem trước Markdown
+                                            </p>
+                                            {editingMessage.trim() ? (
+                                                <div className="prose prose-invert prose-sm max-w-none text-white/85">
+                                                    <MarkdownRenderer
+                                                        content={editingMessage}
+                                                        mode="safe"
+                                                        preserveWikiTips
+                                                    />
+                                                </div>
+                                            ) : (
+                                                <p className="text-sm text-white/40">
+                                                    Nội dung trống.
+                                                </p>
+                                            )}
+                                        </div>
+                                    </>
                                 ) : (
-                                    <p className="mt-4 whitespace-pre-wrap text-sm leading-6 text-white/80">
-                                        {announcement.message}
-                                    </p>
+                                    <div className="prose prose-invert prose-sm mt-4 max-w-none text-white/80">
+                                        <MarkdownRenderer
+                                            content={announcement.message}
+                                            mode="safe"
+                                            preserveWikiTips
+                                        />
+                                    </div>
                                 )}
                             </div>
                         );
