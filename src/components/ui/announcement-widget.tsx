@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Bell, Megaphone, X } from "lucide-react";
+import Image from "next/image";
+import { Megaphone, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { SiteAnnouncement } from "@/lib/announcements";
 
@@ -21,11 +22,6 @@ export function AnnouncementWidget() {
     const [announcements, setAnnouncements] = useState<SiteAnnouncement[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-
-    const unreadCount = useMemo(
-        () => Math.min(announcements.length, 2),
-        [announcements.length]
-    );
 
     useEffect(() => {
         let isMounted = true;
@@ -144,13 +140,17 @@ export function AnnouncementWidget() {
                 )}
             >
                 <span className="absolute inset-0 rounded-full bg-white/15 opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
-                <Bell className="relative h-7 w-7" />
-
-                {unreadCount > 0 && (
-                    <span className="absolute -right-1 -top-1 flex h-6 min-w-6 items-center justify-center rounded-full border border-black/10 bg-red-500 px-1 text-xs font-semibold text-white">
-                        {unreadCount}
-                    </span>
-                )}
+                <span className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border border-black/10 bg-white/15 shadow-inner">
+                    <Image
+                        src="/announcement_logo.png"
+                        alt="Logo thông báo"
+                        width={34}
+                        height={34}
+                        className="h-8 w-8 object-contain"
+                    />
+                </span>
+                <span className="absolute right-1.5 top-1.5 h-3.5 w-3.5 rounded-full bg-red-500 shadow-[0_0_16px_rgba(239,68,68,0.9)]" />
+                <span className="absolute right-1.5 top-1.5 h-3.5 w-3.5 animate-ping rounded-full bg-red-400/70" />
             </button>
         </div>
     );
