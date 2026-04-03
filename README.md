@@ -26,7 +26,7 @@ Sản phẩm này là bài dự thi của nhóm Cẩm Phả 8 - Trường THPT C
 
 - Vũ Hoàng Nam (Lớp 10A5): _xây dựng tính năng kèm các nội dung học liệu của sản phẩm._
 
-- Trần Minh Đức (Lớp 10A5): _thu thập và sáng tạo nội dung đa phương tiện (hình ảnh, logo,..)._
+- Phạm Tú Trinh (Lớp 10A5): _thu thập và sáng tạo nội dung đa phương tiện (hình ảnh, logo,..)._
 
 ###### Dự án này được phát triển chủ yếu dựa trên [Google Antigravity](https://antigravity.google/), [Gemini](https://gemini.google.com/) và [OpenAI Codex](https://openai.com/codex/) cùng một số công cụ hỗ trợ khác. Do đó, một số nội dung chưa được triển khai và tối ưu đúng cách. Nhóm Cẩm Phả 8 sẽ tiếp tục phát triển và đưa ra các bản cập nhật trong thời gian sắp tới.
 
