@@ -183,19 +183,6 @@ export function LessonAiQuestionCard({
                         <div className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.22em] text-white/55">
                             Mục {section.index}
                         </div>
-                        {result && (
-                            <div
-                                className={cn(
-                                    "inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em]",
-                                    result === "correct"
-                                        ? "border border-emerald-400/30 bg-emerald-500/15 text-emerald-300"
-                                        : "border border-rose-400/30 bg-rose-500/15 text-rose-300"
-                                )}
-                            >
-                                {result === "correct" ? <CheckCircle2 size={14} /> : <XCircle size={14} />}
-                                {getResultText(result)}
-                            </div>
-                        )}
                     </div>
                 </div>
 
@@ -315,13 +302,37 @@ export function LessonAiQuestionCard({
                                 >
                                     Kiểm tra
                                 </NeonButton>
-                                <NeonButton type="button" variant="outline" onClick={() => setShowAnswer((current) => !current)} icon={<Eye size={16} />}>
-                                    {showAnswer ? "Ẩn đáp án" : "Xem đáp án"}
-                                </NeonButton>
                                 <NeonButton type="button" variant="ghost" onClick={handleRetry} icon={<RotateCcw size={16} />}>
                                     Sinh lại
                                 </NeonButton>
                             </div>
+
+                            {result && (
+                                <div className="flex flex-wrap items-center gap-3">
+                                    <div
+                                        className={cn(
+                                            "inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em]",
+                                            result === "correct"
+                                                ? "border border-emerald-400/30 bg-emerald-500/15 text-emerald-300"
+                                                : "border border-rose-400/30 bg-rose-500/15 text-rose-300"
+                                        )}
+                                    >
+                                        {result === "correct" ? <CheckCircle2 size={14} /> : <XCircle size={14} />}
+                                        {getResultText(result)}
+                                    </div>
+
+                                    {result === "incorrect" && (
+                                        <NeonButton
+                                            type="button"
+                                            variant="outline"
+                                            onClick={() => setShowAnswer((current) => !current)}
+                                            icon={<Eye size={16} />}
+                                        >
+                                            {showAnswer ? "Ẩn đáp án" : "Xem đáp án"}
+                                        </NeonButton>
+                                    )}
+                                </div>
+                            )}
 
                             <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
                                 <p className="mb-2 text-xs font-bold uppercase tracking-[0.22em] text-white/55">Gợi ý</p>
