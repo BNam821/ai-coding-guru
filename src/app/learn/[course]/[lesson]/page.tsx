@@ -11,6 +11,7 @@ import { MarkdownRenderer } from '@/components/markdown/markdown-renderer';
 import { parseLearnLessonContent } from '@/lib/learn-toc';
 import { LessonContentLayout } from '@/components/learn/lesson-content-layout';
 import { LessonScrollReset } from '@/components/learn/lesson-scroll-reset';
+import { LessonAiQuestionCard } from '@/components/learn/lesson-ai-question-card';
 
 interface PageProps {
     params: Promise<{
@@ -86,11 +87,43 @@ export default async function LessonPage({ params }: PageProps) {
                         Bài {lesson.order}: {lesson.title}
                     </h1>
 
-                    <MarkdownRenderer
-                        content={parsedLessonContent.content}
-                        mode="full"
-                        imageComponent={WikiImage}
-                    />
+                    {parsedLessonContent.sections.length === 0 ? (
+                        <MarkdownRenderer
+                            content={parsedLessonContent.content}
+                            mode="full"
+                            imageComponent={WikiImage}
+                        />
+                    ) : (
+                        <>
+                            {parsedLessonContent.intro ? (
+                                <MarkdownRenderer
+                                    content={parsedLessonContent.intro}
+                                    mode="full"
+                                    imageComponent={WikiImage}
+                                />
+                            ) : null}
+
+                            {parsedLessonContent.sections.map((section) => (
+                                <div key={section.id}>
+                                    <MarkdownRenderer
+                                        content={section.content}
+                                        mode="full"
+                                        imageComponent={WikiImage}
+                                    />
+
+                                    <div className="not-prose my-8">
+                                        <LessonAiQuestionCard
+                                            courseSlug={courseSlug}
+                                            lessonSlug={lessonSlug}
+                                            lessonTitle={lesson.title}
+                                            section={section}
+                                            autoGenerate={section.index <= 2}
+                                        />
+                                    </div>
+                                </div>
+                            ))}
+                        </>
+                    )}
                 </article>
 
 
