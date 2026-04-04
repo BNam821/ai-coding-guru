@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "AI Coding Guru | THPT Cẩm Phả",
-  description: "Trải nghiệm học lập trình cùng AI với phong cách Dark Space Futuristic.",
+  description: "Sản phẩm dự thi AI Young Guru - Nhóm Cẩm Phả 8, trường THPT Cẩm Phả.",
 };
 
 import { Navbar } from "@/components/ui/navbar";
