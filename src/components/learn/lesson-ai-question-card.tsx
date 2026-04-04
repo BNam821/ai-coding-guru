@@ -238,23 +238,11 @@ export function LessonAiQuestionCard({
 
                     {status === "ready" && question && (
                         <div className="space-y-6">
-                            <div className="space-y-3">
-                                <h3 className="text-2xl font-bold text-white">{question.title}</h3>
-                                <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-                                    <MarkdownRenderer content={question.instruction} mode="safe" />
-                                </div>
-                            </div>
-
                             {question.questionType === "code_completion" ? (
                                 <div className="space-y-5">
-                                    <div className="grid gap-4 md:grid-cols-2">
-                                        <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                                            <p className="mb-2 text-xs font-bold uppercase tracking-[0.22em] text-cyan-300">Input</p>
-                                            <MarkdownRenderer content={question.inputDescription} mode="safe" />
-                                        </div>
-                                        <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                                            <p className="mb-2 text-xs font-bold uppercase tracking-[0.22em] text-emerald-300">Output</p>
-                                            <MarkdownRenderer content={question.outputDescription} mode="safe" />
+                                    <div className="space-y-3">
+                                        <div className="text-xl font-bold text-white [&_.markdown-content>p]:mb-0 [&_.markdown-content]:leading-relaxed">
+                                            <MarkdownRenderer content={question.instruction} mode="safe" />
                                         </div>
                                     </div>
 
@@ -264,6 +252,17 @@ export function LessonAiQuestionCard({
                                             content={buildMarkdownCodeBlock(question.language, question.templateCode)}
                                             mode="safe"
                                         />
+                                    </div>
+
+                                    <div className="grid gap-4 md:grid-cols-2">
+                                        <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                                            <p className="mb-2 text-xs font-bold uppercase tracking-[0.22em] text-cyan-300">Input</p>
+                                            <MarkdownRenderer content={question.inputDescription} mode="safe" />
+                                        </div>
+                                        <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                                            <p className="mb-2 text-xs font-bold uppercase tracking-[0.22em] text-emerald-300">Output</p>
+                                            <MarkdownRenderer content={question.outputDescription} mode="safe" />
+                                        </div>
                                     </div>
 
                                     <div className="space-y-3">
@@ -280,6 +279,13 @@ export function LessonAiQuestionCard({
                                 </div>
                             ) : (
                                 <div className="space-y-5">
+                                    <div className="space-y-3">
+                                        <h3 className="text-2xl font-bold text-white">{question.title}</h3>
+                                        <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                                            <MarkdownRenderer content={question.instruction} mode="safe" />
+                                        </div>
+                                    </div>
+
                                     <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
                                         <MarkdownRenderer content={question.question} mode="safe" />
                                     </div>
