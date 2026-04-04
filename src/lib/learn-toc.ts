@@ -46,12 +46,14 @@ function trimBlankLines(value: string) {
     return value.replace(/^\s*\n+/, '').replace(/\n+\s*$/, '').trim();
 }
 
-function slugifyHeading(value: string) {
-    const normalized = value
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
+function slugifyHeading(value: string, stripDiacritics = false) {
+    const normalizedValue = stripDiacritics
+        ? value.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        : value;
+
+    const normalized = normalizedValue
         .toLowerCase()
-        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/[^\p{Letter}\p{Number}\s-]/gu, '')
         .trim()
         .replace(/\s+/g, '-')
         .replace(/-+/g, '-')
@@ -86,11 +88,50 @@ function getUniqueSectionId(baseId: string, seenIds: Map<string, number>, fallba
     return `${normalizedBase}-${count + 1}`;
 }
 
-function splitLearnLessonSections(content: string): Pick<ParsedLearnLessonContent, 'intro' | 'sections'> {
+function getHeadingIdCandidates(rawHeading: string) {
+    const cleanedHeading = cleanHeadingText(rawHeading);
+    const explicitId = rawHeading.match(EXPLICIT_HEADING_ID_PATTERN)?.[1]?.trim();
+    const candidates = [
+        explicitId,
+        slugifyHeading(cleanedHeading, false),
+        slugifyHeading(cleanedHeading, true),
+    ].filter((value): value is string => Boolean(value));
+
+    return Array.from(new Set(candidates));
+}
+
+function findMatchingTocItem(
+    rawHeading: string,
+    tocMap: Map<string, LearnTocItem>,
+    matchedSectionIds: Set<string>
+) {
+    for (const candidateId of getHeadingIdCandidates(rawHeading)) {
+        const matchedItem = tocMap.get(candidateId);
+
+        if (matchedItem && !matchedSectionIds.has(matchedItem.id)) {
+            return matchedItem;
+        }
+    }
+
+    return null;
+}
+
+function splitLearnLessonSections(
+    content: string,
+    tocItems: LearnTocItem[]
+): Pick<ParsedLearnLessonContent, 'intro' | 'sections'> {
+    if (tocItems.length === 0) {
+        return {
+            intro: trimBlankLines(content),
+            sections: [],
+        };
+    }
+
     const lines = content.split(/\r?\n/);
     const sections: LearnLessonSection[] = [];
-    const seenIds = new Map<string, number>();
     const introLines: string[] = [];
+    const tocMap = new Map(tocItems.map((item) => [item.id, item]));
+    const matchedSectionIds = new Set<string>();
 
     let currentSectionLines: string[] | null = null;
     let currentHeading = '';
@@ -135,20 +176,20 @@ function splitLearnLessonSections(content: string): Pick<ParsedLearnLessonConten
         }
 
         const headingMatch = !currentFenceToken ? line.match(HEADING_PATTERN) : null;
-        const headingLevel = headingMatch?.[1] || '';
 
-        if (headingMatch && headingLevel === '##') {
-            flushCurrentSection();
-
+        if (headingMatch) {
             const rawHeading = headingMatch[2] || '';
-            const explicitIdMatch = rawHeading.match(EXPLICIT_HEADING_ID_PATTERN);
-            const heading = cleanHeadingText(rawHeading);
-            const baseId = explicitIdMatch?.[1]?.trim() || slugifyHeading(heading);
+            const matchedTocItem = findMatchingTocItem(rawHeading, tocMap, matchedSectionIds);
 
-            currentHeading = heading;
-            currentSectionId = getUniqueSectionId(baseId, seenIds, sections.length + 1);
-            currentSectionLines = [line];
-            continue;
+            if (matchedTocItem) {
+                flushCurrentSection();
+
+                currentHeading = cleanHeadingText(rawHeading) || matchedTocItem.label;
+                currentSectionId = matchedTocItem.id || getUniqueSectionId('', new Map(), sections.length + 1);
+                currentSectionLines = [line];
+                matchedSectionIds.add(matchedTocItem.id);
+                continue;
+            }
         }
 
         if (currentSectionLines) {
@@ -169,14 +210,13 @@ function splitLearnLessonSections(content: string): Pick<ParsedLearnLessonConten
 
 export function parseLearnLessonContent(content: string): ParsedLearnLessonContent {
     const cleanedContent = cleanContent(content);
-    const sectionData = splitLearnLessonSections(cleanedContent);
     const markerMatch = LEARN_TOC_MARKER_SINGLE_PATTERN.exec(content);
 
     if (!markerMatch || typeof markerMatch.index !== 'number') {
         return {
             content: cleanedContent,
-            intro: sectionData.intro,
-            sections: sectionData.sections,
+            intro: trimBlankLines(cleanedContent),
+            sections: [],
             tocItems: [],
             hasMarkedToc: false,
         };
@@ -196,8 +236,8 @@ export function parseLearnLessonContent(content: string): ParsedLearnLessonConte
     if (!headingMatch || normalizeHeadingText(headingMatch[2] || '') !== 'mục lục') {
         return {
             content: cleanedContent,
-            intro: sectionData.intro,
-            sections: sectionData.sections,
+            intro: trimBlankLines(cleanedContent),
+            sections: [],
             tocItems: [],
             hasMarkedToc: true,
         };
@@ -243,6 +283,8 @@ export function parseLearnLessonContent(content: string): ParsedLearnLessonConte
 
         index += 1;
     }
+
+    const sectionData = splitLearnLessonSections(cleanedContent, tocItems);
 
     return {
         content: cleanedContent,
