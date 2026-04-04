@@ -152,7 +152,7 @@ export function AnnouncementWidget() {
                         alt="Logo thông báo"
                         width={34}
                         height={34}
-                        className="h-10 w-10 object-contain"
+                        className="h-15 w-15 object-contain"
                         onError={() => setLogoSrc("/real_logo.png")}
                     />
                 </span>
