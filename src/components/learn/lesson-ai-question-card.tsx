@@ -176,8 +176,8 @@ export function LessonAiQuestionCard({
             <GlassCard className="border-yellow-400/15 bg-gradient-to-br from-yellow-400/10 via-white/5 to-cyan-400/5 p-0" hoverEffect={false}>
                 <div className="border-b border-white/10 px-6 py-4">
                     <div className="flex flex-wrap items-center gap-3">
-                        <div className="inline-flex items-center gap-2 rounded-full border border-yellow-400/25 bg-yellow-400/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.24em] text-yellow-300">
-                            <BrainCircuit size={14} />
+                        <div className="inline-flex items-center gap-1.5 rounded-full border border-yellow-400/25 bg-yellow-400/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.16em] text-yellow-300">
+                            <BrainCircuit size={10} />
                             Câu hỏi từ AI
                         </div>
                         <div className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.22em] text-white/55">
@@ -202,18 +202,13 @@ export function LessonAiQuestionCard({
                 <div className="space-y-5 px-6 py-6">
                     {(status === "idle" || status === "prefetch-pending") && (
                         <div className="space-y-4">
-                            <div className="space-y-2">
-                                <h3 className="text-xl font-bold text-white">
-                                    {autoGenerate ? "Phần này sẽ tự sinh câu hỏi khi bạn cuộn tới đây." : "Muốn tự kiểm tra phần này?"}
-                                </h3>
-                                <p className="max-w-2xl text-sm leading-7 text-white/70">
-                                    AI sẽ chỉ dùng nội dung của mục <span className="font-semibold text-white/90">{section.heading}</span> để tạo 1 câu hỏi phù hợp, giúp tiết kiệm token và bám sát phần kiến thức bạn vừa đọc.
-                                </p>
-                            </div>
+                            <h3 className="text-xl font-bold text-white">
+                                {autoGenerate ? "Phần này sẽ tự sinh câu hỏi khi bạn cuộn tới đây." : "Muốn tự kiểm tra phần này?"}
+                            </h3>
 
                             {!autoGenerate && (
                                 <NeonButton type="button" variant="secondary" onClick={handleManualGenerate} icon={<Sparkles size={16} />}>
-                                    Câu hỏi từ AI
+                                    Tạo câu hỏi
                                 </NeonButton>
                             )}
                         </div>
