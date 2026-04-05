@@ -30,6 +30,7 @@ export default async function LessonPage({ params }: PageProps) {
     }
 
     const parsedLessonContent = parseLearnLessonContent(lesson.content || '*Nội dung đang được cập nhật...*');
+    const shouldRenderAiQuestions = Boolean(lesson.ai_question_enabled) && parsedLessonContent.sections.length > 0;
 
     return (
         <LessonContentLayout tocItems={parsedLessonContent.tocItems}>
@@ -87,7 +88,7 @@ export default async function LessonPage({ params }: PageProps) {
                         Bài {lesson.order}: {lesson.title}
                     </h1>
 
-                    {parsedLessonContent.sections.length === 0 ? (
+                    {!shouldRenderAiQuestions ? (
                         <MarkdownRenderer
                             content={parsedLessonContent.content}
                             mode="full"

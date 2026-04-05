@@ -10,7 +10,7 @@ export async function POST(req: Request) {
     }
 
     try {
-        const { title, slug, content, chapter_id, order } = await req.json();
+        const { title, slug, content, chapter_id, order, ai_question_enabled } = await req.json();
 
         // Validate required fields
         if (!title || !slug || !chapter_id) {
@@ -19,7 +19,14 @@ export async function POST(req: Request) {
 
         const { data, error } = await supabase
             .from("lessons")
-            .insert([{ title, slug, content, chapter_id, order }])
+            .insert([{
+                title,
+                slug,
+                content,
+                chapter_id,
+                order,
+                ai_question_enabled: Boolean(ai_question_enabled),
+            }])
             .select()
             .single();
 
@@ -44,7 +51,7 @@ export async function PUT(req: Request) {
     }
 
     try {
-        const { id, title, slug, content, chapter_id, order } = await req.json();
+        const { id, title, slug, content, chapter_id, order, ai_question_enabled } = await req.json();
 
         if (!id) {
             return NextResponse.json({ success: false, error: "Missing Lesson ID" }, { status: 400 });
@@ -52,7 +59,14 @@ export async function PUT(req: Request) {
 
         const { error } = await supabase
             .from("lessons")
-            .update({ title, slug, content, chapter_id, order })
+            .update({
+                title,
+                slug,
+                content,
+                chapter_id,
+                order,
+                ai_question_enabled: Boolean(ai_question_enabled),
+            })
             .eq("id", id);
 
         if (error) {

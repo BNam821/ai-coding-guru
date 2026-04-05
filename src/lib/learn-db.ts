@@ -27,6 +27,7 @@ export interface Lesson {
     title: string;
     slug: string;
     content: string | null;
+    ai_question_enabled: boolean | null;
     order: number;
     created_at: string;
 }
@@ -87,6 +88,7 @@ export async function getCourseSyllabus(courseId: string): Promise<Chapter[]> {
         chapter_id,
         title,
         slug,
+        ai_question_enabled,
         order
       )
     `)
@@ -156,6 +158,7 @@ export async function getFullLearningTree(): Promise<CourseWithChapters[]> {
           id,
           title,
           slug,
+          ai_question_enabled,
           order
         )
       )

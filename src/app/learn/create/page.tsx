@@ -4,7 +4,7 @@ import { useEffect, Suspense, useState, useEffectEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { GlassCard } from "@/components/ui/glass-card";
 import { NeonButton } from "@/components/ui/neon-button";
-import { ArrowLeft, Send, Type, FileText, List, Layers, Hash } from "lucide-react";
+import { ArrowLeft, Send, Type, FileText, List, Layers, Hash, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { CourseWithChapters } from "@/lib/learn-db";
 
@@ -16,6 +16,7 @@ function CreateLessonForm() {
     const [slug, setSlug] = useState("");
     const [content, setContent] = useState("");
     const [order, setOrder] = useState(1);
+    const [aiQuestionEnabled, setAiQuestionEnabled] = useState(false);
 
     // Structure Selection
     const [courses, setCourses] = useState<CourseWithChapters[]>([]);
@@ -127,7 +128,8 @@ function CreateLessonForm() {
                     slug,
                     content,
                     chapter_id: selectedChapterId,
-                    order
+                    order,
+                    ai_question_enabled: aiQuestionEnabled,
                 }),
             });
 
@@ -260,6 +262,26 @@ function CreateLessonForm() {
                                     <p className="text-[10px] text-white/40 italic">
                                         * Tự động đặt vị trí cuối chương
                                     </p>
+                                </div>
+
+                                <div className="space-y-3">
+                                    <label className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-white/40">
+                                        <Sparkles size={14} /> Câu hỏi từ AI
+                                    </label>
+                                    <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-white/10 bg-white/5 p-4 transition-colors hover:border-accent-secondary/30">
+                                        <input
+                                            type="checkbox"
+                                            checked={aiQuestionEnabled}
+                                            onChange={(event) => setAiQuestionEnabled(event.target.checked)}
+                                            className="mt-1 h-4 w-4 rounded border-white/20 bg-black/20 text-accent-secondary"
+                                        />
+                                        <div className="space-y-1">
+                                            <p className="text-sm font-semibold text-white">Bật Câu hỏi từ AI cho bài học này</p>
+                                            <p className="text-[11px] leading-5 text-white/55">
+                                                Chỉ bài học được Admin bật mới hiển thị tính năng này ở trang học.
+                                            </p>
+                                        </div>
+                                    </label>
                                 </div>
                             </>
                         )}

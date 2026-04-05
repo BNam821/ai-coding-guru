@@ -4,7 +4,7 @@ import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import { GlassCard } from "@/components/ui/glass-card";
 import { NeonButton } from "@/components/ui/neon-button";
-import { ArrowLeft, Save, Type, FileText, List, Layers, Hash } from "lucide-react";
+import { ArrowLeft, Save, Type, FileText, List, Layers, Hash, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { CourseWithChapters } from "@/lib/learn-db";
 
@@ -16,6 +16,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ course: s
     const [slug, setSlug] = useState("");
     const [content, setContent] = useState("");
     const [order, setOrder] = useState(1);
+    const [aiQuestionEnabled, setAiQuestionEnabled] = useState(false);
 
     // Structure Selection
     const [courses, setCourses] = useState<CourseWithChapters[]>([]);
@@ -91,6 +92,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ course: s
                     const contentData = await contentRes.json();
                     if (contentData.success) {
                         setContent(contentData.lesson.content || "");
+                        setAiQuestionEnabled(Boolean(contentData.lesson.ai_question_enabled));
                     }
                 } else {
                     setError("Không tìm thấy bài học.");
@@ -122,7 +124,8 @@ export default function EditLessonPage({ params }: { params: Promise<{ course: s
                     slug,
                     content,
                     chapter_id: selectedChapterId,
-                    order
+                    order,
+                    ai_question_enabled: aiQuestionEnabled,
                 }),
             });
 
@@ -251,6 +254,26 @@ export default function EditLessonPage({ params }: { params: Promise<{ course: s
                                     className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white text-sm focus:outline-none focus:border-accent-secondary/50"
                                     min={1}
                                 />
+                            </div>
+
+                            <div className="space-y-3">
+                                <label className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-white/40">
+                                    <Sparkles size={14} /> Câu hỏi từ AI
+                                </label>
+                                <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-white/10 bg-white/5 p-4 transition-colors hover:border-accent-secondary/30">
+                                    <input
+                                        type="checkbox"
+                                        checked={aiQuestionEnabled}
+                                        onChange={(event) => setAiQuestionEnabled(event.target.checked)}
+                                        className="mt-1 h-4 w-4 rounded border-white/20 bg-black/20 text-accent-secondary"
+                                    />
+                                    <div className="space-y-1">
+                                        <p className="text-sm font-semibold text-white">Bật Câu hỏi từ AI cho bài học này</p>
+                                        <p className="text-[11px] leading-5 text-white/55">
+                                            Người dùng chỉ thấy tính năng này trong bài học khi Admin bật cờ này.
+                                        </p>
+                                    </div>
+                                </label>
                             </div>
 
                             <div className="pt-6 border-t border-white/10">
