@@ -1,3 +1,4 @@
+import { createDeepSeekJsonCompletion, isDeepSeekConfigured } from "@/lib/deepseek";
 import { geminiModel } from "@/lib/gemini";
 import {
     type LearnAiQuestion,
@@ -9,6 +10,7 @@ import {
 } from "@/lib/learn-ai-question";
 
 const MAX_SECTION_CONTENT_LENGTH = 6000;
+type LearnAiProvider = "gemini" | "deepseek";
 
 function buildPrompt(request: LearnAiQuestionRequest, isRetry = false) {
     const truncatedSectionContent = request.sectionContent.trim().slice(0, MAX_SECTION_CONTENT_LENGTH);
@@ -88,28 +90,73 @@ function normalizeQuestion(question: LearnAiQuestion): LearnAiQuestion {
     };
 }
 
-export async function generateLearnAiQuestion(request: LearnAiQuestionRequest): Promise<LearnAiQuestion> {
-    if (!process.env.GEMINI_API_KEY) {
-        throw new Error("Thiếu cấu hình Gemini cho tính năng này.");
-    }
+async function generateWithGemini(prompt: string) {
+    const result = await geminiModel.generateContent(prompt);
+    const response = await result.response;
+    return response.text();
+}
 
-    if (!request.sectionContent.trim()) {
-        throw new Error("Phần nội dung này chưa đủ dữ liệu để tạo câu hỏi.");
-    }
+async function generateWithDeepSeek(prompt: string) {
+    return createDeepSeekJsonCompletion([
+        {
+            role: "system",
+            content: "Bạn là AI giáo dục chuyên tạo đúng 1 câu hỏi kiểm tra kiến thức dưới dạng JSON hợp lệ.",
+        },
+        {
+            role: "user",
+            content: prompt,
+        },
+    ]);
+}
 
+async function generateQuestionWithProvider(provider: LearnAiProvider, request: LearnAiQuestionRequest) {
     let lastError: Error | null = null;
 
     for (let attempt = 0; attempt < 2; attempt += 1) {
         try {
-            const result = await geminiModel.generateContent(buildPrompt(request, attempt > 0));
-            const response = await result.response;
-            const text = response.text();
+            const prompt = buildPrompt(request, attempt > 0);
+            const text = provider === "gemini"
+                ? await generateWithGemini(prompt)
+                : await generateWithDeepSeek(prompt);
             const payload = JSON.parse(sanitizeModelJson(text));
             const validatedQuestion = validateLearnAiQuestion(payload);
 
             return normalizeQuestion(validatedQuestion);
         } catch (error) {
-            lastError = error instanceof Error ? error : new Error("Unknown Gemini error");
+            lastError = error instanceof Error ? error : new Error(`Unknown ${provider} error`);
+        }
+    }
+
+    throw lastError || new Error(`Unknown ${provider} error`);
+}
+
+export async function generateLearnAiQuestion(request: LearnAiQuestionRequest): Promise<LearnAiQuestion> {
+    if (!request.sectionContent.trim()) {
+        throw new Error("Phần nội dung này chưa đủ dữ liệu để tạo câu hỏi.");
+    }
+
+    const providers: LearnAiProvider[] = [];
+
+    if (process.env.GEMINI_API_KEY) {
+        providers.push("gemini");
+    }
+
+    if (isDeepSeekConfigured()) {
+        providers.push("deepseek");
+    }
+
+    if (providers.length === 0) {
+        throw new Error("Thiếu cấu hình Gemini và DeepSeek cho tính năng này.");
+    }
+
+    let lastError: Error | null = null;
+
+    for (const provider of providers) {
+        try {
+            return await generateQuestionWithProvider(provider, request);
+        } catch (error) {
+            lastError = error instanceof Error ? error : new Error(`Unknown ${provider} error`);
+            console.warn(`Learn AI Question fallback from ${provider}:`, lastError.message);
         }
     }
 
