@@ -1,9 +1,11 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { Children, cloneElement, isValidElement, type ReactNode } from "react";
 import { useState } from "react";
 import { Check, Copy } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+const AI_BLANK_TOKEN = "__AI_BLANK__";
 
 interface MarkdownCodeBlockProps {
     code: string;
@@ -11,6 +13,61 @@ interface MarkdownCodeBlockProps {
     languageLabel?: string;
     className?: string;
     children?: ReactNode;
+}
+
+function highlightAiBlankText(text: string, keyPrefix: string): ReactNode {
+    if (!text.includes(AI_BLANK_TOKEN)) {
+        return text;
+    }
+
+    const parts = text.split(AI_BLANK_TOKEN);
+
+    return parts.flatMap((part, index) => {
+        const nodes: ReactNode[] = [];
+
+        if (part) {
+            nodes.push(part);
+        }
+
+        if (index < parts.length - 1) {
+            nodes.push(
+                <span
+                    key={`${keyPrefix}-${index}`}
+                    className="rounded-sm bg-yellow-400 px-1.5 py-0.5 font-bold text-black shadow-[0_0_0_1px_rgba(250,204,21,0.35),0_0_18px_rgba(250,204,21,0.28)]"
+                >
+                    {AI_BLANK_TOKEN}
+                </span>
+            );
+        }
+
+        return nodes;
+    });
+}
+
+function highlightAiBlankNode(node: ReactNode, keyPrefix = "blank"): ReactNode {
+    if (typeof node === "string") {
+        return highlightAiBlankText(node, keyPrefix);
+    }
+
+    if (typeof node === "number" || node == null || typeof node === "boolean") {
+        return node;
+    }
+
+    if (Array.isArray(node)) {
+        return node.map((child, index) => highlightAiBlankNode(child, `${keyPrefix}-${index}`));
+    }
+
+    if (isValidElement(node)) {
+        const props = node.props as { children?: ReactNode };
+
+        if (props.children === undefined) {
+            return node;
+        }
+
+        return cloneElement(node, undefined, highlightAiBlankNode(props.children, keyPrefix));
+    }
+
+    return Children.map(node, (child, index) => highlightAiBlankNode(child, `${keyPrefix}-${index}`));
 }
 
 export function MarkdownCodeBlock({
@@ -24,6 +81,7 @@ export function MarkdownCodeBlock({
     const normalizedCode = code.replace(/\n$/, "");
     const lines = normalizedCode.split("\n");
     const lineNumbers = Array.from({ length: Math.max(lines.length, 1) }, (_, index) => index + 1);
+    const renderedCode = highlightAiBlankNode(children ?? normalizedCode);
 
     const handleCopy = async () => {
         try {
@@ -63,7 +121,7 @@ export function MarkdownCodeBlock({
                     ))}
                 </div>
                 <pre className="markdown-code-block-pre min-w-0 flex-1 overflow-x-auto px-4 py-2.5">
-                    <code className={cn("block min-w-max", className)}>{children ?? normalizedCode}</code>
+                    <code className={cn("block min-w-max", className)}>{renderedCode}</code>
                 </pre>
             </div>
         </div>
