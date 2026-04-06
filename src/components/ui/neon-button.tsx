@@ -18,7 +18,7 @@ export function NeonButton({ variant = "primary", className, children, icon, ...
     return (
         <button
             className={cn(
-                "relative rounded-full px-8 py-3.5 uppercase tracking-wider text-sm transition-all duration-300 flex items-center justify-center gap-2 group",
+                "group relative flex w-full items-center justify-center gap-2 rounded-full px-6 py-3 text-sm uppercase tracking-wider transition-all duration-300 sm:w-auto sm:px-8 sm:py-3.5",
                 variants[variant],
                 className
             )}

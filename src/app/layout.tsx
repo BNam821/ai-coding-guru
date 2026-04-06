@@ -22,7 +22,7 @@ export default function RootLayout({
       >
         <div className="min-h-screen flex flex-col relative">
           <Navbar />
-          <main className="flex-1">
+          <main className="flex-1 pb-24 sm:pb-0">
             {children}
           </main>
           <AnnouncementWidget />

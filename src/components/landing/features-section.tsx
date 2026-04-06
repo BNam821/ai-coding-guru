@@ -16,17 +16,17 @@ interface FeatureCardProps {
 
 function FeatureCard({ title, icon, description, href, buttonText, accentColor }: FeatureCardProps) {
     return (
-        <GlassCard className="p-8 h-full flex flex-col group hover:border-white/20 transition-all duration-500">
+        <GlassCard className="group flex h-full flex-col p-5 transition-all duration-500 hover:border-white/20 sm:p-8">
             {/* Icon */}
-            <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-6 ${accentColor} transition-transform duration-500 group-hover:scale-110`}>
+            <div className={`mb-5 flex h-14 w-14 items-center justify-center rounded-2xl transition-transform duration-500 group-hover:scale-110 sm:mb-6 sm:h-16 sm:w-16 ${accentColor}`}>
                 {icon}
             </div>
 
             {/* Title */}
-            <h3 className="text-2xl font-bold text-white mb-4">{title}</h3>
+            <h3 className="mb-3 text-xl font-bold text-white sm:mb-4 sm:text-2xl">{title}</h3>
 
             {/* Description with Markdown */}
-            <div className="prose prose-invert prose-sm max-w-none flex-1 mb-6 text-white/70 leading-relaxed">
+            <div className="prose prose-invert prose-sm mb-5 max-w-none flex-1 text-white/70 leading-relaxed sm:mb-6">
                 <MarkdownRenderer content={description} mode="lite" />
             </div>
 
@@ -85,17 +85,17 @@ const features = [
 
 export function FeaturesSection() {
     return (
-        <section id="features" className="py-20 px-4 relative z-10">
+        <section id="features" className="relative z-10 px-4 py-16 sm:py-20">
             <div className="container mx-auto max-w-6xl">
                 {/* Section Title - Left aligned */}
-                <div className="mb-12">
-                    <h2 className="text-4xl font-bold text-white">
+                <div className="mb-10 sm:mb-12">
+                    <h2 className="text-3xl font-bold text-white sm:text-4xl">
                         <span className="text-accent-secondary">AI Coding Guru</span> có gì?
                     </h2>
                 </div>
 
                 {/* Feature Cards Grid */}
-                <div className="grid md:grid-cols-3 gap-8">
+                <div className="grid gap-4 sm:gap-8 md:grid-cols-3">
                     {features.map((feature) => (
                         <FeatureCard
                             key={feature.title}

@@ -140,14 +140,16 @@ export function LoginForm() {
                     </div>
                 )}
 
-                <NeonButton
-                    type="submit"
-                    variant="primary"
-                    className="w-full py-4 rounded-xl font-bold flex items-center justify-center gap-2"
-                    disabled={isLoading}
-                >
-                    {isLoading ? "Đang xử lý..." : "Đăng nhập ngay"}
-                </NeonButton>
+                <div className="flex justify-center">
+                    <NeonButton
+                        type="submit"
+                        variant="primary"
+                        className="min-w-[220px] py-4 rounded-xl font-bold"
+                        disabled={isLoading}
+                    >
+                        {isLoading ? "Đang xử lý..." : "Đăng nhập ngay"}
+                    </NeonButton>
+                </div>
 
                 <p className="text-center text-white/40 text-sm">
                     Chưa có tài khoản?{" "}

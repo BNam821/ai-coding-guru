@@ -149,14 +149,16 @@ export function SignupForm() {
                     </div>
                 </div>
 
-                <NeonButton
-                    type="submit"
-                    variant="primary"
-                    className="w-full py-4 rounded-xl font-bold flex items-center justify-center gap-2 mt-4"
-                    disabled={isLoading}
-                >
-                    {isLoading ? "Đang xử lý..." : "Đăng ký ngay"}
-                </NeonButton>
+                <div className="mt-4 flex justify-center">
+                    <NeonButton
+                        type="submit"
+                        variant="primary"
+                        className="min-w-[220px] py-4 rounded-xl font-bold"
+                        disabled={isLoading}
+                    >
+                        {isLoading ? "Đang xử lý..." : "Đăng ký ngay"}
+                    </NeonButton>
+                </div>
 
                 <p className="text-center text-white/40 text-sm mt-4">
                     Đã có tài khoản?{" "}

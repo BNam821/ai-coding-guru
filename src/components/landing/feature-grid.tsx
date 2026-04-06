@@ -26,24 +26,24 @@ const features = [
 
 export function FeatureGrid() {
     return (
-        <section className="py-24 relative z-10">
+        <section className="relative z-10 py-16 sm:py-24">
             <div className="container mx-auto px-4">
-                <div className="text-center mb-16 space-y-4">
-                    <h2 className="text-4xl font-bold font-heading">
+                <div className="mb-10 space-y-4 text-center sm:mb-16">
+                    <h2 className="font-heading text-3xl font-bold sm:text-4xl">
                         Tại sao chọn <span className="text-accent-secondary">AI Coding Guru</span>?
                     </h2>
-                    <p className="text-slate-400 max-w-xl mx-auto">
+                    <p className="mx-auto max-w-xl text-sm text-slate-400 sm:text-base">
                         Chúng tôi kết hợp giáo trình với sức mạnh của AI, mong muốn giúp các bạn có tư duy lập trình tốt hơn. Trở thành những người thầy trẻ đột phá trong tương lai.
                     </p>
                 </div>
 
-                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-4">
                     {features.map((feature, idx) => (
-                        <GlassCard key={idx} className="h-full flex flex-col gap-4 group">
+                        <GlassCard key={idx} className="group flex h-full flex-col gap-4 p-5 sm:p-6">
                             <div className="p-3 w-fit rounded-lg bg-white/5 border border-white/10 group-hover:bg-white/10 transition-colors">
                                 {feature.icon}
                             </div>
-                            <h3 className="text-xl font-bold text-starlight group-hover:text-accent-secondary transition-colors">
+                            <h3 className="text-lg font-bold text-starlight transition-colors group-hover:text-accent-secondary sm:text-xl">
                                 {feature.title}
                             </h3>
                             <p className="text-slate-400 text-sm leading-relaxed">

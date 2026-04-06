@@ -69,7 +69,7 @@ export function AnnouncementWidget() {
     }, []);
 
     return (
-        <div className="fixed bottom-5 right-5 z-[60] flex flex-col items-end gap-3">
+        <div className="fixed bottom-24 right-3 z-[60] flex flex-col items-end gap-3 sm:bottom-5 sm:right-5">
             <AnimatePresence>
                 {isOpen && (
                     <motion.section
@@ -77,7 +77,7 @@ export function AnnouncementWidget() {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 12, scale: 0.98 }}
                         transition={{ duration: 0.2, ease: "easeOut" }}
-                        className="w-[min(22rem,calc(100vw-2.5rem))] overflow-hidden rounded-3xl border border-white/12 bg-black/80 shadow-[0_20px_70px_rgba(0,0,0,0.45)] backdrop-blur-2xl"
+                        className="w-[min(22rem,calc(100vw-1.5rem))] overflow-hidden rounded-3xl border border-white/12 bg-black/80 shadow-[0_20px_70px_rgba(0,0,0,0.45)] backdrop-blur-2xl sm:w-[min(22rem,calc(100vw-2.5rem))]"
                     >
                         <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
                             <div>
@@ -141,12 +141,12 @@ export function AnnouncementWidget() {
                 aria-expanded={isOpen}
                 aria-label={isOpen ? "Ẩn thông báo" : "Mở thông báo"}
                 className={cn(
-                    "group relative flex h-16 w-16 items-center justify-center rounded-full border border-accent-secondary/35 bg-gradient-to-br from-accent-secondary to-accent-primary text-deep-space shadow-[0_18px_45px_rgba(0,223,154,0.35)] transition-transform duration-200 hover:scale-105",
+                    "group relative flex h-14 w-14 items-center justify-center rounded-full border border-accent-secondary/35 bg-gradient-to-br from-accent-secondary to-accent-primary text-deep-space shadow-[0_18px_45px_rgba(0,223,154,0.35)] transition-transform duration-200 hover:scale-105 sm:h-16 sm:w-16",
                     isOpen && "scale-105"
                 )}
             >
                 <span className="absolute inset-0 rounded-full bg-white/15 opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
-                <span className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border border-black/10 bg-white/15 shadow-inner">
+                <span className="relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-black/10 bg-white/15 shadow-inner sm:h-11 sm:w-11">
                     <Image
                         src={logoSrc}
                         alt="Logo thông báo"

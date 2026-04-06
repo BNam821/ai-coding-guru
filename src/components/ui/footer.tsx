@@ -4,13 +4,13 @@ import React from "react";
 
 export function Footer() {
     return (
-        <footer className="relative z-50 py-2 px-4 mt-auto">
-            <div className="container mx-auto flex flex-col md:flex-row justify-between items-center gap-2 opacity-20 hover:opacity-100 transition-opacity duration-500">
-                <p className="text-[10px] tracking-widest uppercase order-2 md:order-1 whitespace-nowrap">
+        <footer className="relative z-50 mt-auto px-4 py-3 sm:py-2">
+            <div className="container mx-auto flex flex-col items-center justify-between gap-2 opacity-20 transition-opacity duration-500 hover:opacity-100 md:flex-row">
+                <p className="order-2 text-center text-[10px] uppercase tracking-widest md:order-1 md:whitespace-nowrap">
                     © 2026 Google Antigravity. Phát triển với <span className="mx-0.5">❤️</span> bởi <span>CamPha8</span>.
                 </p>
 
-                <div className="flex items-center gap-4 order-1 md:order-2">
+                <div className="order-1 flex items-center gap-4 md:order-2">
                     <a
                         href="https://www.facebook.com/bnam8210/"
                         target="_blank"
