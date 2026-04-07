@@ -69,13 +69,13 @@ export function AnnouncementWidget() {
     }, []);
 
     return (
-        <div className="fixed right-3 top-4 z-[60] flex flex-col items-end gap-3 sm:right-5 sm:top-6">
+        <div className="fixed right-3 top-4 z-[60] flex flex-col-reverse items-end gap-3 sm:right-5 sm:top-6">
             <AnimatePresence>
                 {isOpen && (
                     <motion.section
-                        initial={{ opacity: 0, y: 18, scale: 0.96 }}
+                        initial={{ opacity: 0, y: -12, scale: 0.96 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 12, scale: 0.98 }}
+                        exit={{ opacity: 0, y: -8, scale: 0.98 }}
                         transition={{ duration: 0.2, ease: "easeOut" }}
                         className="w-[min(22rem,calc(100vw-1.5rem))] overflow-hidden rounded-3xl border border-white/12 bg-black/80 shadow-[0_20px_70px_rgba(0,0,0,0.45)] backdrop-blur-2xl sm:w-[min(22rem,calc(100vw-2.5rem))]"
                     >
