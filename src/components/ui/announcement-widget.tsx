@@ -69,7 +69,7 @@ export function AnnouncementWidget() {
     }, []);
 
     return (
-        <div className="fixed bottom-24 right-3 z-[60] flex flex-col items-end gap-3 sm:bottom-5 sm:right-5">
+        <div className="fixed bottom-28 right-3 z-[60] flex flex-col items-end gap-3 sm:bottom-8 sm:right-5">
             <AnimatePresence>
                 {isOpen && (
                     <motion.section
