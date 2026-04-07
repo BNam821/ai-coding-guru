@@ -69,7 +69,7 @@ export function AnnouncementWidget() {
     }, []);
 
     return (
-        <div className="fixed bottom-28 right-3 z-[60] flex flex-col items-end gap-3 sm:bottom-8 sm:right-5">
+        <div className="fixed right-3 top-4 z-[60] flex flex-col items-end gap-3 sm:right-5 sm:top-6">
             <AnimatePresence>
                 {isOpen && (
                     <motion.section
@@ -84,7 +84,7 @@ export function AnnouncementWidget() {
                                 <p className="text-sm font-semibold text-white">Thông báo từ website</p>
                                 <p className="text-xs text-white/45">Hiển thị 2 cập nhật mới nhất</p>
                             </div>
-                            <button
+                        <button
                                 type="button"
                                 onClick={() => setIsOpen(false)}
                                 className="rounded-full border border-white/10 p-2 text-white/60 transition-colors hover:border-white/20 hover:text-white"
@@ -141,18 +141,17 @@ export function AnnouncementWidget() {
                 aria-expanded={isOpen}
                 aria-label={isOpen ? "Ẩn thông báo" : "Mở thông báo"}
                 className={cn(
-                    "group relative flex h-14 w-14 items-center justify-center rounded-full border border-accent-secondary/35 bg-gradient-to-br from-accent-secondary to-accent-primary text-deep-space shadow-[0_18px_45px_rgba(0,223,154,0.35)] transition-transform duration-200 hover:scale-105 sm:h-16 sm:w-16",
-                    isOpen && "scale-105"
+                    "group relative flex h-14 w-14 items-center justify-center rounded-full border border-white/10 bg-[#333333] text-zinc-100 transition-colors duration-200 hover:bg-[#3d3d3d] sm:h-16 sm:w-16",
+                    isOpen && "bg-[#3d3d3d]"
                 )}
             >
-                <span className="absolute inset-0 rounded-full bg-white/15 opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
-                <span className="relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-black/10 bg-white/15 shadow-inner sm:h-11 sm:w-11">
+                <span className="relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-[#333333] sm:h-11 sm:w-11">
                     <Image
                         src={logoSrc}
                         alt="Logo thông báo"
                         width={34}
                         height={34}
-                        className="h-15 w-15 object-contain"
+                        className="h-15 w-15 object-contain grayscale contrast-125 brightness-110"
                         onError={() => setLogoSrc("/real_logo.png")}
                     />
                 </span>
