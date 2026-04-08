@@ -9,6 +9,7 @@ interface PageBackgroundProps {
     className?: string;
     opacity?: number;
     overlayColor?: string;
+    overlayOpacity?: number;
     blur?: string;
 }
 
@@ -17,7 +18,8 @@ export function PageBackground({
     alt = "Background",
     className,
     opacity = 0.5,
-    overlayColor = "black", // Default to black for better text contrast
+    overlayColor = "black",
+    overlayOpacity = 0.2,
     blur = "0px",
 }: PageBackgroundProps) {
     return (
@@ -40,7 +42,7 @@ export function PageBackground({
             {/* Overlay Layer for better contrast/tinting */}
             <div
                 className="absolute inset-0 w-full h-full"
-                style={{ background: overlayColor, opacity: 0.2 }} // Fixed base opacity for the mix-blend
+                style={{ background: overlayColor, opacity: overlayOpacity }}
             />
 
             {/* Vignette effect for focus */}
