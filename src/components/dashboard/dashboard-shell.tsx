@@ -7,7 +7,7 @@ import { DashboardWeeklyActivity } from "@/components/dashboard/dashboard-weekly
 
 export function DashboardShell({ data }: { data: DashboardViewModel }) {
     return (
-        <div className="min-h-screen bg-[#ddd9d2] px-3 py-3 text-white sm:px-4 sm:py-4 lg:px-6 lg:py-6">
+        <div className="min-h-screen bg-[#111318] px-3 py-3 text-white sm:px-4 sm:py-4 lg:px-6 lg:py-6">
             <div className="mx-auto max-w-[1480px] rounded-[2.5rem] bg-[#111318] p-3 shadow-[0_40px_90px_rgba(0,0,0,0.24)] sm:p-4 lg:p-6">
                 <div className="flex flex-col gap-6 lg:flex-row">
                     <DashboardSidebar user={data.user} />
