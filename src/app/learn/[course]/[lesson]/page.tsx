@@ -34,7 +34,7 @@ export default async function LessonPage({ params }: PageProps) {
 
     return (
         <LessonContentLayout tocItems={parsedLessonContent.tocItems}>
-            <div className="max-w-none relative z-10 w-full">
+            <div className="relative z-10 w-full max-w-none min-w-0">
                 <LessonScrollReset />
                 <HistoryTracker
                     type="lesson"
@@ -77,14 +77,14 @@ export default async function LessonPage({ params }: PageProps) {
                     </nav>
                 </div>
 
-                <article className="prose prose-invert prose-blue max-w-none w-full
+                <article className="prose prose-invert prose-blue max-w-none w-full min-w-0 break-words
         prose-headings:font-bold prose-headings:tracking-tight
         prose-a:text-blue-400 prose-a:no-underline hover:prose-a:text-blue-300
         prose-pre:bg-[#1e1e1e] prose-pre:border prose-pre:border-white/10
         prose-blockquote:border-l-blue-500 prose-blockquote:bg-white/5 prose-blockquote:py-2 prose-blockquote:px-4 prose-blockquote:not-italic
         prose-img:rounded-lg prose-img:border prose-img:border-white/10
         ">
-                    <h1 className="text-3xl md:text-4xl font-extrabold mb-8 bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
+                    <h1 className="mb-8 break-words bg-gradient-to-r from-white to-gray-400 bg-clip-text text-2xl font-extrabold text-transparent sm:text-3xl md:text-4xl">
                         Bài {lesson.order}: {lesson.title}
                     </h1>
 

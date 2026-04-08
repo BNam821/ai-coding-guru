@@ -93,7 +93,7 @@ export default async function WikiDetailPage({ params }: { params: { slug: strin
     }
 
     return (
-        <main className="min-h-screen pt-32 pb-20 px-4 relative z-10">
+        <main className="relative z-10 min-h-screen px-4 pb-20 pt-32">
             <HistoryTracker
                 type="wiki"
                 isLoggedIn={isLoggedIn}
@@ -105,10 +105,10 @@ export default async function WikiDetailPage({ params }: { params: { slug: strin
             {/* Focal Gentle Aura for reading content */}
             <div className="absolute top-[20%] left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-accent-secondary/5 rounded-full blur-[200px] -z-10" />
 
-            <div className="container mx-auto max-w-7xl">
+            <div className="container mx-auto max-w-7xl min-w-0">
                 {/* Back Button */}
                 {/* Top Bar: Back & Edit */}
-                <div className="flex items-center justify-between mb-8">
+                <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <Link href="/wiki" className="inline-flex items-center gap-2 text-white font-bold hover:text-accent-secondary transition-colors group">
                         <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
                         <span>Quay lại Thư viện</span>
@@ -126,14 +126,14 @@ export default async function WikiDetailPage({ params }: { params: { slug: strin
                     )}
                 </div>
 
-                <div className="grid lg:grid-cols-[1fr_350px] gap-12">
+                <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_350px]">
                     {/* Left Column: Content */}
-                    <div className="space-y-8">
+                    <div className="min-w-0 space-y-8">
                         <header className="space-y-6">
                             <div className="inline-block px-4 py-1.5 rounded-full bg-accent-secondary/10 border border-accent-secondary/20 text-accent-secondary text-sm font-semibold">
                                 {post.category || "Hướng dẫn"}
                             </div>
-                            <h1 className="text-4xl lg:text-6xl font-bold text-white leading-tight drop-shadow-sm">
+                            <h1 className="break-words text-3xl font-bold leading-tight text-white drop-shadow-sm sm:text-4xl lg:text-6xl">
                                 {post.title}
                             </h1>
 
@@ -149,7 +149,7 @@ export default async function WikiDetailPage({ params }: { params: { slug: strin
                         </header>
 
                         {/* Article Content */}
-                        <div className="prose prose-invert prose-slate max-w-none">
+                        <div className="prose prose-invert prose-slate max-w-none min-w-0">
                             <div className="relative w-full aspect-video rounded-2xl overflow-hidden border border-white/10 mb-12 block">
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10" />
                                 {post.image_url ? (
@@ -183,7 +183,7 @@ export default async function WikiDetailPage({ params }: { params: { slug: strin
                     </div>
 
                     {/* Right Column: Sidebar */}
-                    <aside className="space-y-8">
+                    <aside className="min-w-0 space-y-8">
                         <div className="sticky top-32 space-y-8">
                             <GlassCard className="p-6">
                                 <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">

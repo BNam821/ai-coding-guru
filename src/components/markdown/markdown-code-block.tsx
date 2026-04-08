@@ -94,7 +94,7 @@ export function MarkdownCodeBlock({
     };
 
     return (
-        <div className="my-6 overflow-hidden rounded-2xl border border-accent-secondary/75 bg-[#12151b] shadow-[0_0_0_1px_rgba(0,223,154,0.2),0_0_22px_rgba(0,223,154,0.18),0_0_48px_rgba(0,223,154,0.08)]">
+        <div className="my-6 max-w-full overflow-hidden rounded-2xl border border-accent-secondary/75 bg-[#12151b] shadow-[0_0_0_1px_rgba(0,223,154,0.2),0_0_22px_rgba(0,223,154,0.18),0_0_48px_rgba(0,223,154,0.08)]">
             <div className="flex items-center justify-between border-b border-white/10 bg-white/5 px-4 py-3">
                 <div className="flex items-center gap-3">
                     <span className="h-2.5 w-2.5 rounded-full bg-accent-secondary/75 shadow-[0_0_10px_rgba(0,223,154,0.45)]" />
@@ -111,7 +111,7 @@ export function MarkdownCodeBlock({
                     {copied ? "Copied" : "Copy"}
                 </button>
             </div>
-            <div className="flex bg-[#171a20] text-sm leading-6">
+            <div className="flex min-w-0 bg-[#171a20] text-sm leading-6">
                 <div
                     aria-hidden="true"
                     className="flex shrink-0 select-none flex-col border-r border-white/8 bg-black/20 px-3 py-2.5 text-right font-medium text-white/28"
@@ -120,8 +120,8 @@ export function MarkdownCodeBlock({
                         <div key={lineNumber}>{lineNumber}</div>
                     ))}
                 </div>
-                <pre className="markdown-code-block-pre min-w-0 flex-1 overflow-x-auto px-4 py-2.5">
-                    <code className={cn("block min-w-max", className)}>{renderedCode}</code>
+                <pre className="markdown-code-block-pre min-w-0 flex-1 overflow-x-hidden px-4 py-2.5 sm:overflow-x-auto">
+                    <code className={cn("block whitespace-pre-wrap break-words sm:min-w-max sm:whitespace-pre sm:break-normal", className)}>{renderedCode}</code>
                 </pre>
             </div>
         </div>

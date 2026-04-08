@@ -147,25 +147,25 @@ export function WikiClientPage({ initialData }: WikiClientPageProps) {
 
             <header className="mb-14 text-center space-y-8">
                 <div className="space-y-4">
-                    <h1 className="text-5xl lg:text-7xl font-bold text-white drop-shadow-[0_0_30px_rgba(255,255,255,0.4)] transition-all duration-500 hover:drop-shadow-[0_0_50px_rgba(255,255,255,0.6)]">
+                    <h1 className="break-words text-4xl font-bold text-white drop-shadow-[0_0_30px_rgba(255,255,255,0.4)] transition-all duration-500 hover:drop-shadow-[0_0_50px_rgba(255,255,255,0.6)] sm:text-5xl lg:text-7xl">
                         Blog Kiến Thức
                     </h1>
-                    <p className="text-white text-xl max-w-2xl mx-auto leading-relaxed font-bold border-b border-white/20 pb-6">
+                    <p className="mx-auto max-w-2xl border-b border-white/20 pb-6 text-base font-bold leading-relaxed text-white sm:text-xl">
                         Tổng hợp các bài viết về lập trình và AI.
                     </p>
                 </div>
 
                 {isLoggedIn && (
-                    <div className="flex justify-center gap-4 animate-in fade-in zoom-in-95 duration-500">
+                    <div className="flex flex-col justify-center gap-4 animate-in fade-in zoom-in-95 duration-500 sm:flex-row">
                         <Link href="/wiki/create">
-                            <button className="px-8 py-3 rounded-xl bg-accent-secondary text-black text-sm font-bold hover:bg-white transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(0,255,163,0.3)]">
+                            <button className="flex w-full items-center justify-center gap-2 rounded-xl bg-accent-secondary px-8 py-3 text-sm font-bold text-black shadow-[0_0_20px_rgba(0,255,163,0.3)] transition-all hover:bg-white sm:w-auto">
                                 <BookOpen size={18} />
                                 {isAdmin ? "Đăng bài mới" : "Gửi bài để duyệt"}
                             </button>
                         </Link>
                         {isAdmin && (
                             <Link href="/wiki/review">
-                                <button className="px-8 py-3 rounded-xl bg-white/10 border border-white/10 text-white text-sm font-bold hover:border-accent-primary/40 hover:bg-white/15 transition-all flex items-center gap-2">
+                                <button className="flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/10 px-8 py-3 text-sm font-bold text-white transition-all hover:border-accent-primary/40 hover:bg-white/15 sm:w-auto">
                                     <ShieldCheck size={18} />
                                     Duyệt bài viết
                                 </button>
@@ -182,13 +182,13 @@ export function WikiClientPage({ initialData }: WikiClientPageProps) {
             )}
 
             {/* Client-side Filter Bar */}
-            <div className="flex flex-wrap items-center gap-4 mb-12 animate-in fade-in slide-in-from-top-4 duration-700">
-                <div className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-accent-secondary">
+            <div className="mb-12 flex flex-wrap items-stretch gap-4 animate-in fade-in slide-in-from-top-4 duration-700 sm:items-center">
+                <div className="hidden rounded-xl border border-white/10 bg-white/5 p-2.5 text-accent-secondary sm:block">
                     <Filter size={18} />
                 </div>
 
                 {/* Category Dropdown */}
-                <div className="relative group min-w-[180px]">
+                <div className="relative group w-full sm:w-auto sm:min-w-[180px]">
                     <select
                         value={categoryFilter}
                         onChange={(e) => setCategoryFilter(e.target.value)}
@@ -203,7 +203,7 @@ export function WikiClientPage({ initialData }: WikiClientPageProps) {
                 </div>
 
                 {/* Author Dropdown */}
-                <div className="relative group min-w-[220px]">
+                <div className="relative group w-full sm:w-auto sm:min-w-[220px]">
                     <select
                         value={authorFilter}
                         onChange={(e) => setAuthorFilter(e.target.value)}
@@ -230,7 +230,7 @@ export function WikiClientPage({ initialData }: WikiClientPageProps) {
                 {isLoggedIn && (
                     <button
                         onClick={() => setShowSaved(!showSaved)}
-                        className={`flex items-center gap-2 px-5 py-2.5 rounded-xl border text-sm font-bold transition-all shadow-lg ${showSaved
+                        className={`flex w-full items-center justify-center gap-2 rounded-xl border px-5 py-2.5 text-sm font-bold transition-all shadow-lg sm:w-auto ${showSaved
                             ? "bg-accent-primary border-accent-primary text-black shadow-accent-primary/20"
                             : "bg-white/5 border-white/10 text-white/80 hover:bg-white/10 hover:border-accent-primary/30"
                             }`}
@@ -247,7 +247,7 @@ export function WikiClientPage({ initialData }: WikiClientPageProps) {
                             setCategoryFilter("");
                             setAuthorFilter("");
                         }}
-                        className="text-xs font-bold text-white/40 hover:text-red-400 flex items-center gap-1 transition-colors ml-auto px-2"
+                        className="flex w-full items-center justify-center gap-1 px-2 text-xs font-bold text-white/40 transition-colors hover:text-red-400 sm:ml-auto sm:w-auto"
                     >
                         <X size={14} /> Xóa lọc
                     </button>
@@ -290,9 +290,9 @@ export function WikiClientPage({ initialData }: WikiClientPageProps) {
 
 function WikiCard({ post, isAdmin }: { post: WikiPost, isAdmin: boolean }) {
     return (
-        <div className="relative group">
+        <div className="relative min-w-0 group">
             <Link href={`/wiki/${post.slug}`} className="block h-full">
-                <GlassCard className="h-full flex flex-col group hover:border-accent-secondary/50 transition-all duration-300 overflow-hidden p-0">
+                <GlassCard className="group flex h-full min-w-0 flex-col overflow-hidden p-0 transition-all duration-300 hover:border-accent-secondary/50">
                     {/* Article Thumbnail */}
                     <div className="relative w-full h-48 bg-white/5 border-b border-white/10 overflow-hidden">
                         {post.image_url ? (
@@ -312,19 +312,19 @@ function WikiCard({ post, isAdmin }: { post: WikiPost, isAdmin: boolean }) {
                         </div>
                     </div>
 
-                    <div className="p-6 space-y-4 flex-1">
+                    <div className="flex-1 space-y-4 p-5 sm:p-6">
                         <AuthorRoleBadge role={post.author_role} />
-                        <h2 className="text-xl font-bold text-white group-hover:text-accent-secondary transition-colors line-clamp-2 leading-tight">
+                        <h2 className="line-clamp-2 break-words text-xl font-bold leading-tight text-white transition-colors group-hover:text-accent-secondary">
                             {post.title}
                         </h2>
-                        <p className="text-white/60 text-sm leading-relaxed line-clamp-2">
+                        <p className="line-clamp-2 break-words text-sm leading-relaxed text-white/60">
                             {post.excerpt}
                         </p>
                     </div>
 
-                    <div className="px-6 py-4 border-t border-white/5 flex items-center justify-between text-[10px] text-white/40 font-bold uppercase tracking-widest">
-                        <div className="flex items-center gap-4">
-                            <span className="flex items-center gap-1.5">
+                    <div className="flex flex-wrap items-center justify-between gap-3 border-t border-white/5 px-5 py-4 text-[10px] font-bold uppercase tracking-widest text-white/40 sm:px-6">
+                        <div className="flex min-w-0 flex-wrap items-center gap-3 sm:gap-4">
+                            <span className="flex min-w-0 items-center gap-1.5">
                                 {post.author_details?.avatar_url ? (
                                     <div className="w-4 h-4 rounded-full overflow-hidden border border-white/10">
                                         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -333,7 +333,7 @@ function WikiCard({ post, isAdmin }: { post: WikiPost, isAdmin: boolean }) {
                                 ) : (
                                     <User size={12} className="text-accent-primary" />
                                 )}
-                                {post.author_details?.display_name || post.author}
+                                <span className="truncate">{post.author_details?.display_name || post.author}</span>
                             </span>
                             <span className="flex items-center gap-1.5"><Clock size={12} className="text-accent-secondary" /> {post.read_time}</span>
                         </div>

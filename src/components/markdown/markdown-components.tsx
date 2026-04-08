@@ -136,7 +136,7 @@ export function createMarkdownComponents(options: MarkdownComponentOptions = {})
         blockquote: ({ className, children, ...props }) => (
             <blockquote
                 className={cn(
-                    "border-l-4 border-blue-500 bg-white/5 px-4 py-2 not-italic text-white/85",
+                    "break-words border-l-4 border-blue-500 bg-white/5 px-4 py-2 not-italic text-white/85",
                     className
                 )}
                 {...props}
@@ -162,32 +162,32 @@ export function createMarkdownComponents(options: MarkdownComponentOptions = {})
             );
         },
         h1: ({ className, children, ...props }) => (
-            <h1 className={cn("scroll-mt-24", className)} {...props}>
+            <h1 className={cn("scroll-mt-24 break-words", className)} {...props}>
                 {children}
             </h1>
         ),
         h2: ({ className, children, ...props }) => (
-            <h2 className={cn("scroll-mt-24", className)} {...props}>
+            <h2 className={cn("scroll-mt-24 break-words", className)} {...props}>
                 {children}
             </h2>
         ),
         h3: ({ className, children, ...props }) => (
-            <h3 className={cn("scroll-mt-24", className)} {...props}>
+            <h3 className={cn("scroll-mt-24 break-words", className)} {...props}>
                 {children}
             </h3>
         ),
         h4: ({ className, children, ...props }) => (
-            <h4 className={cn("scroll-mt-24", className)} {...props}>
+            <h4 className={cn("scroll-mt-24 break-words", className)} {...props}>
                 {children}
             </h4>
         ),
         h5: ({ className, children, ...props }) => (
-            <h5 className={cn("scroll-mt-24", className)} {...props}>
+            <h5 className={cn("scroll-mt-24 break-words", className)} {...props}>
                 {children}
             </h5>
         ),
         h6: ({ className, children, ...props }) => (
-            <h6 className={cn("scroll-mt-24", className)} {...props}>
+            <h6 className={cn("scroll-mt-24 break-words", className)} {...props}>
                 {children}
             </h6>
         ),
@@ -197,7 +197,7 @@ export function createMarkdownComponents(options: MarkdownComponentOptions = {})
             }
 
             // eslint-disable-next-line @next/next/no-img-element
-            return <img className={cn("rounded-lg border border-white/10", className)} alt="" {...props} />;
+            return <img className={cn("h-auto max-w-full rounded-lg border border-white/10", className)} alt="" {...props} />;
         },
         p: ({ className, children, ...props }) => {
             const textContent = extractText(children).trim();
@@ -221,18 +221,18 @@ export function createMarkdownComponents(options: MarkdownComponentOptions = {})
             }
 
             return (
-                <p className={cn("mb-4 leading-relaxed last:mb-0", className)} {...props}>
+                <p className={cn("mb-4 break-words leading-relaxed last:mb-0", className)} {...props}>
                     {children}
                 </p>
             );
         },
         ul: ({ className, children, ...props }) => (
-            <ul className={cn("mb-4 ml-6 list-disc space-y-2 marker:text-white/65", className)} {...props}>
+            <ul className={cn("mb-4 ml-6 list-disc space-y-2 break-words marker:text-white/65", className)} {...props}>
                 {children}
             </ul>
         ),
         ol: ({ className, children, ...props }) => (
-            <ol className={cn("mb-4 ml-6 list-decimal space-y-2 marker:text-white/65", className)} {...props}>
+            <ol className={cn("mb-4 ml-6 list-decimal space-y-2 break-words marker:text-white/65", className)} {...props}>
                 {children}
             </ol>
         ),
@@ -245,6 +245,7 @@ export function createMarkdownComponents(options: MarkdownComponentOptions = {})
                 <li
                     className={cn(
                         hasCheckbox && "list-none ml-[-1.5rem] flex items-start gap-3 marker:content-none",
+                        "break-words",
                         className
                     )}
                     {...props}
@@ -298,8 +299,8 @@ export function createMarkdownComponents(options: MarkdownComponentOptions = {})
             return <pre>{children}</pre>;
         },
         table: ({ className, children, ...props }) => (
-            <div className="my-6 w-full overflow-x-auto">
-                <table className={cn("w-full border-collapse border border-white/80", className)} {...props}>
+            <div className="my-6 w-full max-w-full overflow-x-auto rounded-xl border border-white/10">
+                <table className={cn("w-full table-fixed border-collapse border border-white/80 sm:table-auto", className)} {...props}>
                     {children}
                 </table>
             </div>
@@ -320,12 +321,12 @@ export function createMarkdownComponents(options: MarkdownComponentOptions = {})
             </tr>
         ),
         th: ({ className, children, ...props }) => (
-            <th className={cn("border border-white/80 px-4 py-2 text-left font-semibold text-white", className)} {...props}>
+            <th className={cn("break-words border border-white/80 px-3 py-2 text-left font-semibold text-white whitespace-normal sm:px-4", className)} {...props}>
                 {children}
             </th>
         ),
         td: ({ className, children, ...props }) => (
-            <td className={cn("border border-white/80 px-4 py-2 align-top text-white/90", className)} {...props}>
+            <td className={cn("break-words border border-white/80 px-3 py-2 align-top text-white/90 whitespace-normal sm:px-4", className)} {...props}>
                 {children}
             </td>
         ),

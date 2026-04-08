@@ -66,16 +66,16 @@ const WikiEditHistoryPanel = memo(function WikiEditHistoryPanel({
         >
             {history.length > 0 ? (
                 <div className="overflow-x-auto">
-                    <table className="w-full min-w-[640px] border-collapse border border-white/10 text-left">
+                    <table className="w-full table-fixed border-collapse border border-white/10 text-left sm:table-auto">
                         <thead className="bg-[#00ff9d]/10">
                             <tr className="border-b border-white/10">
-                                <th className="border border-white/10 px-4 py-3 text-xs font-bold uppercase tracking-[0.14em] text-[#bfffe6]">
+                                <th className="break-words whitespace-normal border border-white/10 px-3 py-3 text-xs font-bold uppercase tracking-[0.14em] text-[#bfffe6] sm:px-4">
                                     Thời gian
                                 </th>
-                                <th className="border border-white/10 px-4 py-3 text-xs font-bold uppercase tracking-[0.14em] text-[#bfffe6]">
+                                <th className="break-words whitespace-normal border border-white/10 px-3 py-3 text-xs font-bold uppercase tracking-[0.14em] text-[#bfffe6] sm:px-4">
                                     Người chỉnh sửa
                                 </th>
-                                <th className="border border-white/10 px-4 py-3 text-xs font-bold uppercase tracking-[0.14em] text-[#bfffe6]">
+                                <th className="break-words whitespace-normal border border-white/10 px-3 py-3 text-xs font-bold uppercase tracking-[0.14em] text-[#bfffe6] sm:px-4">
                                     Lí do chỉnh sửa
                                 </th>
                             </tr>
@@ -83,13 +83,13 @@ const WikiEditHistoryPanel = memo(function WikiEditHistoryPanel({
                         <tbody className="divide-y divide-white/10">
                             {history.map((entry) => (
                                 <tr key={`${entry.edited_at}-${entry.editor_username}-${entry.edit_reason}`} className="border-b border-white/10">
-                                    <td className="border border-white/10 px-4 py-3 align-top text-sm text-white/90">
+                                    <td className="break-words whitespace-normal border border-white/10 px-3 py-3 align-top text-sm text-white/90 sm:px-4">
                                         {entry.formattedEditedAt}
                                     </td>
-                                    <td className="border border-white/10 px-4 py-3 align-top text-sm font-semibold text-white">
+                                    <td className="break-words whitespace-normal border border-white/10 px-3 py-3 align-top text-sm font-semibold text-white sm:px-4">
                                         {entry.displayEditor}
                                     </td>
-                                    <td className="border border-white/10 px-4 py-3 align-top text-sm text-white/85">
+                                    <td className="break-words whitespace-normal border border-white/10 px-3 py-3 align-top text-sm text-white/85 sm:px-4">
                                         {entry.edit_reason}
                                     </td>
                                 </tr>
@@ -169,7 +169,7 @@ export function WikiArticleMeta({
                     aria-expanded={isHistoryOpen}
                     aria-controls={panelId}
                     onClick={() => setIsHistoryOpen((value) => !value)}
-                    className="ml-auto inline-flex items-center gap-2 rounded-full border border-[#6cffc9]/60 bg-[#00ff9d]/12 px-3.5 py-2 text-[11px] font-black uppercase tracking-[0.18em] text-[#8bffd7] transition-[background-color,border-color,color] duration-150 hover:border-[#8bffd7]/90 hover:bg-[#00ff9d]/18 hover:text-[#c5ffea]"
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-[#6cffc9]/60 bg-[#00ff9d]/12 px-3.5 py-2 text-[11px] font-black uppercase tracking-[0.18em] text-[#8bffd7] transition-[background-color,border-color,color] duration-150 hover:border-[#8bffd7]/90 hover:bg-[#00ff9d]/18 hover:text-[#c5ffea] sm:ml-auto sm:w-auto"
                 >
                     <History size={14} />
                     <span>Lịch sử chỉnh sửa</span>

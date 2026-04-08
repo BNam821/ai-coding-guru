@@ -33,7 +33,12 @@ export function Hero() {
                         </span> cùng AI
                     </h1>
 
-                    <p className="mx-auto max-w-xl text-base leading-relaxed text-slate-400 sm:max-w-2xl sm:text-xl lg:mx-0">
+                    <p className="mx-auto block max-w-xl text-base leading-relaxed text-slate-400 sm:hidden">
+                        Học lập trình không còn khó khăn.<br /> <span className="text-accent-secondary">AI CODING GURU<br />
+                        </span> Giúp bạn bắt đầu thật dễ dàng và vững chắc.
+                    </p>
+
+                    <p className="mx-auto hidden max-w-xl text-base leading-relaxed text-slate-400 sm:block sm:max-w-2xl sm:text-xl lg:mx-0">
                         Học lập trình không còn khó khăn. <span className="text-accent-secondary">AI CODING GURU<br />
                         </span> Giúp bạn bắt đầu thật dễ dàng và vững chắc.
                     </p>
