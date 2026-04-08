@@ -67,7 +67,7 @@ export function DashboardSidebar({ user }: { user: DashboardUserSummary }) {
                 </nav>
             </div>
 
-            <aside className="hidden lg:flex lg:w-[104px] lg:flex-col lg:justify-between lg:rounded-[2rem] lg:border lg:border-white/10 lg:bg-[#17191f] lg:px-4 lg:py-5">
+            <aside className="hidden lg:sticky lg:top-6 lg:flex lg:h-[calc(100vh-3rem)] lg:w-[92px] lg:flex-col lg:justify-between lg:self-start lg:rounded-[2rem] lg:border lg:border-white/10 lg:bg-[#17191f] lg:px-3 lg:py-4">
                 <div className="space-y-8">
                     <div className="px-1 text-center">
                         <p className="text-[17px] font-semibold leading-none tracking-tight text-[#cbbaf5]">Tổng</p>
@@ -81,7 +81,7 @@ export function DashboardSidebar({ user }: { user: DashboardUserSummary }) {
                                 href={href}
                                 aria-label={label}
                                 className={cn(
-                                    "flex h-14 w-full items-center justify-center rounded-2xl border border-transparent text-white/55 transition-colors hover:border-white/10 hover:bg-white/5 hover:text-white",
+                                    "flex h-12 w-full items-center justify-center rounded-2xl border border-transparent text-white/55 transition-colors hover:border-white/10 hover:bg-white/5 hover:text-white",
                                     href === "/dashboard" && "border-[#f4e588]/40 bg-[#f4e588] text-[#151720]"
                                 )}
                             >
@@ -91,7 +91,7 @@ export function DashboardSidebar({ user }: { user: DashboardUserSummary }) {
                     </nav>
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-3">
                     <div className="flex justify-center">
                         <Link href="/account" aria-label="Tài khoản">
                             <UserAvatar user={user} />
