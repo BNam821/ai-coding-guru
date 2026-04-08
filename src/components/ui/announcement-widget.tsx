@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import { Megaphone, X } from "lucide-react";
@@ -19,6 +20,7 @@ function formatAnnouncementTime(value: string) {
 }
 
 export function AnnouncementWidget() {
+    const pathname = usePathname();
     const [isOpen, setIsOpen] = useState(false);
     const [announcements, setAnnouncements] = useState<SiteAnnouncement[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -54,10 +56,14 @@ export function AnnouncementWidget() {
             }
         };
 
-        void loadAnnouncements();
+        if (!pathname.startsWith("/dashboard")) {
+            void loadAnnouncements();
+        }
 
         const handleChanged = () => {
-            void loadAnnouncements();
+            if (!pathname.startsWith("/dashboard")) {
+                void loadAnnouncements();
+            }
         };
 
         window.addEventListener("announcements:changed", handleChanged);
@@ -66,7 +72,11 @@ export function AnnouncementWidget() {
             isMounted = false;
             window.removeEventListener("announcements:changed", handleChanged);
         };
-    }, []);
+    }, [pathname]);
+
+    if (pathname.startsWith("/dashboard")) {
+        return null;
+    }
 
     return (
         <div className="fixed right-3 top-4 z-[60] flex flex-col-reverse items-end gap-3 sm:right-5 sm:top-6">
@@ -84,7 +94,7 @@ export function AnnouncementWidget() {
                                 <p className="text-sm font-semibold text-white">Thông báo từ website</p>
                                 <p className="text-xs text-white/45">Hiển thị 2 cập nhật mới nhất</p>
                             </div>
-                        <button
+                            <button
                                 type="button"
                                 onClick={() => setIsOpen(false)}
                                 className="rounded-full border border-white/10 p-2 text-white/60 transition-colors hover:border-white/20 hover:text-white"

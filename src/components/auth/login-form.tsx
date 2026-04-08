@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRef, useState } from "react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Eye, EyeOff, Lock, ShieldAlert, User } from "lucide-react";
 import { GlassCard } from "@/components/ui/glass-card";
 import { NeonButton } from "@/components/ui/neon-button";
-import { Lock, User, Eye, EyeOff, ShieldAlert } from "lucide-react";
-import Link from "next/link";
 
 export function LoginForm() {
     const [username, setUsername] = useState("");
@@ -15,10 +15,9 @@ export function LoginForm() {
     const [showAdminKey, setShowAdminKey] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
-    const router = useRouter();
-
-    // Logic click 5 lần trong 2 giây
     const clickTimes = useRef<number[]>([]);
+    const router = useRouter();
+    const searchParams = useSearchParams();
 
     const handleEyeClick = () => {
         setShowPassword(!showPassword);
@@ -26,7 +25,6 @@ export function LoginForm() {
         const now = Date.now();
         clickTimes.current.push(now);
 
-        // Chỉ giữ 5 lần click gần nhất
         if (clickTimes.current.length > 5) {
             clickTimes.current.shift();
         }
@@ -35,7 +33,6 @@ export function LoginForm() {
             const firstClick = clickTimes.current[0];
             if (now - firstClick <= 2000) {
                 setShowAdminKey(true);
-                // Reset click times sau khi đã hiện
                 clickTimes.current = [];
             }
         }
@@ -54,13 +51,15 @@ export function LoginForm() {
             });
 
             const data = await res.json();
+
             if (data.success) {
-                router.refresh(); // Refresh để Server Component nhận diện session mới
-                router.push("/account");
+                const redirectTarget = searchParams.get("redirect") || "/dashboard";
+                router.refresh();
+                router.push(redirectTarget);
             } else {
                 setError(data.error);
             }
-        } catch (err) {
+        } catch {
             setError("Đã có lỗi xảy ra. Vui lòng thử lại.");
         } finally {
             setIsLoading(false);
@@ -68,30 +67,30 @@ export function LoginForm() {
     };
 
     return (
-        <GlassCard className="p-8 border-white/10 shadow-2xl max-w-md mx-auto">
+        <GlassCard className="mx-auto max-w-md border-white/10 p-8 shadow-2xl">
             <form onSubmit={handleLogin} className="space-y-6 text-left">
-                <header className="text-center mb-8 space-y-2">
-                    <h2 className="text-2xl font-bold text-white tracking-tight">Đăng nhập</h2>
-                    <p className="text-white/60 text-sm">Chào mừng bạn quay trở lại</p>
+                <header className="mb-8 space-y-2 text-center">
+                    <h2 className="text-2xl font-bold tracking-tight text-white">Đăng nhập</h2>
+                    <p className="text-sm text-white/60">Chào mừng bạn quay trở lại</p>
                 </header>
 
                 {error && (
-                    <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-500 text-sm text-center">
+                    <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-3 text-center text-sm text-red-500">
                         {error}
                     </div>
                 )}
 
                 <div className="space-y-2">
-                    <label className="text-sm font-medium text-white ml-1">Tài khoản / Email</label>
-                    <div className="relative group">
-                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 group-focus-within:text-accent-primary transition-colors">
+                    <label className="ml-1 text-sm font-medium text-white">Tài khoản / Email</label>
+                    <div className="group relative">
+                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 transition-colors group-focus-within:text-accent-primary">
                             <User size={18} />
                         </div>
                         <input
                             type="text"
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
-                            className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white focus:outline-none focus:border-accent-primary/50 transition-all"
+                            className="w-full rounded-xl border border-white/10 bg-white/5 py-3 pl-10 pr-4 text-white transition-all focus:border-accent-primary/50 focus:outline-none"
                             placeholder="Nhập username hoặc email"
                             required
                         />
@@ -99,23 +98,23 @@ export function LoginForm() {
                 </div>
 
                 <div className="space-y-2">
-                    <label className="text-sm font-medium text-white ml-1">Mật khẩu</label>
-                    <div className="relative group">
-                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 group-focus-within:text-accent-primary transition-colors">
+                    <label className="ml-1 text-sm font-medium text-white">Mật khẩu</label>
+                    <div className="group relative">
+                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 transition-colors group-focus-within:text-accent-primary">
                             <Lock size={18} />
                         </div>
                         <input
                             type={showPassword ? "text" : "password"}
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-10 pr-12 text-white focus:outline-none focus:border-accent-primary/50 transition-all"
+                            className="w-full rounded-xl border border-white/10 bg-white/5 py-3 pl-10 pr-12 text-white transition-all focus:border-accent-primary/50 focus:outline-none"
                             placeholder="Nhập mật khẩu"
                             required
                         />
                         <button
                             type="button"
                             onClick={handleEyeClick}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 transition-colors hover:text-white"
                         >
                             {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                         </button>
@@ -123,16 +122,17 @@ export function LoginForm() {
                 </div>
 
                 {showAdminKey && (
-                    <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
-                        <label className="text-sm font-medium text-accent-secondary ml-1 flex items-center gap-2">
-                            <ShieldAlert size={14} /> Secret Key (Admin)
+                    <div className="animate-in slide-in-from-top-2 fade-in space-y-2 duration-300">
+                        <label className="ml-1 flex items-center gap-2 text-sm font-medium text-accent-secondary">
+                            <ShieldAlert size={14} />
+                            Secret Key (Admin)
                         </label>
-                        <div className="relative group">
+                        <div className="group relative">
                             <input
                                 type="password"
                                 value={adminKey}
                                 onChange={(e) => setAdminKey(e.target.value)}
-                                className="w-full bg-accent-secondary/5 border border-accent-secondary/30 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-accent-secondary transition-all"
+                                className="w-full rounded-xl border border-accent-secondary/30 bg-accent-secondary/5 px-4 py-3 text-white transition-all focus:border-accent-secondary focus:outline-none"
                                 placeholder="Nhập mã bí mật"
                                 required
                             />
@@ -144,16 +144,16 @@ export function LoginForm() {
                     <NeonButton
                         type="submit"
                         variant="primary"
-                        className="min-w-[220px] py-4 rounded-xl font-bold"
+                        className="min-w-[220px] rounded-xl py-4 font-bold"
                         disabled={isLoading}
                     >
                         {isLoading ? "Đang xử lý..." : "Đăng nhập ngay"}
                     </NeonButton>
                 </div>
 
-                <p className="text-center text-white/40 text-sm">
+                <p className="text-center text-sm text-white/40">
                     Chưa có tài khoản?{" "}
-                    <Link href="/signup" className="text-accent-secondary hover:underline cursor-pointer">
+                    <Link href="/signup" className="cursor-pointer text-accent-secondary hover:underline">
                         Đăng ký
                     </Link>
                 </p>
@@ -162,5 +162,4 @@ export function LoginForm() {
     );
 }
 
-// Giữ lại tên AdminLoginForm để không lỗi các chỗ đang import
 export const AdminLoginForm = LoginForm;
