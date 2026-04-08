@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { BarChart3, BookOpen, ClipboardCheck, History, LayoutDashboard, User } from "lucide-react";
+import { BarChart3, BookOpen, ClipboardCheck, History, LayoutDashboard } from "lucide-react";
 import { LogoutButton } from "@/components/auth/logout-button";
 import type { DashboardUserSummary } from "@/lib/dashboard";
 import { cn } from "@/lib/utils";
@@ -10,7 +10,6 @@ const navItems = [
     { label: "Học tập", href: "/learn", icon: BookOpen },
     { label: "Kiểm tra", href: "/test", icon: ClipboardCheck },
     { label: "Lịch sử", href: "/history", icon: History },
-    { label: "Tài khoản", href: "/account", icon: User },
 ];
 
 function UserAvatar({ user, sizeClass = "h-12 w-12" }: { user: DashboardUserSummary; sizeClass?: string }) {
@@ -44,12 +43,14 @@ export function DashboardSidebar({ user }: { user: DashboardUserSummary }) {
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
-                        <UserAvatar user={user} />
+                        <Link href="/account" aria-label="Tài khoản">
+                            <UserAvatar user={user} />
+                        </Link>
                         <LogoutButton iconOnly />
                     </div>
                 </div>
 
-                <nav className="mb-6 grid grid-cols-5 gap-2 rounded-[1.5rem] border border-white/10 bg-[#17191f] p-2">
+                <nav className="mb-6 grid grid-cols-4 gap-2 rounded-[1.5rem] border border-white/10 bg-[#17191f] p-2">
                     {navItems.map(({ label, href, icon: Icon }) => (
                         <Link
                             key={href}
@@ -92,7 +93,9 @@ export function DashboardSidebar({ user }: { user: DashboardUserSummary }) {
 
                 <div className="space-y-4">
                     <div className="flex justify-center">
-                        <UserAvatar user={user} />
+                        <Link href="/account" aria-label="Tài khoản">
+                            <UserAvatar user={user} />
+                        </Link>
                     </div>
                     <div className="flex justify-center">
                         <LogoutButton iconOnly />
