@@ -17,7 +17,7 @@ const routeBackgrounds: RouteBackgroundEntry[] = [
     match: "exact",
     background: {
       src: "/bgt2.jpg",
-      opacity: 1,
+      opacity: 0,
       blur: "0px",
       overlayColor: "black",
     },
@@ -26,8 +26,8 @@ const routeBackgrounds: RouteBackgroundEntry[] = [
     route: "/login",
     match: "exact",
     background: {
-      src: "/login_bg.jpg",
-      opacity: 0.85,
+      src: "/bgt2.jpg",
+      opacity: 0,
       blur: "0px",
       overlayColor: "black",
     },
@@ -36,8 +36,8 @@ const routeBackgrounds: RouteBackgroundEntry[] = [
     route: "/signup",
     match: "exact",
     background: {
-      src: "/signup_bg.jpg",
-      opacity: 0.85,
+      src: "/bgt2.jpg",
+      opacity: 0,
       blur: "0px",
       overlayColor: "black",
     },
@@ -47,7 +47,7 @@ const routeBackgrounds: RouteBackgroundEntry[] = [
     match: "prefix",
     background: {
       src: "/account_bg.jpg",
-      opacity: 0.45,
+      opacity: 0,
       blur: "0px",
       overlayColor: "black",
     },
@@ -56,8 +56,8 @@ const routeBackgrounds: RouteBackgroundEntry[] = [
     route: "/history",
     match: "prefix",
     background: {
-      src: "/history_bg.jpg",
-      opacity: 0.4,
+      src: "/test_bg.jpg",
+      opacity: 0,
       blur: "0px",
       overlayColor: "black",
     },
@@ -67,7 +67,7 @@ const routeBackgrounds: RouteBackgroundEntry[] = [
     match: "prefix",
     background: {
       src: "/profile_bg.jpg",
-      opacity: 0.35,
+      opacity: 0,
       blur: "0px",
       overlayColor: "black",
     },
@@ -77,7 +77,7 @@ const routeBackgrounds: RouteBackgroundEntry[] = [
     match: "prefix",
     background: {
       src: "/wiki_bg.jpg",
-      opacity: 0.38,
+      opacity: 0,
       blur: "0px",
       overlayColor: "",
     },
@@ -87,7 +87,7 @@ const routeBackgrounds: RouteBackgroundEntry[] = [
     match: "prefix",
     background: {
       src: "/test_bg.jpg",
-      opacity: 0.3,
+      opacity: 0,
       blur: "0px",
       overlayColor: "black",
     },
@@ -97,7 +97,7 @@ const routeBackgrounds: RouteBackgroundEntry[] = [
     match: "prefix",
     background: {
       src: "/learn_bg.jpg",
-      opacity: 0.34,
+      opacity: 0,
       blur: "0px",
       overlayColor: "black",
     },
