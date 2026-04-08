@@ -1,5 +1,4 @@
 import { LoginForm } from "@/components/auth/login-form";
-import { PageBackground } from "@/components/ui/page-background";
 import { getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
 

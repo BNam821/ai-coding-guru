@@ -1,5 +1,4 @@
 import { SignupForm } from "@/components/auth/signup-form";
-import { PageBackground } from "@/components/ui/page-background";
 
 export default function SignupPage() {
     return (

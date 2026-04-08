@@ -16,7 +16,7 @@ export default async function LearnLayout({
 
     return (
         <LearnSidebarStateProvider>
-            <div className="flex min-h-screen bg-black text-gray-100">
+            <div className="flex min-h-screen bg-black/80 text-gray-100 backdrop-blur-[2px]">
                 {/* Sidebar Desktop */}
                 <LearnSidebar courses={courses} isAdmin={isAdmin} className="hidden md:block" />
 
@@ -31,8 +31,9 @@ export default async function LearnLayout({
 
                     {/* Main Content */}
                     <main className="relative mx-auto w-full max-w-7xl min-w-0 flex-1 p-4 pt-24 md:p-8 md:pt-28">
+                        <div className="absolute inset-0 bg-black/40 pointer-events-none" />
                         <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-20 pointer-events-none" />
-                        {children}
+                        <div className="relative z-10">{children}</div>
                     </main>
                 </div>
             </div>
