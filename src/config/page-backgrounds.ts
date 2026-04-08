@@ -97,7 +97,7 @@ const routeBackgrounds: RouteBackgroundEntry[] = [
     match: "prefix",
     background: {
       src: "/learn_bg.jpg",
-      opacity: 0.18,
+      opacity: 0.34,
       blur: "0px",
       overlayColor: "black",
     },

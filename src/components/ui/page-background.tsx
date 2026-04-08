@@ -40,7 +40,7 @@ export function PageBackground({
             {/* Overlay Layer for better contrast/tinting */}
             <div
                 className="absolute inset-0 w-full h-full"
-                style={{ background: overlayColor, opacity: 0.4 }} // Fixed base opacity for the mix-blend
+                style={{ background: overlayColor, opacity: 0 }} // Fixed base opacity for the mix-blend
             />
 
             {/* Vignette effect for focus */}
