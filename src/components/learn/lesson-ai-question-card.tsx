@@ -190,7 +190,7 @@ export function LessonAiQuestionCard({
                     {(status === "idle" || status === "prefetch-pending") && (
                         <div className="space-y-4">
                             <h3 className="text-xl font-bold text-white">
-                                {autoGenerate ? "Phần này sẽ tự sinh câu hỏi khi bạn cuộn tới đây." : "Muốn tự kiểm tra phần này?"}
+                                {autoGenerate ? "Phần này sẽ tự sinh câu hỏi khi bạn cuộn tới đây." : "Bạn muốn tự kiểm tra phần này?"}
                             </h3>
 
                             {!autoGenerate && (
@@ -206,7 +206,7 @@ export function LessonAiQuestionCard({
                             <Loader2 className="h-10 w-10 animate-spin text-yellow-300" />
                             <div className="space-y-2">
                                 <p className="text-lg font-semibold text-white">AI đang soạn câu hỏi cho mục này</p>
-                                <p className="text-sm text-white/60">Chỉ dùng nội dung của section hiện tại để giảm token.</p>
+                                <p className="text-sm text-white/60">Bạn vui lòng chờ một chút nhé!</p>
                             </div>
                         </div>
                     )}
