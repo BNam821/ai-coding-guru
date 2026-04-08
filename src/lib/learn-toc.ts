@@ -4,6 +4,7 @@ const HEADING_PATTERN = /^\s{0,3}(#{1,6})\s+(.+?)\s*$/;
 const MARKDOWN_LINK_ITEM_PATTERN = /^\s*(?:[-*+]|\d+\.)\s+\[([^\]]+)\]\((#[^)]+)\)\s*$/;
 const EXPLICIT_HEADING_ID_PATTERN = /\s*\{#([A-Za-z0-9\-_:]+)\}\s*$/;
 const FENCE_START_PATTERN = /^\s{0,3}(`{3,}|~{3,})/;
+const LEARN_TOC_HEADING = 'nội dung bài học';
 
 export interface LearnTocItem {
     id: string;
@@ -233,7 +234,7 @@ export function parseLearnLessonContent(content: string): ParsedLearnLessonConte
     const headingLine = lines[index];
     const headingMatch = headingLine?.match(HEADING_PATTERN);
 
-    if (!headingMatch || normalizeHeadingText(headingMatch[2] || '') !== 'mục lục') {
+    if (!headingMatch || normalizeHeadingText(headingMatch[2] || '') !== LEARN_TOC_HEADING) {
         return {
             content: cleanedContent,
             intro: trimBlankLines(cleanedContent),

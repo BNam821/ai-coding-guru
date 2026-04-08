@@ -187,7 +187,7 @@ export function LessonRightToc({ items }: LessonRightTocProps) {
             >
                 <div className="space-y-3">
                     <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-white/35">
-                        Mục lục
+                        Nội dung bài học
                     </p>
 
                     <nav className="space-y-1.5" aria-label="Mục lục bài học">
