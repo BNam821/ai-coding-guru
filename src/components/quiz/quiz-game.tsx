@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Loader2, CheckCircle2, XCircle, ChevronRight, RefreshCcw, Award, AlertCircle, Sparkles } from "lucide-react";
 import { NeonButton } from "@/components/ui/neon-button";
 import { GlassCard } from "@/components/ui/glass-card";
@@ -31,6 +31,7 @@ export function QuizGame() {
     const [isFinished, setIsFinished] = useState(false);
     const [showExitModal, setShowExitModal] = useState(false);
     const [estimatedSeconds, setEstimatedSeconds] = useState(10);
+    const correctAnswersRef = useRef(0);
 
     useEffect(() => {
         fetchQuiz();
@@ -59,6 +60,12 @@ export function QuizGame() {
             if (!data.questions || data.questions.length === 0) throw new Error("No questions generated");
 
             setQuestions(data.questions);
+            setCurrentIndex(0);
+            setSelectedAnswer(null);
+            setShowExplanation(false);
+            setScore(0);
+            correctAnswersRef.current = 0;
+            setIsFinished(false);
         } catch (err: any) {
             console.error("Quiz Fetch Error:", err);
             setError(err.message || "Có lỗi khi tạo bài kiểm tra. Vui lòng thử lại.");
@@ -73,6 +80,7 @@ export function QuizGame() {
         setShowExplanation(true);
 
         if (index === questions[currentIndex].correctAnswer) {
+            correctAnswersRef.current += 1;
             setScore(prev => prev + 1);
         }
     };
@@ -82,7 +90,14 @@ export function QuizGame() {
             const actualScore = Math.round((finalScore / questions.length) * 100);
             await fetch("/api/quiz/score", {
                 method: "POST",
-                body: JSON.stringify({ score: actualScore }),
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    score: actualScore,
+                    correctAnswers: finalScore,
+                    totalQuestions: questions.length,
+                }),
             });
         } catch (err) {
             console.error("Failed to sync score:", err);
@@ -96,7 +111,7 @@ export function QuizGame() {
             setShowExplanation(false);
         } else {
             setIsFinished(true);
-            syncScore(score);
+            syncScore(correctAnswersRef.current);
         }
     };
 

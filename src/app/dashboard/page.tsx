@@ -13,11 +13,9 @@ import {
     Flame,
     Layers3,
     LineChart,
-    Search,
     ShieldCheck,
     Star,
     Target,
-    TrendingUp,
 } from "lucide-react";
 import { AdminLoginForm } from "@/components/auth/login-form";
 import { getSession } from "@/lib/auth";
@@ -29,9 +27,9 @@ export const dynamic = "force-dynamic";
 type StatCard = {
     title: string;
     value: string;
-    delta: string;
-    positive: boolean;
+    description: string;
     icon: React.ReactNode;
+    footer?: React.ReactNode;
 };
 
 type BarDatum = {
@@ -44,8 +42,8 @@ type LineDatum = {
     value: number;
 };
 
-const DASHBOARD_TITLE = "Learning Command Center";
-const DASHBOARD_SUBTITLE = "Your personal overview for lessons, quizzes, and knowledge building.";
+const DASHBOARD_TITLE = "Trung tâm quản lý";
+const DASHBOARD_SUBTITLE = "Dữ liệu cá nhân hóa của bạn về các bài học, câu hỏi và xây dựng kiến thức";
 const LOGIN_TITLE = "Đăng nhập để vào dashboard";
 const LOGIN_DESCRIPTION = "Truy cập bảng điều khiển để xem tiến độ, mục tiêu và những điểm đáng chú ý trong hành trình học.";
 
@@ -53,9 +51,27 @@ function formatPercent(value: number) {
     return `${Math.max(0, Math.min(100, Math.round(value)))}%`;
 }
 
-function formatDelta(value: number) {
-    const abs = Math.abs(value).toFixed(1);
-    return `${value >= 0 ? "+" : "-"}${abs}%`;
+function getLevelRequirement(level: number) {
+    return 100 * (2 ** level);
+}
+
+function calculateExperience(totalExperience: number) {
+    let level = 0;
+    let currentLevelExperience = Math.max(0, totalExperience);
+    let requiredExperience = getLevelRequirement(level);
+
+    while (currentLevelExperience >= requiredExperience) {
+        currentLevelExperience -= requiredExperience;
+        level += 1;
+        requiredExperience = getLevelRequirement(level);
+    }
+
+    return {
+        level,
+        currentLevelExperience,
+        requiredExperience,
+        progress: requiredExperience > 0 ? currentLevelExperience / requiredExperience : 0,
+    };
 }
 
 function buildBarData(posts: number, lessons: number, quizCount: number, avgScore: number): BarDatum[] {
@@ -95,26 +111,18 @@ function buildPath(series: LineDatum[], width: number, height: number) {
         .join(" ");
 }
 
-function StatBlock({ title, value, delta, positive, icon }: StatCard) {
+function StatBlock({ title, value, description, icon, footer }: StatCard) {
     return (
-        <div className="rounded-[1.6rem] border border-white/8 bg-[#141414]/96 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
-            <div className="mb-6 flex items-start justify-between gap-3">
+        <div className="flex h-full flex-col rounded-[1.6rem] border border-white/8 bg-[#141414]/96 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+            <div className="mb-6 flex items-start gap-3">
                 <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] text-[#90defa]">
                     {icon}
                 </div>
-                <span
-                    className={cn(
-                        "rounded-full border px-2.5 py-1 text-[11px] font-medium tracking-[0.18em]",
-                        positive
-                            ? "border-emerald-400/20 bg-emerald-400/10 text-emerald-300"
-                            : "border-rose-400/20 bg-rose-400/10 text-rose-300",
-                    )}
-                >
-                    {delta}
-                </span>
             </div>
             <p className="text-sm text-white/48">{title}</p>
             <p className="mt-2 text-[2rem] font-semibold tracking-tight text-white">{value}</p>
+            <p className="mt-3 text-sm leading-6 text-white/46">{description}</p>
+            {footer ? <div className="mt-5">{footer}</div> : null}
         </div>
     );
 }
@@ -201,9 +209,12 @@ export default async function DashboardPage() {
     let displayName = session.username;
     let streakScore = 0;
     let recentLessonTitle = "Explore a fresh lesson";
+    let uniqueLessonCount = 0;
+    let totalCorrectAnswers = 0;
+    let totalAnsweredQuestions = 0;
 
     try {
-        const [postsRes, currentUserRes, historyRes, scoresRes] = await Promise.all([
+        const [postsRes, currentUserRes, lessonCountRes, recentLessonRes, scoresRes] = await Promise.all([
             supabase
                 .from("wiki_posts")
                 .select("*", { count: "exact", head: true })
@@ -215,27 +226,53 @@ export default async function DashboardPage() {
                 .single(),
             supabase
                 .from("user_learning_history")
+                .select("lesson_id", { count: "exact", head: true })
+                .eq("username", session.username),
+            supabase
+                .from("user_learning_history")
                 .select("lesson_title, updated_at")
                 .eq("username", session.username)
                 .order("updated_at", { ascending: false })
                 .limit(8),
             supabase
                 .from("quiz_scores")
-                .select("score")
+                .select("*")
                 .eq("username", session.username),
         ]);
 
         postCount = postsRes.count || 0;
         displayName = currentUserRes.data?.display_name || session.username;
+        uniqueLessonCount = lessonCountRes.count || 0;
 
-        const historyRows = historyRes.data || [];
-        lessonCount = historyRows.length;
+        const historyRows = recentLessonRes.data || [];
+        lessonCount = uniqueLessonCount;
         recentLessonTitle = historyRows[0]?.lesson_title || recentLessonTitle;
 
-        const scoreRows = scoresRes.data || [];
+        const scoreRows = (scoresRes.data || []) as Array<{
+            score?: number | null;
+            correct_answers?: number | null;
+            total_questions?: number | null;
+        }>;
         quizCount = scoreRows.length;
         if (scoreRows.length > 0) {
             avgScore = Number((scoreRows.reduce((sum, row) => sum + row.score, 0) / scoreRows.length).toFixed(1));
+        }
+
+        for (const row of scoreRows) {
+            const storedCorrectAnswers = typeof row.correct_answers === "number" ? row.correct_answers : null;
+            const storedTotalQuestions = typeof row.total_questions === "number" ? row.total_questions : null;
+
+            if (storedCorrectAnswers !== null && storedTotalQuestions !== null && storedTotalQuestions > 0) {
+                totalCorrectAnswers += storedCorrectAnswers;
+                totalAnsweredQuestions += storedTotalQuestions;
+                continue;
+            }
+
+            if (typeof row.score === "number") {
+                const inferredTotalQuestions = 10;
+                totalAnsweredQuestions += inferredTotalQuestions;
+                totalCorrectAnswers += Math.round((row.score / 100) * inferredTotalQuestions);
+            }
         }
 
         const now = Date.now();
@@ -251,35 +288,44 @@ export default async function DashboardPage() {
     const focusRate = Math.min(96, 30 + quizCount * 8 + Math.round(avgScore / 6));
     const consistencyRate = Math.min(100, 18 + streakScore * 3);
     const momentumRate = Math.min(100, 24 + lessonCount * 6 + postCount * 8);
+    const accuracyRate = totalAnsweredQuestions > 0 ? (totalCorrectAnswers / totalAnsweredQuestions) * 100 : 0;
+    const totalExperience = uniqueLessonCount * 10 + totalCorrectAnswers * 5;
+    const experience = calculateExperience(totalExperience);
 
     const statCards: StatCard[] = [
         {
-            title: "Learning sessions",
-            value: `${lessonCount}`,
-            delta: formatDelta(lessonCount > 0 ? lessonCount * 1.8 : 2.4),
-            positive: true,
+            title: "Số bài đã học",
+            value: `${uniqueLessonCount}`,
+            description: "Tính theo số bài duy nhất đã xem trong /learn, không cộng số lần mở lại cùng một bài.",
             icon: <BookOpen className="h-4 w-4" />,
         },
         {
-            title: "Focus coverage",
-            value: formatPercent(focusRate),
-            delta: formatDelta(quizCount > 0 ? 4.6 : 1.8),
-            positive: true,
-            icon: <Search className="h-4 w-4" />,
-        },
-        {
-            title: "Mastery score",
-            value: formatPercent(avgScore || 76),
-            delta: formatDelta(avgScore >= 70 ? 2.3 : -1.4),
-            positive: avgScore >= 70,
+            title: "Tỉ lệ chính xác",
+            value: formatPercent(accuracyRate),
+            description: totalAnsweredQuestions > 0
+                ? `${totalCorrectAnswers}/${totalAnsweredQuestions} câu đúng trong /test.`
+                : "Chưa có dữ liệu làm bài trong /test.",
             icon: <Target className="h-4 w-4" />,
         },
         {
-            title: "Momentum",
-            value: `${momentumRate}`,
-            delta: formatDelta(postCount > 0 ? 5.1 : 2.1),
-            positive: true,
-            icon: <TrendingUp className="h-4 w-4" />,
+            title: "Kinh nghiệm",
+            value: `Lv${experience.level} · ${experience.currentLevelExperience}/${experience.requiredExperience} XP`,
+            description: `${totalExperience} XP tổng. +10 mỗi bài đã học, +5 mỗi câu trả lời đúng.`,
+            icon: <Flame className="h-4 w-4" />,
+            footer: (
+                <div className="space-y-2">
+                    <div className="h-3 overflow-hidden rounded-full bg-[#4fb673]">
+                        <div
+                            className="h-full rounded-full bg-[#f6c453] transition-all duration-500"
+                            style={{ width: `${Math.max(0, Math.min(100, experience.progress * 100))}%` }}
+                        />
+                    </div>
+                    <div className="flex items-center justify-between text-xs text-white/42">
+                        <span>{experience.currentLevelExperience} XP hiện tại</span>
+                        <span>Cần {experience.requiredExperience} XP để lên Lv{experience.level + 1}</span>
+                    </div>
+                </div>
+            ),
         },
     ];
 
@@ -403,7 +449,7 @@ export default async function DashboardPage() {
                     </section>
 
                     <section className="space-y-7 px-6 py-7 sm:px-8 lg:px-10">
-                        <div className="grid gap-5 xl:grid-cols-4">
+                        <div className="grid gap-5 md:grid-cols-3">
                             {statCards.map((card) => (
                                 <StatBlock key={card.title} {...card} />
                             ))}

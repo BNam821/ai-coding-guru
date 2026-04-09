@@ -9,20 +9,50 @@ export async function POST(req: Request) {
             return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
         }
 
-        const { score } = await req.json();
+        const { score, correctAnswers, totalQuestions } = await req.json();
 
         if (typeof score !== 'number' || score < 0 || score > 100) {
             return NextResponse.json({ success: false, error: "Invalid score" }, { status: 400 });
         }
 
-        const { error } = await supabase
+        if (
+            correctAnswers !== undefined &&
+            (typeof correctAnswers !== "number" || correctAnswers < 0)
+        ) {
+            return NextResponse.json({ success: false, error: "Invalid correctAnswers" }, { status: 400 });
+        }
+
+        if (
+            totalQuestions !== undefined &&
+            (typeof totalQuestions !== "number" || totalQuestions <= 0)
+        ) {
+            return NextResponse.json({ success: false, error: "Invalid totalQuestions" }, { status: 400 });
+        }
+
+        const payload = {
+            username: session.username,
+            score,
+            ...(typeof correctAnswers === "number" ? { correct_answers: correctAnswers } : {}),
+            ...(typeof totalQuestions === "number" ? { total_questions: totalQuestions } : {}),
+        };
+
+        let { error } = await supabase
             .from("quiz_scores")
-            .insert([
-                {
-                    username: session.username,
-                    score: score
-                }
-            ]);
+            .insert([payload]);
+
+        // Fallback for old schema that still only has `score`.
+        if (error && (error.message.includes("correct_answers") || error.message.includes("total_questions"))) {
+            const fallback = await supabase
+                .from("quiz_scores")
+                .insert([
+                    {
+                        username: session.username,
+                        score,
+                    }
+                ]);
+
+            error = fallback.error;
+        }
 
         if (error) {
             console.error("Supabase Insert Error:", error);
