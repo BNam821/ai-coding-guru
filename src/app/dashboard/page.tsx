@@ -255,7 +255,7 @@ export default async function DashboardPage() {
         }>;
         quizCount = scoreRows.length;
         if (scoreRows.length > 0) {
-            avgScore = Number((scoreRows.reduce((sum, row) => sum + row.score, 0) / scoreRows.length).toFixed(1));
+            avgScore = Number((scoreRows.reduce((sum, row) => sum + (row.score ?? 0), 0) / scoreRows.length).toFixed(1));
         }
 
         for (const row of scoreRows) {
