@@ -36,6 +36,10 @@ export interface CourseWithChapters extends Course {
     chapters: Chapter[];
 }
 
+type UserCourseRegistrationRow = {
+    course_id: string | null;
+};
+
 // --- Data Fetching Functions ---
 
 /**
@@ -182,4 +186,25 @@ export async function getFullLearningTree(): Promise<CourseWithChapters[]> {
     }));
 
     return courses || [];
+}
+
+/**
+ * Get unique course IDs that a user has registered.
+ */
+export async function getUserRegisteredCourseIds(username: string): Promise<string[]> {
+    const { data, error } = await supabase
+        .from('user_course_registrations')
+        .select('course_id')
+        .eq('username', username);
+
+    if (error) {
+        console.error(`Error fetching registered courses for "${username}":`, error);
+        return [];
+    }
+
+    const ids = (data as UserCourseRegistrationRow[] | null | undefined)
+        ?.map((row) => row.course_id)
+        .filter((id): id is string => Boolean(id)) || [];
+
+    return Array.from(new Set(ids));
 }

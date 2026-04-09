@@ -1,5 +1,5 @@
-import { getFullLearningTree } from '@/lib/learn-db';
-import { isAdminAuthenticated } from '@/lib/auth';
+import { getFullLearningTree, getUserRegisteredCourseIds } from '@/lib/learn-db';
+import { getSession, isAdminAuthenticated } from '@/lib/auth';
 import { LearnSidebar } from '@/components/learn/sidebar';
 import { MobileSidebar } from '@/components/learn/mobile-sidebar';
 import { LearnSidebarStateProvider } from '@/components/learn/learn-sidebar-state';
@@ -11,19 +11,28 @@ export default async function LearnLayout({
 }: {
     children: React.ReactNode;
 }) {
-    const courses = await getFullLearningTree();
-    const isAdmin = await isAdminAuthenticated();
+    const [courses, isAdmin, session] = await Promise.all([
+        getFullLearningTree(),
+        isAdminAuthenticated(),
+        getSession(),
+    ]);
+
+    const registeredCourseIds = session?.username
+        ? await getUserRegisteredCourseIds(session.username)
+        : [];
+
+    const myCourses = courses.filter((course) => registeredCourseIds.includes(course.id));
 
     return (
         <LearnSidebarStateProvider>
             <div className="relative flex min-h-screen overflow-x-clip bg-transparent text-gray-100">
                 {/* Sidebar Desktop */}
-                <LearnSidebar courses={courses} isAdmin={isAdmin} className="hidden md:block" />
+                <LearnSidebar courses={myCourses} isAdmin={isAdmin} className="hidden md:block" />
 
                 <div className="flex min-h-screen min-w-0 flex-1 flex-col overflow-x-clip">
                     {/* Mobile Header */}
                     <header className="md:hidden flex items-center h-14 border-b border-white/10 px-4 sticky top-16 bg-black/55 backdrop-blur-md z-40">
-                        <MobileSidebar courses={courses} isAdmin={isAdmin} />
+                        <MobileSidebar courses={myCourses} isAdmin={isAdmin} />
                         <span className="ml-4 font-semibold text-lg bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600">
                             Học Tập
                         </span>

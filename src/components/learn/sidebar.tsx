@@ -41,8 +41,8 @@ export function LearnSidebar({
                         <button
                             onClick={() => setIsCollapsed?.(false)}
                             className="flex h-12 w-12 shrink-0 items-center justify-center self-center rounded-2xl border border-white/10 bg-white/5 text-blue-300 transition-colors hover:border-blue-400/40 hover:bg-blue-500/10 hover:text-blue-200"
-                            title="Mở rộng danh sách khoá học"
-                            aria-label="Mở rộng danh sách khoá học"
+                            title="Mở rộng khoá học của tôi"
+                            aria-label="Mở rộng khoá học của tôi"
                         >
                             <ChevronRight className="h-5 w-5" />
                         </button>
@@ -50,7 +50,7 @@ export function LearnSidebar({
                         <>
                             <div className="px-2">
                                 <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600">
-                                    DANH SÁCH<br /> KHÓA HỌC
+                                    Khoá học của tôi
                                 </h2>
                             </div>
 
@@ -58,8 +58,8 @@ export function LearnSidebar({
                                 <button
                                     onClick={() => setIsCollapsed?.(true)}
                                     className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-gray-300 transition-colors hover:border-blue-400/40 hover:bg-blue-500/10 hover:text-white"
-                                    title="Thu nhỏ danh sách khoá học"
-                                    aria-label="Thu nhỏ danh sách khoá học"
+                                    title="Thu gọn khoá học của tôi"
+                                    aria-label="Thu gọn khoá học của tôi"
                                 >
                                     <ChevronLeft className="h-4 w-4" />
                                 </button>
@@ -109,6 +109,12 @@ export function LearnSidebar({
                         )}
 
                         <div className="space-y-2">
+                            {courses.length === 0 && (
+                                <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-3 text-sm text-gray-400">
+                                    Bạn chưa đăng ký khoá học nào.
+                                </div>
+                            )}
+
                             {courses.map((course) => (
                                 <CourseItem
                                     key={course.id}
