@@ -57,9 +57,31 @@ function validateEditReason(value: unknown) {
     return { editReason };
 }
 
-// GET: Lấy danh sách bài viết đã xuất bản
-export async function GET() {
+// GET: Lấy danh sách bài viết đã xuất bản hoặc một bài theo slug
+export async function GET(req: Request) {
     try {
+        const { searchParams } = new URL(req.url);
+        const slug = String(searchParams.get("slug") || "").trim();
+
+        if (slug) {
+            const { data: post, error } = await supabase
+                .from("wiki_posts")
+                .select("*")
+                .eq("slug", slug)
+                .maybeSingle();
+
+            if (error) {
+                console.error("Supabase error:", error.message);
+                return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+            }
+
+            if (!post) {
+                return NextResponse.json({ success: false, error: "Không tìm thấy bài viết" }, { status: 404 });
+            }
+
+            return NextResponse.json({ success: true, post });
+        }
+
         const { data: posts, error } = await supabase
             .from("wiki_posts")
             .select("*")

@@ -6,7 +6,6 @@ import { GlassCard } from "@/components/ui/glass-card";
 import { NeonButton } from "@/components/ui/neon-button";
 import { ArrowLeft, Save, Type, FileText, User, Tag, PencilLine } from "lucide-react";
 import Link from "next/link";
-import { createClient } from "@supabase/supabase-js";
 
 export default function EditPostPage({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = use(params);
@@ -37,21 +36,16 @@ export default function EditPostPage({ params }: { params: Promise<{ slug: strin
 
             // 2. Fetch post data
             try {
-                const supabase = createClient(
-                    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-                    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-                );
+                const response = await fetch(`/api/wiki?slug=${encodeURIComponent(slug)}`, {
+                    cache: "no-store",
+                });
+                const payload = await response.json();
 
-                const { data: post, error } = await supabase
-                    .from("wiki_posts")
-                    .select("*")
-                    .eq("slug", slug)
-                    .single();
-
-                if (error || !post) {
-                    setPageError("Không tìm thấy bài viết");
+                if (!response.ok || !payload.success || !payload.post) {
+                    setPageError(payload.error || "Không tìm thấy bài viết");
                     return;
                 }
+                const post = payload.post;
 
                 // Check if user is author
                 if (post.author !== sessionData.username && sessionData.role !== 'admin') {
