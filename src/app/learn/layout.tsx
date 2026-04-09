@@ -16,11 +16,11 @@ export default async function LearnLayout({
 
     return (
         <LearnSidebarStateProvider>
-            <div className="relative flex min-h-screen bg-transparent text-gray-100">
+            <div className="relative flex min-h-screen overflow-x-clip bg-transparent text-gray-100">
                 {/* Sidebar Desktop */}
                 <LearnSidebar courses={courses} isAdmin={isAdmin} className="hidden md:block" />
 
-                <div className="flex min-h-screen min-w-0 flex-1 flex-col">
+                <div className="flex min-h-screen min-w-0 flex-1 flex-col overflow-x-clip">
                     {/* Mobile Header */}
                     <header className="md:hidden flex items-center h-14 border-b border-white/10 px-4 sticky top-16 bg-black/55 backdrop-blur-md z-40">
                         <MobileSidebar courses={courses} isAdmin={isAdmin} />
@@ -30,7 +30,7 @@ export default async function LearnLayout({
                     </header>
 
                     {/* Main Content */}
-                    <main className="relative mx-auto w-full max-w-7xl min-w-0 flex-1 p-4 pt-24 md:p-8 md:pt-28">
+                    <main className="relative mx-auto w-full max-w-7xl min-w-0 flex-1 overflow-x-clip p-4 pt-24 md:p-8 md:pt-28">
                         <div className="absolute inset-0 rounded-[2rem] bg-black/25 pointer-events-none" />
                         <div className="absolute inset-0 rounded-[2rem] bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-20 pointer-events-none" />
                         <div className="relative z-10">{children}</div>

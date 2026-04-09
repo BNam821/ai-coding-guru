@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import Image from "next/image";
-import { Megaphone, X } from "lucide-react";
+import { Bell, Megaphone, X } from "lucide-react";
 import { MarkdownRenderer } from "@/components/markdown/markdown-renderer";
 import { cn } from "@/lib/utils";
 import type { SiteAnnouncement } from "@/lib/announcements";
@@ -18,12 +17,21 @@ function formatAnnouncementTime(value: string) {
     return Number.isNaN(date.getTime()) ? "Vừa cập nhật" : dateFormatter.format(date);
 }
 
-export function AnnouncementWidget() {
+type AnnouncementWidgetProps = {
+    className?: string;
+    panelClassName?: string;
+    panelSide?: "up" | "down";
+};
+
+export function AnnouncementWidget({
+    className,
+    panelClassName,
+    panelSide = "down",
+}: AnnouncementWidgetProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [announcements, setAnnouncements] = useState<SiteAnnouncement[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [logoSrc, setLogoSrc] = useState("/announcement_logo.png");
 
     useEffect(() => {
         let isMounted = true;
@@ -69,7 +77,7 @@ export function AnnouncementWidget() {
     }, []);
 
     return (
-        <div className="fixed right-3 top-4 z-[60] flex flex-col-reverse items-end gap-3 sm:right-5 sm:top-6">
+        <div className={cn("relative z-[60] flex items-center", className)}>
             <AnimatePresence>
                 {isOpen && (
                     <motion.section
@@ -77,14 +85,20 @@ export function AnnouncementWidget() {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: -8, scale: 0.98 }}
                         transition={{ duration: 0.2, ease: "easeOut" }}
-                        className="w-[min(22rem,calc(100vw-1.5rem))] overflow-hidden rounded-3xl border border-white/12 bg-black/80 shadow-[0_20px_70px_rgba(0,0,0,0.45)] backdrop-blur-2xl sm:w-[min(22rem,calc(100vw-2.5rem))]"
+                        className={cn(
+                            "absolute right-0 w-[min(22rem,calc(100vw-1.5rem))] overflow-hidden rounded-3xl border border-white/12 bg-black/80 shadow-[0_20px_70px_rgba(0,0,0,0.45)] backdrop-blur-2xl sm:left-[calc(100%-2.5rem)] sm:right-auto sm:w-[22rem]",
+                            panelSide === "down"
+                                ? "top-full mt-3 origin-top-right sm:origin-top-left"
+                                : "bottom-full mb-3 origin-bottom-right sm:origin-bottom-left",
+                            panelClassName
+                        )}
                     >
                         <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
                             <div>
                                 <p className="text-sm font-semibold text-white">Thông báo từ website</p>
                                 <p className="text-xs text-white/45">Hiển thị 2 cập nhật mới nhất</p>
                             </div>
-                        <button
+                            <button
                                 type="button"
                                 onClick={() => setIsOpen(false)}
                                 className="rounded-full border border-white/10 p-2 text-white/60 transition-colors hover:border-white/20 hover:text-white"
@@ -141,20 +155,11 @@ export function AnnouncementWidget() {
                 aria-expanded={isOpen}
                 aria-label={isOpen ? "Ẩn thông báo" : "Mở thông báo"}
                 className={cn(
-                    "group relative flex h-14 w-14 items-center justify-center rounded-full border border-white/10 bg-[#333333] text-zinc-100 transition-colors duration-200 hover:bg-[#3d3d3d] sm:h-16 sm:w-16",
-                    isOpen && "bg-[#3d3d3d]"
+                    "group relative flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-300 transition-all duration-200 hover:bg-white/10 hover:text-starlight",
+                    isOpen && "border-accent-secondary/40 bg-accent-secondary/10 text-accent-secondary"
                 )}
             >
-                <span className="relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-[#333333] sm:h-11 sm:w-11">
-                    <Image
-                        src={logoSrc}
-                        alt="Logo thông báo"
-                        width={34}
-                        height={34}
-                        className="h-15 w-15 object-contain grayscale contrast-125 brightness-110"
-                        onError={() => setLogoSrc("/real_logo.png")}
-                    />
-                </span>
+                <Bell className="h-5 w-5" />
                 <span className="absolute right-1.5 top-1.5 h-3.5 w-3.5 rounded-full bg-red-500 shadow-[0_0_16px_rgba(239,68,68,0.9)]" />
                 <span className="absolute right-1.5 top-1.5 h-3.5 w-3.5 animate-ping rounded-full bg-red-400/70" />
             </button>

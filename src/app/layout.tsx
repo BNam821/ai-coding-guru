@@ -7,7 +7,6 @@ export const metadata: Metadata = {
 };
 
 import { Navbar } from "@/components/ui/navbar";
-import { AnnouncementWidget } from "@/components/ui/announcement-widget";
 import { Footer } from "@/components/ui/footer";
 import { RouteBackground } from "@/components/ui/route-background";
 
@@ -19,15 +18,14 @@ export default function RootLayout({
   return (
     <html lang="vi">
       <body
-        className="antialiased bg-deep-space text-starlight selection:bg-accent-primary selection:text-deep-space"
+        className="overflow-x-clip antialiased bg-deep-space text-starlight selection:bg-accent-primary selection:text-deep-space"
       >
-        <div className="min-h-screen flex flex-col relative">
+        <div className="relative flex min-h-screen flex-col overflow-x-clip">
           <RouteBackground />
           <Navbar />
           <main className="flex-1 pb-24 sm:pb-0">
             {children}
           </main>
-          <AnnouncementWidget />
           <Footer />
         </div>
       </body>
