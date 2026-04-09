@@ -47,6 +47,17 @@ const routeBackgrounds: RouteBackgroundEntry[] = [
     },
   },
   {
+    route: "/dashboard",
+    match: "prefix",
+    background: {
+      src: "/account_bg.jpg",
+      opacity: 0.45,
+      blur: "0px",
+      overlayColor: "black",
+      overlayOpacity: 0.2,
+    },
+  },
+  {
     route: "/account",
     match: "prefix",
     background: {

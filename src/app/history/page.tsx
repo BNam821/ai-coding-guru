@@ -52,7 +52,7 @@ export default async function HistoryPage() {
                             </p>
                         </div>
                         <Link
-                            href="/account"
+                            href="/dashboard/account"
                             className="inline-block px-8 py-3 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-xl transition-all"
                         >
                             Đăng nhập ngay
