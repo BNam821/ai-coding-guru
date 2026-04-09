@@ -25,6 +25,7 @@ export default async function DashboardAccountPage() {
     let userBio = "";
     let userLocation = "";
     let userAvatarUrl = "";
+    let userJoinedAt = "";
 
     if (isAuthenticated) {
         try {
@@ -38,7 +39,7 @@ export default async function DashboardAccountPage() {
                     .select("*", { count: "exact", head: true }),
                 supabase
                     .from("users")
-                    .select("email, display_name, bio, location, avatar_url")
+                    .select("email, display_name, bio, location, avatar_url, created_at")
                     .eq("username", session.username)
                     .single(),
                 supabase
@@ -58,6 +59,7 @@ export default async function DashboardAccountPage() {
             userBio = currentUserRes.data?.bio || "";
             userLocation = currentUserRes.data?.location || "";
             userAvatarUrl = currentUserRes.data?.avatar_url || "";
+            userJoinedAt = currentUserRes.data?.created_at || "";
             lessonCount = historyRes.count || 0;
 
             if (scoresRes.data && scoresRes.data.length > 0) {
@@ -98,6 +100,7 @@ export default async function DashboardAccountPage() {
                             bio: userBio,
                             location: userLocation,
                             avatarUrl: userAvatarUrl,
+                            joinedAt: userJoinedAt,
                         }}
                         stats={{ postCount, memberCount, lessonCount, avgScore }}
                     />

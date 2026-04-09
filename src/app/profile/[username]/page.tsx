@@ -16,10 +16,9 @@ export default async function ProfilePage({ params }: { params: { username: stri
     let userData: any = null;
 
     try {
-        // 1. Fetch user data first (Essential)
         const targetUserRes = await supabase
             .from("users")
-            .select("username, email, display_name, bio, location, avatar_url")
+            .select("username, email, display_name, bio, location, avatar_url, created_at")
             .eq("username", username)
             .single();
 
@@ -32,10 +31,9 @@ export default async function ProfilePage({ params }: { params: { username: stri
             return notFound();
         }
 
-        // Logic mã hóa email: a****@gmail.com
         const maskEmail = (email: string) => {
-            if (!email || !email.includes('@')) return email;
-            const [localPart, domain] = email.split('@');
+            if (!email || !email.includes("@")) return email;
+            const [localPart, domain] = email.split("@");
             if (localPart.length <= 1) return `*@${domain}`;
             return `${localPart[0]}****@${domain}`;
         };
@@ -46,20 +44,19 @@ export default async function ProfilePage({ params }: { params: { username: stri
             email: maskEmail(rawUserData.email),
             role: "admin"
         };
-        const actualUsername = userData.username; // Use the exact username from DB for other queries
+        const actualUsername = userData.username;
 
-        // 2. Fetch stats (Non-essential, handle errors gracefully)
         const [postsRes, usersRes, historyRes, scoresRes] = await Promise.allSettled([
             supabase
                 .from("wiki_posts")
-                .select("*", { count: 'exact', head: true })
+                .select("*", { count: "exact", head: true })
                 .eq("author", actualUsername),
             supabase
                 .from("users")
-                .select("*", { count: 'exact', head: true }),
+                .select("*", { count: "exact", head: true }),
             supabase
                 .from("user_learning_history")
-                .select("lesson_slug", { count: 'exact' })
+                .select("lesson_slug", { count: "exact" })
                 .eq("username", actualUsername),
             supabase
                 .from("quiz_scores")
@@ -67,11 +64,11 @@ export default async function ProfilePage({ params }: { params: { username: stri
                 .eq("username", actualUsername)
         ]);
 
-        postCount = (postsRes.status === 'fulfilled' && postsRes.value.count) || 0;
-        memberCount = (usersRes.status === 'fulfilled' && usersRes.value.count) || 0;
-        lessonCount = (historyRes.status === 'fulfilled' && historyRes.value.count) || 0;
+        postCount = (postsRes.status === "fulfilled" && postsRes.value.count) || 0;
+        memberCount = (usersRes.status === "fulfilled" && usersRes.value.count) || 0;
+        lessonCount = (historyRes.status === "fulfilled" && historyRes.value.count) || 0;
 
-        if (scoresRes.status === 'fulfilled' && scoresRes.value.data && scoresRes.value.data.length > 0) {
+        if (scoresRes.status === "fulfilled" && scoresRes.value.data && scoresRes.value.data.length > 0) {
             const total = scoresRes.value.data.reduce((acc, curr: any) => acc + curr.score, 0);
             avgScore = (total / scoresRes.value.data.length).toFixed(1);
         }
@@ -83,7 +80,6 @@ export default async function ProfilePage({ params }: { params: { username: stri
     return (
         <main className="min-h-screen pt-32 pb-20 px-4 relative z-10">
             <div className="container mx-auto max-w-4xl space-y-12">
-                {/* Back Button */}
                 <div className="flex justify-start">
                     <BackButton />
                 </div>
@@ -105,7 +101,8 @@ export default async function ProfilePage({ params }: { params: { username: stri
                         displayName: userData.display_name,
                         bio: userData.bio,
                         location: userData.location,
-                        avatarUrl: userData.avatar_url
+                        avatarUrl: userData.avatar_url,
+                        joinedAt: userData.created_at
                     }}
                     stats={{ postCount, memberCount, lessonCount, avgScore }}
                     isReadOnly={true}

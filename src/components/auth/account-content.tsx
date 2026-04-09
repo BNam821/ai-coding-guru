@@ -7,7 +7,6 @@ import { LogoutButton } from "@/components/auth/logout-button";
 import { EditProfileForm } from "@/components/auth/edit-profile-form";
 import { DeleteAccountSection } from "@/components/auth/delete-account-section";
 import { User, ShieldCheck, Mail, MapPin, UserCircle, Edit3 } from "lucide-react";
-
 import Image from "next/image";
 
 interface AccountContentProps {
@@ -19,6 +18,7 @@ interface AccountContentProps {
         bio?: string;
         location?: string;
         avatarUrl?: string;
+        joinedAt?: string;
     };
     stats: {
         postCount: number;
@@ -32,6 +32,9 @@ interface AccountContentProps {
 export function AccountContent({ session, stats, isReadOnly = false }: AccountContentProps) {
     const [isEditing, setIsEditing] = useState(false);
     const isAdmin = session?.role === "admin";
+    const joinedDate = session.joinedAt
+        ? new Intl.DateTimeFormat("vi-VN").format(new Date(session.joinedAt))
+        : "Chưa cập nhật";
 
     return (
         <div className="animate-in fade-in zoom-in-95 duration-500 text-left">
@@ -123,22 +126,18 @@ export function AccountContent({ session, stats, isReadOnly = false }: AccountCo
                             </div>
                         </div>
 
-                        <div className="mt-12 pt-8 border-t border-white/10 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+                        <div className="mt-12 pt-8 border-t border-white/10 grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+                            <div className="space-y-1">
+                                <p className="text-2xl font-bold text-white">{joinedDate}</p>
+                                <p className="text-[10px] uppercase tracking-widest text-white/40">Ngày tham gia</p>
+                            </div>
                             <div className="space-y-1">
                                 <p className="text-2xl font-bold text-white">{stats.postCount}</p>
                                 <p className="text-[10px] uppercase tracking-widest text-white/40">Bài viết</p>
                             </div>
                             <div className="space-y-1">
-                                <p className="text-2xl font-bold text-white">{stats.memberCount}</p>
-                                <p className="text-[10px] uppercase tracking-widest text-white/40">Thành viên</p>
-                            </div>
-                            <div className="space-y-1">
-                                <p className="text-2xl font-bold text-white">{stats.lessonCount}</p>
-                                <p className="text-[10px] uppercase tracking-widest text-white/40">Bài đã học</p>
-                            </div>
-                            <div className="space-y-1">
-                                <p className="text-2xl font-bold text-white">{stats.avgScore}</p>
-                                <p className="text-[10px] uppercase tracking-widest text-white/40">Điểm Trung Bình</p>
+                                <p className="text-2xl font-bold text-white">Cấp độ 1</p>
+                                <p className="text-[10px] uppercase tracking-widest text-white/40">Cấp độ</p>
                             </div>
                         </div>
                     </>
