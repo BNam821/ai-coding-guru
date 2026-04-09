@@ -1,4 +1,4 @@
-import Image from "next/image";
+﻿import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
@@ -44,10 +44,10 @@ type LineDatum = {
     value: number;
 };
 
-const DASHBOARD_TITLE = "\u004c\u0065\u0061\u0072\u006e\u0069\u006e\u0067\u0020\u0043\u006f\u006d\u006d\u0061\u006e\u0064\u0020\u0043\u0065\u006e\u0074\u0065\u0072";
-const DASHBOARD_SUBTITLE = "\u0059\u006f\u0075\u0072\u0020\u0070\u0065\u0072\u0073\u006f\u006e\u0061\u006c\u0020\u006f\u0076\u0065\u0072\u0076\u0069\u0065\u0077\u0020\u0066\u006f\u0072\u0020\u006c\u0065\u0073\u0073\u006f\u006e\u0073\u002c\u0020\u0071\u0075\u0069\u007a\u007a\u0065\u0073\u002c\u0020\u0061\u006e\u0064\u0020\u006b\u006e\u006f\u0077\u006c\u0065\u0064\u0067\u0065\u0020\u0062\u0075\u0069\u006c\u0064\u0069\u006e\u0067\u002e";
-const LOGIN_TITLE = "\u0110\u0103\u006e\u0067\u0020\u006e\u0068\u1ead\u0070\u0020\u0111\u1ec3\u0020\u0076\u00e0\u006f\u0020\u0064\u0061\u0073\u0068\u0062\u006f\u0061\u0072\u0064";
-const LOGIN_DESCRIPTION = "\u0054\u0072\u0075\u0079\u0020\u0063\u1ead\u0070\u0020\u0062\u1ea3\u006e\u0067\u0020\u0111\u0069\u1ec1\u0075\u0020\u006b\u0068\u0069\u1ec3\u006e\u0020\u0111\u1ec3\u0020\u0078\u0065\u006d\u0020\u0074\u0069\u1ebf\u006e\u0020\u0111\u1ed9\u002c\u0020\u006d\u1ee5\u0063\u0020\u0074\u0069\u00ea\u0075\u0020\u0076\u00e0\u0020\u006e\u0068\u1eef\u006e\u0067\u0020\u0111\u0069\u1ec3\u006d\u0020\u0111\u00e1\u006e\u0067\u0020\u0063\u0068\u00fa\u0020\u00fd\u0020\u0074\u0072\u006f\u006e\u0067\u0020\u0068\u00e0\u006e\u0068\u0020\u0074\u0072\u00ec\u006e\u0068\u0020\u0068\u1ecd\u0063\u002e";
+const DASHBOARD_TITLE = "Learning Command Center";
+const DASHBOARD_SUBTITLE = "Your personal overview for lessons, quizzes, and knowledge building.";
+const LOGIN_TITLE = "Đăng nhập để vào dashboard";
+const LOGIN_DESCRIPTION = "Truy cập bảng điều khiển để xem tiến độ, mục tiêu và những điểm đáng chú ý trong hành trình học.";
 
 function formatPercent(value: number) {
     return `${Math.max(0, Math.min(100, Math.round(value)))}%`;
@@ -369,14 +369,14 @@ export default async function DashboardPage() {
                                     className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-medium text-white/74 transition-colors hover:bg-white/[0.08] hover:text-white"
                                 >
                                     <ShieldCheck className="h-4 w-4" />
-                                    Account Hub
+                                    Tài khoản
                                 </Link>
                                 <Link
                                     href="/learn"
                                     className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#90defa] px-5 py-3 text-sm font-medium text-slate-950 shadow-[0_0_30px_rgba(144,222,250,0.2)] transition-transform hover:-translate-y-0.5"
                                 >
                                     <ArrowRight className="h-4 w-4" />
-                                    Continue Learning
+                                    Tiếp tục học
                                 </Link>
                             </div>
                         </div>
