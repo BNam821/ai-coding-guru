@@ -21,7 +21,7 @@ const routeBackgrounds: RouteBackgroundEntry[] = [
       opacity: 1,
       blur: "0px",
       overlayColor: "black",
-      overlayOpacity: 0.2,
+      overlayOpacity: 0,
     },
   },
   {
@@ -32,7 +32,7 @@ const routeBackgrounds: RouteBackgroundEntry[] = [
       opacity: 0.85,
       blur: "0px",
       overlayColor: "black",
-      overlayOpacity: 0.2,
+      overlayOpacity: 0,
     },
   },
   {
@@ -43,7 +43,7 @@ const routeBackgrounds: RouteBackgroundEntry[] = [
       opacity: 0.85,
       blur: "0px",
       overlayColor: "black",
-      overlayOpacity: 0.2,
+      overlayOpacity: 0,
     },
   },
   {
@@ -54,7 +54,7 @@ const routeBackgrounds: RouteBackgroundEntry[] = [
       opacity: 0.45,
       blur: "0px",
       overlayColor: "black",
-      overlayOpacity: 0.2,
+      overlayOpacity: 0,
     },
   },
   {
@@ -65,7 +65,7 @@ const routeBackgrounds: RouteBackgroundEntry[] = [
       opacity: 0.45,
       blur: "0px",
       overlayColor: "black",
-      overlayOpacity: 0.2,
+      overlayOpacity: 0,
     },
   },
   {
@@ -76,7 +76,7 @@ const routeBackgrounds: RouteBackgroundEntry[] = [
       opacity: 0.4,
       blur: "0px",
       overlayColor: "black",
-      overlayOpacity: 0.2,
+      overlayOpacity: 0,
     },
   },
   {
@@ -87,7 +87,7 @@ const routeBackgrounds: RouteBackgroundEntry[] = [
       opacity: 0.35,
       blur: "0px",
       overlayColor: "black",
-      overlayOpacity: 0.2,
+      overlayOpacity: 0,
     },
   },
   {
@@ -109,7 +109,7 @@ const routeBackgrounds: RouteBackgroundEntry[] = [
       opacity: 0.3,
       blur: "0px",
       overlayColor: "black",
-      overlayOpacity: 0.2,
+      overlayOpacity: 0,
     },
   },
   {
@@ -120,7 +120,7 @@ const routeBackgrounds: RouteBackgroundEntry[] = [
       opacity: 0.34,
       blur: "0px",
       overlayColor: "black",
-      overlayOpacity: 0.2,
+      overlayOpacity: 0,
     },
   },
 ];

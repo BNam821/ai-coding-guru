@@ -352,6 +352,13 @@ export default async function DashboardPage() {
 
                             <div className="flex flex-col gap-3 sm:flex-row">
                                 <Link
+                                    href="/wiki/manage"
+                                    className="inline-flex items-center justify-center gap-2 rounded-2xl border border-[#90defa]/20 bg-[#90defa]/10 px-5 py-3 text-sm font-medium text-[#c8f3ff] transition-colors hover:bg-[#90defa]/16 hover:text-white"
+                                >
+                                    <FileText className="h-4 w-4" />
+                                    Quản lý bài viết
+                                </Link>
+                                <Link
                                     href="/dashboard/account"
                                     className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-medium text-white/74 transition-colors hover:bg-white/[0.08] hover:text-white"
                                 >
