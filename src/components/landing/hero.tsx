@@ -29,7 +29,7 @@ export function Hero({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
 
     const handlePrimaryAction = () => {
         if (isLoggedIn) {
-            router.push("/dashboard/account");
+            router.push("/dashboard");
             return;
         }
 
