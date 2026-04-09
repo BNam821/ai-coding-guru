@@ -43,8 +43,8 @@ type LineDatum = {
 };
 
 const DASHBOARD_TITLE = "Trung tâm quản lý";
-const DASHBOARD_SUBTITLE = "Dữ liệu cá nhân hóa của bạn về các bài học, câu hỏi và xây dựng kiến thức";
-const LOGIN_TITLE = "Đăng nhập để vào dashboard";
+const DASHBOARD_SUBTITLE = "Dữ liệu cá nhân hóa của bạn về các bài học, câu hỏi và xây dựng kiến thức.";
+const LOGIN_TITLE = "Đăng nhập để vào dashboard.";
 const LOGIN_DESCRIPTION = "Truy cập bảng điều khiển để xem tiến độ, mục tiêu và những điểm đáng chú ý trong hành trình học.";
 
 function formatPercent(value: number) {
