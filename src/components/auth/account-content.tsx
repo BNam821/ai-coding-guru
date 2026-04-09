@@ -25,6 +25,7 @@ interface AccountContentProps {
         memberCount: number;
         lessonCount: number;
         avgScore: string;
+        currentLevel?: number;
     };
     isReadOnly?: boolean;
 }
@@ -136,7 +137,7 @@ export function AccountContent({ session, stats, isReadOnly = false }: AccountCo
                                 <p className="text-[10px] uppercase tracking-widest text-white/40">Bài viết</p>
                             </div>
                             <div className="space-y-1">
-                                <p className="text-2xl font-bold text-white">Cấp độ 1</p>
+                                <p className="text-2xl font-bold text-white">Lv.{stats.currentLevel ?? 0}</p>
                                 <p className="text-[10px] uppercase tracking-widest text-white/40">Cấp độ</p>
                             </div>
                         </div>

@@ -1,6 +1,7 @@
 import { AccountContent } from "@/components/auth/account-content";
 import { BackButton } from "@/components/ui/back-button";
 import { supabase } from "@/lib/supabase";
+import { getUserProgressSnapshot } from "@/lib/user-progress";
 import { notFound } from "next/navigation";
 
 export const revalidate = 60;
@@ -13,6 +14,7 @@ export default async function ProfilePage({ params }: { params: { username: stri
     let memberCount = 0;
     let lessonCount = 0;
     let avgScore = "0";
+    let currentLevel = 0;
     let userData: any = null;
 
     try {
@@ -46,7 +48,7 @@ export default async function ProfilePage({ params }: { params: { username: stri
         };
         const actualUsername = userData.username;
 
-        const [postsRes, usersRes, historyRes, scoresRes] = await Promise.allSettled([
+        const [postsRes, usersRes, progressRes] = await Promise.allSettled([
             supabase
                 .from("wiki_posts")
                 .select("*", { count: "exact", head: true })
@@ -54,23 +56,15 @@ export default async function ProfilePage({ params }: { params: { username: stri
             supabase
                 .from("users")
                 .select("*", { count: "exact", head: true }),
-            supabase
-                .from("user_learning_history")
-                .select("lesson_slug", { count: "exact" })
-                .eq("username", actualUsername),
-            supabase
-                .from("quiz_scores")
-                .select("score")
-                .eq("username", actualUsername)
+            getUserProgressSnapshot(actualUsername),
         ]);
 
         postCount = (postsRes.status === "fulfilled" && postsRes.value.count) || 0;
         memberCount = (usersRes.status === "fulfilled" && usersRes.value.count) || 0;
-        lessonCount = (historyRes.status === "fulfilled" && historyRes.value.count) || 0;
-
-        if (scoresRes.status === "fulfilled" && scoresRes.value.data && scoresRes.value.data.length > 0) {
-            const total = scoresRes.value.data.reduce((acc, curr: any) => acc + curr.score, 0);
-            avgScore = (total / scoresRes.value.data.length).toFixed(1);
+        if (progressRes.status === "fulfilled") {
+            lessonCount = progressRes.value.uniqueLessonCount;
+            avgScore = progressRes.value.avgScore.toFixed(1);
+            currentLevel = progressRes.value.experience.level;
         }
     } catch (error) {
         console.error("Failed to fetch profile data:", error);
@@ -104,7 +98,7 @@ export default async function ProfilePage({ params }: { params: { username: stri
                         avatarUrl: userData.avatar_url,
                         joinedAt: userData.created_at
                     }}
-                    stats={{ postCount, memberCount, lessonCount, avgScore }}
+                    stats={{ postCount, memberCount, lessonCount, avgScore, currentLevel }}
                     isReadOnly={true}
                 />
             </div>

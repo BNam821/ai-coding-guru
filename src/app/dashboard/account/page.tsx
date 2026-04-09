@@ -2,6 +2,7 @@ import { getSession } from "@/lib/auth";
 import { AccountContent } from "@/components/auth/account-content";
 import { AdminLoginForm } from "@/components/auth/login-form";
 import { supabase } from "@/lib/supabase";
+import { getUserProgressSnapshot } from "@/lib/user-progress";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
@@ -22,6 +23,7 @@ export default async function DashboardAccountPage() {
     let memberCount = 0;
     let lessonCount = 0;
     let avgScore = "0";
+    let currentLevel = 0;
     let userEmail = "";
     let userDisplayName = "";
     let userBio = "";
@@ -31,7 +33,7 @@ export default async function DashboardAccountPage() {
 
     if (isAuthenticated) {
         try {
-            const [postsRes, usersRes, currentUserRes, historyRes, scoresRes] = await Promise.all([
+            const [postsRes, usersRes, currentUserRes, progressSnapshot] = await Promise.all([
                 supabase
                     .from("wiki_posts")
                     .select("*", { count: "exact", head: true })
@@ -44,14 +46,7 @@ export default async function DashboardAccountPage() {
                     .select("email, display_name, bio, location, avatar_url, created_at")
                     .eq("username", session.username)
                     .single(),
-                supabase
-                    .from("user_learning_history")
-                    .select("lesson_slug", { count: "exact" })
-                    .eq("username", session.username),
-                supabase
-                    .from("quiz_scores")
-                    .select("score")
-                    .eq("username", session.username),
+                getUserProgressSnapshot(session.username),
             ]);
 
             postCount = postsRes.count || 0;
@@ -62,12 +57,9 @@ export default async function DashboardAccountPage() {
             userLocation = currentUserRes.data?.location || "";
             userAvatarUrl = currentUserRes.data?.avatar_url || "";
             userJoinedAt = currentUserRes.data?.created_at || "";
-            lessonCount = historyRes.count || 0;
-
-            if (scoresRes.data && scoresRes.data.length > 0) {
-                const total = scoresRes.data.reduce((acc, curr) => acc + curr.score, 0);
-                avgScore = (total / scoresRes.data.length).toFixed(1);
-            }
+            lessonCount = progressSnapshot.uniqueLessonCount;
+            avgScore = progressSnapshot.avgScore.toFixed(1);
+            currentLevel = progressSnapshot.experience.level;
         } catch (error) {
             console.error("Failed to fetch dashboard stats:", error);
         }
@@ -111,7 +103,7 @@ export default async function DashboardAccountPage() {
                             avatarUrl: userAvatarUrl,
                             joinedAt: userJoinedAt,
                         }}
-                        stats={{ postCount, memberCount, lessonCount, avgScore }}
+                        stats={{ postCount, memberCount, lessonCount, avgScore, currentLevel }}
                     />
                 )}
             </div>

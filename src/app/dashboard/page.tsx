@@ -20,6 +20,7 @@ import {
 import { AdminLoginForm } from "@/components/auth/login-form";
 import { getSession } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
+import { getUserProgressSnapshot } from "@/lib/user-progress";
 import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -49,29 +50,6 @@ const LOGIN_DESCRIPTION = "Truy cập bảng điều khiển để xem tiến đ
 
 function formatPercent(value: number) {
     return `${Math.max(0, Math.min(100, Math.round(value)))}%`;
-}
-
-function getLevelRequirement(level: number) {
-    return 100 * (2 ** level);
-}
-
-function calculateExperience(totalExperience: number) {
-    let level = 0;
-    let currentLevelExperience = Math.max(0, totalExperience);
-    let requiredExperience = getLevelRequirement(level);
-
-    while (currentLevelExperience >= requiredExperience) {
-        currentLevelExperience -= requiredExperience;
-        level += 1;
-        requiredExperience = getLevelRequirement(level);
-    }
-
-    return {
-        level,
-        currentLevelExperience,
-        requiredExperience,
-        progress: requiredExperience > 0 ? currentLevelExperience / requiredExperience : 0,
-    };
 }
 
 function buildBarData(posts: number, lessons: number, quizCount: number, avgScore: number): BarDatum[] {
@@ -212,9 +190,16 @@ export default async function DashboardPage() {
     let uniqueLessonCount = 0;
     let totalCorrectAnswers = 0;
     let totalAnsweredQuestions = 0;
+    let totalExperience = 0;
+    let experience = {
+        level: 0,
+        currentLevelExperience: 0,
+        requiredExperience: 100,
+        progress: 0,
+    };
 
     try {
-        const [postsRes, currentUserRes, lessonCountRes, recentLessonRes, scoresRes] = await Promise.all([
+        const [postsRes, currentUserRes, progressSnapshot] = await Promise.all([
             supabase
                 .from("wiki_posts")
                 .select("*", { count: "exact", head: true })
@@ -224,62 +209,21 @@ export default async function DashboardPage() {
                 .select("display_name")
                 .eq("username", session.username)
                 .single(),
-            supabase
-                .from("user_learning_history")
-                .select("lesson_id", { count: "exact", head: true })
-                .eq("username", session.username),
-            supabase
-                .from("user_learning_history")
-                .select("lesson_title, updated_at")
-                .eq("username", session.username)
-                .order("updated_at", { ascending: false })
-                .limit(8),
-            supabase
-                .from("quiz_scores")
-                .select("*")
-                .eq("username", session.username),
+            getUserProgressSnapshot(session.username),
         ]);
 
         postCount = postsRes.count || 0;
         displayName = currentUserRes.data?.display_name || session.username;
-        uniqueLessonCount = lessonCountRes.count || 0;
-
-        const historyRows = recentLessonRes.data || [];
+        uniqueLessonCount = progressSnapshot.uniqueLessonCount;
         lessonCount = uniqueLessonCount;
-        recentLessonTitle = historyRows[0]?.lesson_title || recentLessonTitle;
-
-        const scoreRows = (scoresRes.data || []) as Array<{
-            score?: number | null;
-            correct_answers?: number | null;
-            total_questions?: number | null;
-        }>;
-        quizCount = scoreRows.length;
-        if (scoreRows.length > 0) {
-            avgScore = Number((scoreRows.reduce((sum, row) => sum + (row.score ?? 0), 0) / scoreRows.length).toFixed(1));
-        }
-
-        for (const row of scoreRows) {
-            const storedCorrectAnswers = typeof row.correct_answers === "number" ? row.correct_answers : null;
-            const storedTotalQuestions = typeof row.total_questions === "number" ? row.total_questions : null;
-
-            if (storedCorrectAnswers !== null && storedTotalQuestions !== null && storedTotalQuestions > 0) {
-                totalCorrectAnswers += storedCorrectAnswers;
-                totalAnsweredQuestions += storedTotalQuestions;
-                continue;
-            }
-
-            if (typeof row.score === "number") {
-                const inferredTotalQuestions = 10;
-                totalAnsweredQuestions += inferredTotalQuestions;
-                totalCorrectAnswers += Math.round((row.score / 100) * inferredTotalQuestions);
-            }
-        }
-
-        const now = Date.now();
-        streakScore = historyRows.reduce((acc, row) => {
-            const distance = Math.max(0, 7 - Math.floor((now - new Date(row.updated_at).getTime()) / (1000 * 60 * 60 * 24)));
-            return acc + distance;
-        }, 0);
+        recentLessonTitle = progressSnapshot.recentLessonTitle;
+        quizCount = progressSnapshot.quizCount;
+        avgScore = progressSnapshot.avgScore;
+        totalCorrectAnswers = progressSnapshot.totalCorrectAnswers;
+        totalAnsweredQuestions = progressSnapshot.totalAnsweredQuestions;
+        streakScore = progressSnapshot.streakScore;
+        totalExperience = progressSnapshot.totalExperience;
+        experience = progressSnapshot.experience;
     } catch (error) {
         console.error("Failed to fetch dashboard overview:", error);
     }
@@ -289,9 +233,6 @@ export default async function DashboardPage() {
     const consistencyRate = Math.min(100, 18 + streakScore * 3);
     const momentumRate = Math.min(100, 24 + lessonCount * 6 + postCount * 8);
     const accuracyRate = totalAnsweredQuestions > 0 ? (totalCorrectAnswers / totalAnsweredQuestions) * 100 : 0;
-    const totalExperience = uniqueLessonCount * 10 + totalCorrectAnswers * 5;
-    const experience = calculateExperience(totalExperience);
-
     const statCards: StatCard[] = [
         {
             title: "Số bài đã học",
