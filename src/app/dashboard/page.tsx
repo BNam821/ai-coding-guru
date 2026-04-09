@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
@@ -14,7 +15,6 @@ import {
     LineChart,
     Search,
     ShieldCheck,
-    Sparkles,
     Star,
     Target,
     TrendingUp,
@@ -326,9 +326,15 @@ export default async function DashboardPage() {
                         <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
                             <div className="space-y-5">
                                 <div className="space-y-3">
-                                    <div className="inline-flex items-center gap-2 rounded-full border border-[#7fdbff]/20 bg-[#7fdbff]/10 px-3 py-1 text-xs font-medium tracking-[0.18em] text-[#a9ecff]">
-                                        <Sparkles className="h-3.5 w-3.5" />
-                                        Overview workspace
+                                    <div className="inline-flex items-center">
+                                        <Image
+                                            src="/team_logo.png"
+                                            alt="Team logo"
+                                            width={1249}
+                                            height={297}
+                                            className="h-auto w-[220px] object-contain sm:w-[260px]"
+                                            priority
+                                        />
                                     </div>
                                     <div>
                                         <h1 className="text-3xl font-semibold tracking-tight text-white sm:text-[2.35rem]">{DASHBOARD_TITLE}</h1>
