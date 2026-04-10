@@ -1,12 +1,12 @@
 import { cookies } from "next/headers";
 import bcrypt from "bcryptjs";
-import { supabase } from "./supabase";
+import { supabaseAdmin } from "./supabase-admin";
 
 const ADMIN_SECRET_KEY = process.env.ADMIN_SECRET_KEY;
 
 export async function loginUser(username: string, pass: string, adminKey?: string) {
     try {
-        const { data: user, error } = await supabase
+        const { data: user, error } = await supabaseAdmin
             .from("users")
             .select("*")
             .or(`username.eq.${username},email.eq.${username}`)

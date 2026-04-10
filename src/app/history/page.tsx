@@ -1,5 +1,5 @@
 import { isUserAuthenticated, getSession } from "@/lib/auth";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabase-admin";
 import Link from "next/link";
 import { BookOpen, Clock, ArrowRight, BookMarked, History, ArrowLeft } from "lucide-react";
 import { GlassCard } from "@/components/ui/glass-card";
@@ -14,7 +14,7 @@ export default async function HistoryPage() {
     let history: any[] = [];
 
     if (isLoggedIn) {
-        const { data } = await supabase
+        const { data } = await supabaseAdmin
             .from("user_learning_history")
             .select("*")
             .eq("username", session.username)

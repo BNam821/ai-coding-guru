@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
 import { getSession } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabase-admin';
 
 export async function GET() {
     const session = await getSession();
@@ -10,7 +11,7 @@ export async function GET() {
     }
 
     try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseAdmin
             .from('user_course_registrations')
             .select('course_id')
             .eq('username', session.username);
@@ -52,7 +53,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ success: false, error: 'Course not found' }, { status: 404 });
         }
 
-        const { error } = await supabase
+        const { error } = await supabaseAdmin
             .from('user_course_registrations')
             .upsert({
                 username: session.username,

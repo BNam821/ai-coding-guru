@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabase-admin";
 import { getSession } from "@/lib/auth";
 
 // POST: Track lesson (Hybrid: DB for user, local is handled by client)
@@ -16,7 +16,7 @@ export async function POST(req: Request) {
         if (session) {
             // Logged in: Upsert to user_learning_history to track multiple lessons
             // UNIQUE(username, lesson_id) allows updating the timestamp of an existing entry
-            const { error } = await supabase
+            const { error } = await supabaseAdmin
                 .from("user_learning_history")
                 .upsert({
                     username: session.username,
@@ -50,7 +50,7 @@ export async function GET(req: Request) {
     const limit = parseInt(searchParams.get("limit") || "10");
 
     try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseAdmin
             .from("user_learning_history")
             .select("*")
             .eq("username", session.username)

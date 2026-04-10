@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabase-admin';
 
 // --- Types ---
 
@@ -192,7 +193,7 @@ export async function getFullLearningTree(): Promise<CourseWithChapters[]> {
  * Get unique course IDs that a user has registered.
  */
 export async function getUserRegisteredCourseIds(username: string): Promise<string[]> {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
         .from('user_course_registrations')
         .select('course_id')
         .eq('username', username);

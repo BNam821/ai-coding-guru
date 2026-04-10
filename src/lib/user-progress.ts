@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabase-admin";
 
 export type ExperienceSummary = {
     level: number;
@@ -50,17 +50,17 @@ export function calculateExperience(totalExperience: number): ExperienceSummary 
 
 export async function getUserProgressSnapshot(username: string): Promise<UserProgressSnapshot> {
     const [lessonCountRes, recentLessonRes, scoresRes] = await Promise.all([
-        supabase
+        supabaseAdmin
             .from("user_learning_history")
             .select("lesson_id", { count: "exact", head: true })
             .eq("username", username),
-        supabase
+        supabaseAdmin
             .from("user_learning_history")
             .select("lesson_title, updated_at")
             .eq("username", username)
             .order("updated_at", { ascending: false })
             .limit(8),
-        supabase
+        supabaseAdmin
             .from("quiz_scores")
             .select("score, correct_answers, total_questions")
             .eq("username", username),

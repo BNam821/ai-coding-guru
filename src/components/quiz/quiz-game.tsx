@@ -31,6 +31,7 @@ export function QuizGame() {
     const [isFinished, setIsFinished] = useState(false);
     const [showExitModal, setShowExitModal] = useState(false);
     const [estimatedSeconds, setEstimatedSeconds] = useState(10);
+    const [syncState, setSyncState] = useState<"idle" | "saving" | "saved" | "error">("idle");
     const correctAnswersRef = useRef(0);
 
     useEffect(() => {
@@ -66,6 +67,7 @@ export function QuizGame() {
             setScore(0);
             correctAnswersRef.current = 0;
             setIsFinished(false);
+            setSyncState("idle");
         } catch (err: any) {
             console.error("Quiz Fetch Error:", err);
             setError(err.message || "Có lỗi khi tạo bài kiểm tra. Vui lòng thử lại.");
@@ -87,9 +89,11 @@ export function QuizGame() {
 
     const syncScore = async (finalScore: number) => {
         try {
+            setSyncState("saving");
             const actualScore = Math.round((finalScore / questions.length) * 100);
-            await fetch("/api/quiz/score", {
+            const res = await fetch("/api/quiz/score", {
                 method: "POST",
+                keepalive: true,
                 headers: {
                     "Content-Type": "application/json",
                 },
@@ -99,8 +103,15 @@ export function QuizGame() {
                     totalQuestions: questions.length,
                 }),
             });
+
+            if (!res.ok) {
+                throw new Error("Score sync failed");
+            }
+
+            setSyncState("saved");
         } catch (err) {
             console.error("Failed to sync score:", err);
+            setSyncState("error");
         }
     };
 
@@ -175,6 +186,11 @@ export function QuizGame() {
                     </div>
                     <p className="text-gray-400 text-lg">
                         Bạn đã trả lời đúng <span className="text-white font-bold">{score}/{questions.length}</span> câu hỏi.
+                    </p>
+                    <p className="mt-4 text-sm text-gray-400">
+                        {syncState === "saving" && "Đang đồng bộ kết quả vào dashboard..."}
+                        {syncState === "saved" && "Kết quả đã được lưu vào dashboard."}
+                        {syncState === "error" && "Chưa lưu được kết quả. Hãy thử làm lại hoặc kiểm tra kết nối."}
                     </p>
                 </GlassCard>
 

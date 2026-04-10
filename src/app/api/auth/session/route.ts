@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabase-admin";
 
 export async function GET() {
     const session = await getSession();
@@ -10,7 +10,7 @@ export async function GET() {
     }
 
     try {
-        const { data } = await supabase
+        const { data } = await supabaseAdmin
             .from("users")
             .select("avatar_url")
             .eq("username", session.username)

@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabase-admin";
 import { getLesson } from "@/lib/learn-db";
 import { geminiModel } from "@/lib/gemini";
 
@@ -14,7 +14,7 @@ export async function generateQuizForUser(username: string): Promise<QuizQuestio
     console.log(`Generating quiz for user: ${username}`);
 
     // 1. Get recent history (Top 3 most recently accessed lessons)
-    const { data: history, error } = await supabase
+    const { data: history, error } = await supabaseAdmin
         .from("user_learning_history")
         .select("course_slug, lesson_slug, lesson_title")
         .eq("username", username)

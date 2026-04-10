@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabase-admin";
 
 export async function POST(req: Request) {
     try {
@@ -36,13 +36,13 @@ export async function POST(req: Request) {
             ...(typeof totalQuestions === "number" ? { total_questions: totalQuestions } : {}),
         };
 
-        let { error } = await supabase
+        let { error } = await supabaseAdmin
             .from("quiz_scores")
             .insert([payload]);
 
         // Fallback for old schema that still only has `score`.
         if (error && (error.message.includes("correct_answers") || error.message.includes("total_questions"))) {
-            const fallback = await supabase
+            const fallback = await supabaseAdmin
                 .from("quiz_scores")
                 .insert([
                     {
