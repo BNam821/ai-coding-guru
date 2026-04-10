@@ -123,6 +123,17 @@ const routeBackgrounds: RouteBackgroundEntry[] = [
       overlayOpacity: 0,
     },
   },
+  {
+    route: "/list",
+    match: "prefix",
+    background: {
+      src: "/learn_bg.jpg",
+      opacity: 0.34,
+      blur: "0px",
+      overlayColor: "black",
+      overlayOpacity: 0,
+    },
+  },
 ];
 
 export function getPageBackground(pathname: string): AppPageBackgroundConfig | null {

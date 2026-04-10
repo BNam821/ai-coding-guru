@@ -38,7 +38,9 @@ export default async function LearnPage() {
             <section className="space-y-4">
                 <div className="flex items-center justify-between gap-3">
                     <h2 className="text-xl font-bold text-white">Khoá học trong sản phẩm</h2>
-                    <span className="text-sm text-gray-400">Hiển thị tối đa 3 khoá học</span>
+                    <Link href="/list" className="text-sm text-gray-400 transition-colors hover:text-white">
+                        Xem tất cả khoá học
+                    </Link>
                 </div>
 
                 {featuredCourses.length === 0 ? (
