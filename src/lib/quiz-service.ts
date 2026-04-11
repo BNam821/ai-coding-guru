@@ -1,6 +1,7 @@
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { getLesson } from "@/lib/learn-db";
 import { geminiModel } from "@/lib/gemini";
+import { sanitizeModelJson } from "@/lib/learn-ai-question";
 
 export interface QuizQuestion {
     id: number;
@@ -8,6 +9,58 @@ export interface QuizQuestion {
     options: string[];
     correctAnswer: number; // 0-3
     explanation: string;
+}
+
+function validateQuizQuestions(payload: unknown): QuizQuestion[] {
+    if (!Array.isArray(payload) || payload.length === 0) {
+        throw new Error("Quiz payload must be a non-empty array");
+    }
+
+    return payload.map((item, index) => {
+        if (!item || typeof item !== "object") {
+            throw new Error(`Question ${index + 1} is invalid`);
+        }
+
+        const question = typeof (item as { question?: unknown }).question === "string"
+            ? (item as { question: string }).question.trim()
+            : "";
+        const explanation = typeof (item as { explanation?: unknown }).explanation === "string"
+            ? (item as { explanation: string }).explanation.trim()
+            : "";
+        const options = Array.isArray((item as { options?: unknown }).options)
+            ? (item as { options: unknown[] }).options.filter((option): option is string => typeof option === "string").map((option) => option.trim())
+            : [];
+        const rawCorrectAnswer = (item as { correctAnswer?: unknown }).correctAnswer;
+        const correctAnswer = typeof rawCorrectAnswer === "number"
+            ? rawCorrectAnswer
+            : Number(rawCorrectAnswer);
+        const rawId = (item as { id?: unknown }).id;
+        const id = typeof rawId === "number" ? rawId : index + 1;
+
+        if (!question) {
+            throw new Error(`Question ${index + 1} is missing content`);
+        }
+
+        if (options.length !== 4 || options.some((option) => !option)) {
+            throw new Error(`Question ${index + 1} must contain exactly 4 options`);
+        }
+
+        if (!Number.isInteger(correctAnswer) || correctAnswer < 0 || correctAnswer > 3) {
+            throw new Error(`Question ${index + 1} has an invalid correctAnswer`);
+        }
+
+        if (!explanation) {
+            throw new Error(`Question ${index + 1} is missing explanation`);
+        }
+
+        return {
+            id,
+            question,
+            options,
+            correctAnswer,
+            explanation,
+        };
+    });
 }
 
 export async function generateQuizForUser(username: string): Promise<QuizQuestion[]> {
@@ -49,50 +102,53 @@ export async function generateQuizForUser(username: string): Promise<QuizQuestio
     }
 
     // 3. Generate with Gemini
-    const prompt = `
-    Bạn là một trợ lý AI giáo dục (AI Tutor). Dựa trên nội dung các bài học dưới đây mà người dùng vừa học, hãy tạo ra 10 câu hỏi trắc nghiệm (Multiple Choice Questions) bằng Tiếng Việt để kiểm tra độ hiểu bài.
+    let lastError: Error | null = null;
 
-    Yêu cầu:
-    1. Câu hỏi phải liên quan trực tiếp đến nội dung cung cấp.
-    2. Độ khó: Trung bình - Khó.
-    3. Có 4 đáp án lựa chọn, chỉ 1 đáp án đúng.
-    4. Giải thích ngắn gọn tại sao đáp án đó đúng.
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+        const prompt = `
+        Bạn là một trợ lý AI giáo dục (AI Tutor). Dựa trên nội dung các bài học dưới đây mà người dùng vừa học, hãy tạo ra đúng 10 câu hỏi trắc nghiệm bằng Tiếng Việt để kiểm tra độ hiểu bài.
 
-    Dữ liệu bài học:
-    ${fullContent}
+        Yêu cầu:
+        1. Câu hỏi phải liên quan trực tiếp đến nội dung cung cấp.
+        2. Độ khó: Trung bình đến khó.
+        3. Mỗi câu có đúng 4 đáp án lựa chọn và chỉ 1 đáp án đúng.
+        4. "correctAnswer" phải là số nguyên 0, 1, 2 hoặc 3.
+        5. "options" phải là mảng đúng 4 chuỗi.
+        6. Mỗi câu phải có "explanation" ngắn gọn, rõ ràng.
+        7. Trả về JSON array thuần túy, không markdown, không code block, không giải thích thêm ngoài JSON.
+        ${attempt > 0 ? '8. Lần trả lời trước không đúng schema. Lần này bắt buộc bám sát schema tuyệt đối.' : ""}
 
-    Output Format (JSON Array ONLY, no markdown code blocks):
-    [
-        {
+        Dữ liệu bài học:
+        ${fullContent}
+
+        Output format hợp lệ:
+        [
+          {
             "id": 1,
             "question": "Nội dung câu hỏi?",
             "options": ["Đáp án A", "Đáp án B", "Đáp án C", "Đáp án D"],
-            "correctAnswer": 0, // Index của đáp án đúng (0, 1, 2, hoặc 3)
-            "explanation": "Giải thích..."
+            "correctAnswer": 0,
+            "explanation": "Giải thích ngắn gọn."
+          }
+        ]
+        `;
+
+        console.log(`Sending prompt to Gemini (attempt ${attempt + 1})...`);
+
+        try {
+            const result = await geminiModel.generateContent(prompt);
+            const response = await result.response;
+            const text = response.text();
+
+            console.log("Gemini response received.");
+
+            const questions = validateQuizQuestions(JSON.parse(sanitizeModelJson(text)));
+            return questions;
+        } catch (error) {
+            lastError = error instanceof Error ? error : new Error("Unknown Gemini error");
+            console.error(`Quiz generation attempt ${attempt + 1} failed:`, lastError);
         }
-    ]
-    `;
-
-    console.log("Sending prompt to Gemini...");
-    const result = await geminiModel.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
-
-    console.log("Gemini response received.");
-
-    try {
-        // Clean up markdown if present (Gemini sometimes wraps in ```json ... ```)
-        const jsonStr = text.replace(/```json/g, "").replace(/```/g, "").trim();
-        const questions = JSON.parse(jsonStr);
-
-        // Validate structure briefly
-        if (!Array.isArray(questions) || questions.length === 0) {
-            throw new Error("Format JSON không hợp lệ");
-        }
-
-        return questions;
-    } catch (e) {
-        console.error("Failed to parse Gemini response:", text);
-        throw new Error("Lỗi khi xử lý dữ liệu từ AI.");
     }
+
+    throw new Error("Lỗi khi xử lý dữ liệu từ AI.");
 }
