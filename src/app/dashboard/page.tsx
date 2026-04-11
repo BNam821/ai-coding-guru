@@ -1,4 +1,4 @@
-﻿import Image from "next/image";
+import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
@@ -16,11 +16,13 @@ import {
     ShieldCheck,
     Star,
     Target,
+    Trophy,
+    Medal,
 } from "lucide-react";
 import { AdminLoginForm } from "@/components/auth/login-form";
 import { getSession } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
-import { getUserProgressSnapshot } from "@/lib/user-progress";
+import { getUserProgressSnapshot, getDashboardChartsData, getLeaderboardData, type LeaderboardUser } from "@/lib/user-progress";
 import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -106,24 +108,82 @@ function StatBlock({ title, value, description, icon, footer }: StatCard) {
 }
 
 function BarChart({ data }: { data: BarDatum[] }) {
-    const max = Math.max(...data.map((item) => item.value), 1);
+    const rawMax = Math.max(...data.map((item) => item.value), 4);
+    const max = Math.ceil(rawMax);
+    const yTicks = [max, Math.round(max * 0.75), Math.round(max * 0.5), Math.round(max * 0.25), 0];
 
     return (
-        <div className="space-y-5">
-            <div className="grid h-[220px] grid-cols-6 items-end gap-4">
+        <div className="flex h-[252px] items-start gap-4 pb-2">
+            <div className="flex h-[220px] flex-col justify-between text-right text-[11px] text-white/30 pb-[24px]">
+                {yTicks.map((tick, i) => (
+                    <span key={i} className="leading-none">{tick}</span>
+                ))}
+            </div>
+            <div className="flex-1 grid h-[220px] grid-cols-7 items-end gap-2 sm:gap-4">
                 {data.map((item) => (
-                    <div key={item.label} className="flex h-full flex-col justify-end gap-3">
-                        <div className="relative flex-1">
-                            <div className="absolute inset-x-0 bottom-0 rounded-[1rem] bg-gradient-to-b from-[#87e0ff] to-[#5fbff2] shadow-[0_0_25px_rgba(109,204,245,0.35)]" style={{ height: `${(item.value / max) * 100}%` }} />
+                    <div key={item.label} className="flex h-full flex-col justify-end gap-3 group relative">
+                        <div className="relative flex-1 w-full flex justify-center">
+                            <div
+                                className="absolute bottom-0 w-full rounded-[1rem] bg-gradient-to-b from-[#87e0ff] to-[#5fbff2] shadow-[0_0_25px_rgba(109,204,245,0.35)] transition-all duration-300"
+                                style={{ height: `${(item.value / max) * 100}%` }}
+                            >
+                                <div className="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/80 px-2 py-1 rounded text-xs text-white whitespace-nowrap pointer-events-none">
+                                    {item.value} lượt
+                                </div>
+                            </div>
                         </div>
-                        <span className="text-center text-xs text-white/42">{item.label}</span>
+                        <span className="text-center text-[10px] sm:text-[11px] text-white/42 truncate">{item.label}</span>
                     </div>
                 ))}
             </div>
-            <div className="grid grid-cols-4 gap-3 text-[11px] text-white/30 sm:grid-cols-6">
-                {["0", "20", "40", "60", "80", "100"].map((tick) => (
-                    <span key={tick}>{tick}</span>
-                ))}
+        </div>
+    );
+}
+
+function LeaderboardPanel({ data }: { data: LeaderboardUser[] }) {
+    return (
+        <div className="space-y-4">
+            <div className="grid gap-3 max-h-[252px] overflow-y-auto no-scrollbar">
+                {data.map((user) => {
+                    const isTop3 = user.rank <= 3;
+                    const medalColor =
+                        user.rank === 1 ? "text-[#f6c453]" :
+                            user.rank === 2 ? "text-[#a2a2a2]" :
+                                user.rank === 3 ? "text-[#cd7f32]" :
+                                    "text-white/20";
+
+                    return (
+                        <div
+                            key={user.username}
+                            className={cn(
+                                "flex items-center justify-between rounded-2xl border border-white/5 bg-white/[0.02] p-4 transition-all hover:bg-white/[0.04]",
+                                user.rank === 1 && "border-[#f6c453]/20 bg-[#f6c453]/[0.02]"
+                            )}
+                        >
+                            <div className="flex items-center gap-4">
+                                <div className={cn("flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold", medalColor)}>
+                                    {user.rank <= 3 ? <Trophy className="h-5 w-5" /> : user.rank}
+                                </div>
+                                <div>
+                                    <p className="text-sm font-medium text-white">{user.displayName}</p>
+                                    <p className="text-[10px] text-white/30 tracking-wider">{user.username}</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <div className="flex flex-col items-end">
+                                    <span className="text-sm font-bold text-[#8edcf8]">Lv.{user.level}</span>
+                                    <span className="text-[10px] text-white/40">{user.totalExperience} XP</span>
+                                </div>
+                                {isTop3 && <Medal className={cn("h-4 w-4", medalColor)} />}
+                            </div>
+                        </div>
+                    );
+                })}
+                {data.length === 0 && (
+                    <div className="flex h-40 flex-col items-center justify-center text-center">
+                        <p className="text-sm text-white/40">Chưa có dữ liệu xếp hạng</p>
+                    </div>
+                )}
             </div>
         </div>
     );
@@ -197,9 +257,11 @@ export default async function DashboardPage() {
         requiredExperience: 100,
         progress: 0,
     };
+    let chartsData: any = null;
+    let leaderboardData: LeaderboardUser[] = [];
 
     try {
-        const [postsRes, currentUserRes, progressSnapshot] = await Promise.all([
+        const [postsRes, currentUserRes, progressSnapshot, fetchedChartsData, fetchedLeaderboard] = await Promise.all([
             supabase
                 .from("wiki_posts")
                 .select("*", { count: "exact", head: true })
@@ -210,6 +272,8 @@ export default async function DashboardPage() {
                 .eq("username", session.username)
                 .single(),
             getUserProgressSnapshot(session.username),
+            getDashboardChartsData(session.username),
+            getLeaderboardData(),
         ]);
 
         postCount = postsRes.count || 0;
@@ -224,6 +288,8 @@ export default async function DashboardPage() {
         streakScore = progressSnapshot.streakScore;
         totalExperience = progressSnapshot.totalExperience;
         experience = progressSnapshot.experience;
+        chartsData = fetchedChartsData;
+        leaderboardData = fetchedLeaderboard;
     } catch (error) {
         console.error("Failed to fetch dashboard overview:", error);
     }
@@ -270,8 +336,11 @@ export default async function DashboardPage() {
         },
     ];
 
-    const barData = buildBarData(postCount, lessonCount, quizCount, avgScore || 74);
-    const lineData = buildLineData(lessonCount, quizCount, postCount);
+    let barData = chartsData?.learningFrequency?.map((d: any) => ({ label: d.label, value: d.sessions })) || [];
+    let lineData = chartsData?.lessonCompletionRates || [];
+
+    if (barData.length === 0) barData = buildBarData(postCount, lessonCount, quizCount, avgScore || 74);
+    if (lineData.length === 0) lineData = buildLineData(lessonCount, quizCount, postCount);
 
     const insightCards = [
         {
@@ -401,13 +470,13 @@ export default async function DashboardPage() {
                                 <div className="mb-6">
                                     <div className="flex items-start justify-between gap-4">
                                         <div>
-                                            <h2 className="text-xl font-semibold tracking-tight text-white">Focus Distribution</h2>
+                                            <h2 className="text-xl font-semibold tracking-tight text-white">Tần suất học tập</h2>
                                             <p className="mt-2 max-w-lg text-sm leading-6 text-white/46">
-                                                Snapshot of how your effort is spread across lessons, quizzes, writing, and review loops.
+                                                Biểu đồ tần suất làm bài kiểm tra của bạn. <br></br>Chỉ tính những lần hoàn thành đủ 10 câu hỏi.
                                             </p>
                                         </div>
                                         <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-3 py-2 text-xs text-white/52">
-                                            updated live
+                                            Tuần này
                                         </div>
                                     </div>
                                 </div>
@@ -418,17 +487,18 @@ export default async function DashboardPage() {
                                 <div className="mb-6">
                                     <div className="flex items-start justify-between gap-4">
                                         <div>
-                                            <h2 className="text-xl font-semibold tracking-tight text-white">Progress Velocity</h2>
+                                            <h2 className="text-xl font-semibold tracking-tight text-white">Bảng xếp hạng</h2>
                                             <p className="mt-2 max-w-lg text-sm leading-6 text-white/46">
-                                                Rolling view of your recent growth based on completed sessions, quiz attempts, and study output.
+                                                Top 10 người dùng có cấp độ và kinh nghiệm cao nhất. <br></br> Cuộn để xem thêm.
                                             </p>
                                         </div>
-                                        <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-3 py-2 text-xs text-white/52">
-                                            last 12 checkpoints
+                                        <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-xs text-white/44">
+                                            <CheckCircle2 className="h-3.5 w-3.5 text-[#8edcf8]" />
+                                            Cập nhật liên tục
                                         </div>
                                     </div>
                                 </div>
-                                <LineChartPanel data={lineData} />
+                                <LeaderboardPanel data={leaderboardData} />
                             </section>
                         </div>
 
@@ -523,7 +593,7 @@ export default async function DashboardPage() {
                         </section>
                     </section>
                 </div>
-            </div>
-        </main>
+            </div >
+        </main >
     );
 }
