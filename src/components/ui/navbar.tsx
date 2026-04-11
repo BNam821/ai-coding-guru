@@ -184,7 +184,7 @@ export function Navbar() {
                 </div>
             </nav>
 
-            <nav className="fixed inset-x-3 bottom-3 z-50 sm:hidden">
+            <nav className="fixed inset-x-3 bottom-3 z-[60] sm:hidden">
                 <div className="glass-panel rounded-[1.75rem] border border-white/10 bg-black/65 px-2 py-2 shadow-2xl backdrop-blur-xl">
                     <div className="grid grid-cols-6 gap-1">
                         {navItems.map((item) => {

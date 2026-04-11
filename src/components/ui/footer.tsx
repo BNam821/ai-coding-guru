@@ -4,7 +4,7 @@ import React from "react";
 
 export function Footer() {
     return (
-        <footer className="relative z-50 mt-auto px-4 py-3 sm:py-2">
+        <footer className="relative z-10 mt-auto px-4 py-3 sm:py-2">
             <div className="container mx-auto flex flex-col items-center justify-between gap-2 opacity-20 transition-opacity duration-500 hover:opacity-100 md:flex-row">
                 <p className="order-2 text-center text-[10px] uppercase tracking-widest md:order-1 md:whitespace-nowrap">
                     © 2026 Google Antigravity & OpenAI Codex. Phát triển với <span className="mx-0.5">❤️</span> bởi <span>CamPha8</span>.
