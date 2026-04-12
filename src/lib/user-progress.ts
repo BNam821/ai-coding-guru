@@ -20,6 +20,31 @@ export type UserProgressSnapshot = {
     experience: ExperienceSummary;
 };
 
+export type RecentLearningLesson = {
+    lessonId: string;
+    courseSlug: string;
+    lessonSlug: string;
+    lessonTitle: string;
+    updatedAt: string | null;
+    progressPercent: number | null;
+};
+
+export type NextLearningLesson = {
+    courseSlug: string;
+    lessonSlug: string;
+    lessonTitle: string;
+    courseTitle: string;
+};
+
+type LearningHistoryRow = {
+    lesson_id?: string | null;
+    course_slug?: string | null;
+    lesson_slug?: string | null;
+    lesson_title?: string | null;
+    updated_at?: string | null;
+    progress_percent?: number | null;
+};
+
 type QuizScoreRow = {
     score?: number | null;
     correct_answers?: number | null;
@@ -199,6 +224,61 @@ export async function getDashboardChartsData(username: string) {
     return {
         learningFrequency,
         lessonCompletionRates
+    };
+}
+
+export async function getDashboardLearningDetails(username: string, limit = 5): Promise<{
+    recentLessons: RecentLearningLesson[];
+    nextLesson: NextLearningLesson | null;
+}> {
+    const safeLimit = Math.max(1, Math.min(limit, 10));
+    const { data } = await supabaseAdmin
+        .from("user_learning_history")
+        .select("lesson_id, course_slug, lesson_slug, lesson_title, updated_at, progress_percent")
+        .eq("username", username)
+        .order("updated_at", { ascending: false })
+        .limit(safeLimit);
+
+    const recentLessons = ((data || []) as LearningHistoryRow[])
+        .filter((row) => row.lesson_id && row.course_slug && row.lesson_slug && row.lesson_title)
+        .map((row) => ({
+            lessonId: row.lesson_id as string,
+            courseSlug: row.course_slug as string,
+            lessonSlug: row.lesson_slug as string,
+            lessonTitle: row.lesson_title as string,
+            updatedAt: row.updated_at ?? null,
+            progressPercent: typeof row.progress_percent === "number" ? row.progress_percent : null,
+        }));
+
+    const latestLesson = recentLessons[0];
+    if (!latestLesson) {
+        return {
+            recentLessons,
+            nextLesson: null,
+        };
+    }
+
+    const course = await getCourseBySlug(latestLesson.courseSlug);
+    if (!course) {
+        return {
+            recentLessons,
+            nextLesson: null,
+        };
+    }
+
+    const syllabus = await getCourseSyllabus(course.id);
+    const flatLessons = syllabus.flatMap((chapter) => chapter.lessons || []);
+    const currentIndex = flatLessons.findIndex((lesson) => lesson.slug === latestLesson.lessonSlug);
+    const nextLesson = currentIndex >= 0 ? flatLessons[currentIndex + 1] : null;
+
+    return {
+        recentLessons,
+        nextLesson: nextLesson ? {
+            courseSlug: latestLesson.courseSlug,
+            lessonSlug: nextLesson.slug,
+            lessonTitle: nextLesson.title,
+            courseTitle: course.title,
+        } : null,
     };
 }
 

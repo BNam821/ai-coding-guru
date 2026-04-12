@@ -1,17 +1,14 @@
 import Image from "next/image";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import {
     Activity,
     ArrowRight,
     BookOpen,
     CheckCircle2,
     ChevronRight,
-    Clock3,
     Compass,
     FileText,
     Flame,
-    Layers3,
     LineChart,
     ShieldCheck,
     Star,
@@ -20,9 +17,18 @@ import {
     Medal,
 } from "lucide-react";
 import { AdminLoginForm } from "@/components/auth/login-form";
+import { DashboardOverviewTabs } from "@/components/dashboard/dashboard-overview-tabs";
 import { getSession } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
-import { getUserProgressSnapshot, getDashboardChartsData, getLeaderboardData, type LeaderboardUser } from "@/lib/user-progress";
+import {
+    getDashboardChartsData,
+    getDashboardLearningDetails,
+    getLeaderboardData,
+    getUserProgressSnapshot,
+    type LeaderboardUser,
+    type NextLearningLesson,
+    type RecentLearningLesson,
+} from "@/lib/user-progress";
 import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -259,9 +265,11 @@ export default async function DashboardPage() {
     };
     let chartsData: any = null;
     let leaderboardData: LeaderboardUser[] = [];
+    let recentLearningLessons: RecentLearningLesson[] = [];
+    let nextLearningLesson: NextLearningLesson | null = null;
 
     try {
-        const [postsRes, currentUserRes, progressSnapshot, fetchedChartsData, fetchedLeaderboard] = await Promise.all([
+        const [postsRes, currentUserRes, progressSnapshot, fetchedChartsData, fetchedLeaderboard, learningDetails] = await Promise.all([
             supabase
                 .from("wiki_posts")
                 .select("*", { count: "exact", head: true })
@@ -274,6 +282,7 @@ export default async function DashboardPage() {
             getUserProgressSnapshot(session.username),
             getDashboardChartsData(session.username),
             getLeaderboardData(),
+            getDashboardLearningDetails(session.username),
         ]);
 
         postCount = postsRes.count || 0;
@@ -290,14 +299,13 @@ export default async function DashboardPage() {
         experience = progressSnapshot.experience;
         chartsData = fetchedChartsData;
         leaderboardData = fetchedLeaderboard;
+        recentLearningLessons = learningDetails.recentLessons;
+        nextLearningLesson = learningDetails.nextLesson;
     } catch (error) {
         console.error("Failed to fetch dashboard overview:", error);
     }
 
-    const completionRate = Math.min(98, 35 + lessonCount * 7 + Math.round(avgScore / 5));
-    const focusRate = Math.min(96, 30 + quizCount * 8 + Math.round(avgScore / 6));
     const consistencyRate = Math.min(100, 18 + streakScore * 3);
-    const momentumRate = Math.min(100, 24 + lessonCount * 6 + postCount * 8);
     const accuracyRate = totalAnsweredQuestions > 0 ? (totalCorrectAnswers / totalAnsweredQuestions) * 100 : 0;
     const statCards: StatCard[] = [
         {
@@ -342,36 +350,6 @@ export default async function DashboardPage() {
     if (barData.length === 0) barData = buildBarData(postCount, lessonCount, quizCount, avgScore || 74);
     if (lineData.length === 0) lineData = buildLineData(lessonCount, quizCount, postCount);
 
-    const insightCards = [
-        {
-            icon: <Compass className="h-4 w-4" />,
-            title: "Recommended next move",
-            text: `Continue from "${recentLessonTitle}" or open your account workspace to refine profile and learning settings.`,
-            href: "/dashboard/account",
-            hrefLabel: "Open account workspace",
-        },
-        {
-            icon: <Flame className="h-4 w-4" />,
-            title: "Consistency signal",
-            text: `Your recent activity suggests a ${consistencyRate >= 60 ? "steady" : "recovering"} pace. A short quiz session can lift retention faster than another passive read.`,
-            href: "/test/exam",
-            hrefLabel: "Start a quiz",
-        },
-        {
-            icon: <FileText className="h-4 w-4" />,
-            title: "Knowledge output",
-            text: `You have ${postCount} published article${postCount === 1 ? "" : "s"}. Turning notes into wiki posts is currently the clearest leverage point.`,
-            href: "/wiki/create",
-            hrefLabel: "Write a new post",
-        },
-    ];
-
-    const tabs = [
-        { label: "Overview", href: "/dashboard", active: true, icon: <Layers3 className="h-4 w-4" /> },
-        { label: "Learning", href: "/learn", active: false, icon: <BookOpen className="h-4 w-4" /> },
-        { label: "Writing", href: "/wiki/manage", active: false, icon: <FileText className="h-4 w-4" /> },
-    ];
-
     return (
         <main className="relative z-10 min-h-screen bg-transparent px-4 pb-20 pt-28">
             <div className="mx-auto max-w-[1280px]">
@@ -399,9 +377,9 @@ export default async function DashboardPage() {
                                 <div className="flex flex-wrap gap-2">
                                     {[
                                         displayName,
-                                        session.role === "admin" ? "Admin access" : "Member mode",
-                                        "Progress synced",
-                                        "Insight ready",
+                                        session.role === "admin" ? "Quản trị viên" : "Người dùng",
+                                        "Tiến độ",
+                                        "Hiểu biết",
                                     ].map((badge) => (
                                         <span key={badge} className="rounded-lg border border-white/10 bg-white/[0.03] px-3 py-1.5 text-xs text-white/48">
                                             {badge}
@@ -411,13 +389,6 @@ export default async function DashboardPage() {
                             </div>
 
                             <div className="flex flex-col gap-3 sm:flex-row">
-                                <Link
-                                    href="/wiki/manage"
-                                    className="inline-flex items-center justify-center gap-2 rounded-2xl border border-[#90defa]/20 bg-[#90defa]/10 px-5 py-3 text-sm font-medium text-[#c8f3ff] transition-colors hover:bg-[#90defa]/16 hover:text-white"
-                                >
-                                    <FileText className="h-4 w-4" />
-                                    Quản lý bài viết
-                                </Link>
                                 <Link
                                     href="/dashboard/account"
                                     className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-medium text-white/74 transition-colors hover:bg-white/[0.08] hover:text-white"
@@ -437,23 +408,11 @@ export default async function DashboardPage() {
                     </section>
 
                     <section className="border-b border-white/8 px-6 py-4 sm:px-8 lg:px-10">
-                        <div className="flex flex-wrap gap-2">
-                            {tabs.map((tab) => (
-                                <Link
-                                    key={tab.label}
-                                    href={tab.href}
-                                    className={cn(
-                                        "inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm transition-colors",
-                                        tab.active
-                                            ? "border border-white/10 bg-white/[0.04] text-white"
-                                            : "text-white/46 hover:bg-white/[0.04] hover:text-white/80",
-                                    )}
-                                >
-                                    {tab.icon}
-                                    {tab.label}
-                                </Link>
-                            ))}
-                        </div>
+                        <DashboardOverviewTabs
+                            lessonCount={uniqueLessonCount}
+                            recentLessons={recentLearningLessons}
+                            nextLesson={nextLearningLesson}
+                        />
                     </section>
 
                     <section className="space-y-7 px-6 py-7 sm:px-8 lg:px-10">
@@ -500,40 +459,6 @@ export default async function DashboardPage() {
                             </section>
                         </div>
 
-                        <section className="rounded-[1.8rem] border border-white/8 bg-[#141414]/96 p-6">
-                            <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-                                <div>
-                                    <h2 className="text-xl font-semibold tracking-tight text-white">Actionable Insights</h2>
-                                    <p className="mt-2 max-w-2xl text-sm leading-6 text-white/46">
-                                        Recommendations derived from your current pace and content footprint. Use them to decide what to open next.
-                                    </p>
-                                </div>
-                                <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-xs text-white/44">
-                                    <CheckCircle2 className="h-3.5 w-3.5 text-[#8edcf8]" />
-                                    Synced with current account data
-                                </div>
-                            </div>
-
-                            <div className="grid gap-4 lg:grid-cols-3">
-                                {insightCards.map((item) => (
-                                    <div key={item.title} className="rounded-[1.4rem] border border-white/8 bg-[#111111] p-5">
-                                        <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] text-[#90defa]">
-                                            {item.icon}
-                                        </div>
-                                        <h3 className="text-lg font-medium text-white">{item.title}</h3>
-                                        <p className="mt-3 text-sm leading-6 text-white/48">{item.text}</p>
-                                        <Link
-                                            href={item.href}
-                                            className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-[#8fe1ff] transition-opacity hover:opacity-80"
-                                        >
-                                            {item.hrefLabel}
-                                            <ChevronRight className="h-4 w-4" />
-                                        </Link>
-                                    </div>
-                                ))}
-                            </div>
-                        </section>
-
                         <section className="grid gap-5 xl:grid-cols-[1.05fr_0.95fr]">
                             <div className="rounded-[1.8rem] border border-white/8 bg-[#141414]/96 p-6">
                                 <div className="flex items-center justify-between gap-4">
@@ -573,7 +498,7 @@ export default async function DashboardPage() {
                                         { label: "Mở tài khoản", href: "/dashboard/account" },
                                         { label: "Xem lịch sử học", href: "/history" },
                                         { label: "Bài học", href: "/learn" },
-                                        { label: "tạo bài viết mới", href: "/wiki/create" },
+                                        { label: "Tạo bài viết mới", href: "/wiki/create" },
                                     ].map((item) => (
                                         <Link
                                             key={item.label}

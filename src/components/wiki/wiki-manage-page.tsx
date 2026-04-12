@@ -257,7 +257,7 @@ export function WikiManagePage() {
             <section className="space-y-4">
                 <div className="flex items-center gap-3">
                     <FolderOpen className="text-accent-secondary" size={22} />
-                    <h2 className="text-2xl font-bold text-white">Bài viết đã đăng</h2>
+                    <h2 className="text-2xl font-bold text-white">Bài viết đã duyệt</h2>
                 </div>
 
                 {publishedPosts.length === 0 ? (
