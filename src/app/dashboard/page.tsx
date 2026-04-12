@@ -8,7 +8,6 @@ import {
     ChevronRight,
     Flame,
     LineChart,
-    ShieldCheck,
     Star,
     Target,
     Trophy,
@@ -404,9 +403,9 @@ export default async function DashboardPage({
                             <div className="flex flex-col gap-3 sm:flex-row">
                                 <Link
                                     href="/dashboard/account"
-                                    className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-medium text-white/74 transition-colors hover:bg-white/[0.08] hover:text-white"
+                                    className="hidden"
                                 >
-                                    <ShieldCheck className="h-4 w-4" />
+                                    <span />
                                     Tài khoản
                                 </Link>
                                 <Link
