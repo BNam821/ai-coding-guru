@@ -79,6 +79,8 @@ export function QuizGame({ debugPreset }: QuizGameProps) {
     const [estimatedSeconds, setEstimatedSeconds] = useState(10);
     const [syncState, setSyncState] = useState<"idle" | "saving" | "saved" | "error">("idle");
     const correctAnswersRef = useRef(0);
+    const questionCardRef = useRef<HTMLDivElement>(null);
+    const explanationRef = useRef<HTMLDivElement>(null);
     const isDebugMode = Boolean(debugPreset);
 
     // Countdown logic for loading estimation
@@ -147,6 +149,11 @@ export function QuizGame({ debugPreset }: QuizGameProps) {
             correctAnswersRef.current += 1;
             setScore(prev => prev + 1);
         }
+
+        // Auto-scroll to explanation after a short delay
+        setTimeout(() => {
+            explanationRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+        }, 100);
     };
 
     const syncScore = async (finalScore: number) => {
@@ -187,6 +194,11 @@ export function QuizGame({ debugPreset }: QuizGameProps) {
             setCurrentIndex(prev => prev + 1);
             setSelectedAnswer(null);
             setShowExplanation(false);
+
+            // Auto-scroll to top of question card
+            setTimeout(() => {
+                questionCardRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+            }, 100);
         } else {
             setIsFinished(true);
             syncScore(correctAnswersRef.current);
@@ -311,7 +323,7 @@ export function QuizGame({ debugPreset }: QuizGameProps) {
             </div>
 
             {/* Question Card */}
-            <GlassCard className="p-8 md:p-10 space-y-8 animate-fade-in-right">
+            <GlassCard ref={questionCardRef} className="p-8 md:p-10 space-y-8 animate-fade-in-right">
                 <div className="p-6 md:p-8 rounded-2xl bg-yellow-400/5 border border-yellow-400/20 shadow-[0_0_30px_rgba(250,204,21,0.05)] mb-8">
                     <div className="prose prose-invert prose-lg md:prose-xl max-w-none font-bold text-white tracking-tight leading-relaxed [&_pre]:font-normal [&_pre]:text-sm [&_code]:font-mono">
                         <MarkdownRenderer content={currentQuestion.question} mode="safe" />
@@ -372,7 +384,7 @@ export function QuizGame({ debugPreset }: QuizGameProps) {
 
                 {/* Explanation */}
                 {showExplanation && (
-                    <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl animate-fade-in-up">
+                    <div ref={explanationRef} className="mt-6 p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl animate-fade-in-up">
                         <h4 className="font-bold text-blue-400 mb-1 flex items-center gap-2">
                             <span className="text-lg">💡</span> Giải thích
                         </h4>
