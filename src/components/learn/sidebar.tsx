@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import type { CourseWithChapters } from '@/lib/learn-db';
 import { AddCourseButton, EditCourseButton, DeleteCourseButton } from './course-actions';
 import { useLearnSidebarState } from './learn-sidebar-state';
+import { AddChapterButton } from './add-chapter-button';
 
 interface LearnSidebarProps {
     courses: CourseWithChapters[];
@@ -210,7 +211,7 @@ function CourseItem({
 
                     {/* Add New Chapter Button (Admin Only) */}
                     {isAdmin && (
-                        <AddChapterInline courseId={course.id} />
+                        <AddChapterButton courseId={course.id} variant="inline" />
                     )}
                 </div>
             )}
@@ -393,110 +394,6 @@ function ChapterItem({
                         );
                     })}
                 </div>
-            )}
-        </div>
-    );
-}
-
-// --- Add Chapter Inline ---
-function AddChapterInline({ courseId }: { courseId: string }) {
-    const router = useRouter();
-    const [isAdding, setIsAdding] = useState(false);
-    const [newTitle, setNewTitle] = useState('');
-    const [isSaving, setIsSaving] = useState(false);
-    const inputRef = useRef<HTMLInputElement>(null);
-
-    useEffect(() => {
-        if (isAdding && inputRef.current) {
-            inputRef.current.focus();
-        }
-    }, [isAdding]);
-
-    const handleCreate = async () => {
-        const trimmed = newTitle.trim();
-        if (!trimmed) {
-            setIsAdding(false);
-            return;
-        }
-
-        setIsSaving(true);
-        try {
-            const res = await fetch('/api/learn/chapter', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title: trimmed, course_id: courseId }),
-            });
-            const data = await res.json();
-            if (data.success) {
-                setNewTitle('');
-                setIsAdding(false);
-                router.refresh();
-                // Notify other components (like /learn/create) that structure changed
-                window.dispatchEvent(new CustomEvent('learn-structure-changed'));
-            } else {
-                alert(data.error || 'Lỗi khi tạo chương');
-            }
-        } catch {
-            alert('Đã có lỗi xảy ra');
-        } finally {
-            setIsSaving(false);
-        }
-    };
-
-    const handleCancel = () => {
-        setNewTitle('');
-        setIsAdding(false);
-    };
-
-    const handleKeyDown = (e: React.KeyboardEvent) => {
-        if (e.key === 'Enter') handleCreate();
-        if (e.key === 'Escape') handleCancel();
-    };
-
-    if (!isAdding) {
-        return (
-            <button
-                onClick={() => setIsAdding(true)}
-                className="flex items-center gap-1.5 px-2 py-1.5 mt-1 text-xs text-gray-600 hover:text-blue-400 hover:bg-white/5 rounded-md transition-colors w-full"
-            >
-                <Plus className="w-3 h-3" />
-                <span>Thêm chương mới</span>
-            </button>
-        );
-    }
-
-    return (
-        <div className="flex items-center gap-1 px-1 mt-1">
-            <input
-                ref={inputRef}
-                type="text"
-                value={newTitle}
-                onChange={(e) => setNewTitle(e.target.value)}
-                onKeyDown={handleKeyDown}
-                onBlur={handleCancel}
-                disabled={isSaving}
-                placeholder="Tên chương..."
-                className="flex-1 bg-white/10 border border-blue-500/50 rounded px-2 py-1 text-xs text-white placeholder:text-white/30 focus:outline-none focus:border-blue-400 min-w-0"
-            />
-            {isSaving ? (
-                <Loader2 className="w-3.5 h-3.5 text-blue-400 animate-spin shrink-0" />
-            ) : (
-                <>
-                    <button
-                        onMouseDown={(e) => { e.preventDefault(); handleCreate(); }}
-                        className="p-0.5 text-green-400 hover:text-green-300 shrink-0"
-                        title="Tạo"
-                    >
-                        <Check className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                        onMouseDown={(e) => { e.preventDefault(); handleCancel(); }}
-                        className="p-0.5 text-red-400 hover:text-red-300 shrink-0"
-                        title="Hủy"
-                    >
-                        <X className="w-3.5 h-3.5" />
-                    </button>
-                </>
             )}
         </div>
     );

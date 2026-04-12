@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { BookOpen, ChevronRight, Edit, ArrowLeft, Plus, Trash2 } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import { DeleteCourseButton } from '@/components/learn/course-actions';
+import { AddChapterButton } from '@/components/learn/add-chapter-button';
 import { toRoman } from '@/lib/utils';
 
 export default async function CourseDetailPage({ params }: { params: { course: string } }) {
@@ -64,12 +65,13 @@ export default async function CourseDetailPage({ params }: { params: { course: s
                 {isAdmin && (
                     <div className="flex flex-wrap gap-4 pt-4">
                         <Link
-                            href="/learn/create"
+                            href={`/learn/create?courseId=${course.id}`}
                             className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors shadow-lg shadow-blue-500/20"
                         >
                             <Plus className="w-4 h-4" />
                             Thêm bài học mới
                         </Link>
+                        <AddChapterButton courseId={course.id} />
                     </div>
                 )}
             </div>

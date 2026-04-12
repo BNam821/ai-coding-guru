@@ -74,3 +74,32 @@ export async function PUT(req: Request) {
         return NextResponse.json({ success: false, error: "Internal Server Error" }, { status: 500 });
     }
 }
+
+// DELETE: Remove a chapter
+export async function DELETE(req: Request) {
+    if (!(await isAdminAuthenticated())) {
+        return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+    }
+
+    try {
+        const { id } = await req.json();
+
+        if (!id) {
+            return NextResponse.json({ success: false, error: "Missing required field (id)" }, { status: 400 });
+        }
+
+        const { error } = await supabase
+            .from("chapters")
+            .delete()
+            .eq("id", id);
+
+        if (error) {
+            return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+        }
+
+        revalidatePath("/learn");
+        return NextResponse.json({ success: true });
+    } catch (error) {
+        return NextResponse.json({ success: false, error: "Internal Server Error" }, { status: 500 });
+    }
+}
