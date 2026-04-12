@@ -57,6 +57,11 @@ type LineDatum = {
     value: number;
 };
 
+type DashboardBadge = {
+    label: string;
+    className?: string;
+};
+
 const DASHBOARD_TITLE = "Trung tâm quản lý";
 const DASHBOARD_SUBTITLE = "Dữ liệu cá nhân hóa của bạn về các bài học, câu hỏi và xây dựng kiến thức.";
 const LOGIN_TITLE = "Đăng nhập để vào dashboard.";
@@ -64,6 +69,34 @@ const LOGIN_DESCRIPTION = "Truy cập bảng điều khiển để xem tiến đ
 
 function formatPercent(value: number) {
     return `${Math.max(0, Math.min(100, Math.round(value)))}%`;
+}
+
+function getKnowledgeTierBadge(level: number): DashboardBadge {
+    if (level >= 7) {
+        return {
+            label: "Kim cương",
+            className: "border-[#7dd3fc]/80 bg-[#38bdf8]/12 text-[#d8f3ff] shadow-[0_0_24px_rgba(56,189,248,0.3)]",
+        };
+    }
+
+    if (level >= 5) {
+        return {
+            label: "Vàng",
+            className: "border-[#f6d365]/80 bg-[#f6d365]/12 text-[#fff2b3] shadow-[0_0_24px_rgba(246,211,101,0.28)]",
+        };
+    }
+
+    if (level >= 3) {
+        return {
+            label: "Bạc",
+            className: "border-[#d9e2ec]/80 bg-[#d9e2ec]/10 text-[#f5f7fa] shadow-[0_0_24px_rgba(217,226,236,0.24)]",
+        };
+    }
+
+    return {
+        label: "Đồng",
+        className: "border-[#d4a373]/80 bg-[#d4a373]/10 text-[#f8dec4] shadow-[0_0_24px_rgba(212,163,115,0.24)]",
+    };
 }
 
 function buildBarData(posts: number, lessons: number, quizCount: number, avgScore: number): BarDatum[] {
@@ -362,6 +395,8 @@ export default async function DashboardPage({
     if (barData.length === 0) barData = buildBarData(postCount, lessonCount, quizCount, avgScore || 74);
     if (lineData.length === 0) lineData = buildLineData(lessonCount, quizCount, postCount);
 
+    const knowledgeTierBadge = getKnowledgeTierBadge(experience.level);
+
     return (
         <main className="relative z-10 min-h-screen bg-transparent px-4 pb-20 pt-28">
             <div className="mx-auto max-w-[1280px]">
@@ -392,8 +427,14 @@ export default async function DashboardPage({
                                         session.role === "admin" ? "Quản trị viên" : "Người dùng",
                                         "Tiến độ",
                                         "Hiểu biết",
-                                    ].map((badge) => (
-                                        <span key={badge} className="rounded-lg border border-white/10 bg-white/[0.03] px-3 py-1.5 text-xs text-white/48">
+                                    ].filter((_, index) => index < 3).concat(knowledgeTierBadge.label).map((badge) => (
+                                        <span
+                                            key={badge}
+                                            className={cn(
+                                                "rounded-lg border border-white/10 bg-white/[0.03] px-3 py-1.5 text-xs text-white/48",
+                                                badge === knowledgeTierBadge.label && knowledgeTierBadge.className,
+                                            )}
+                                        >
                                             {badge}
                                         </span>
                                     ))}

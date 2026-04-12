@@ -3,8 +3,6 @@ import { AccountContent } from "@/components/auth/account-content";
 import { AdminLoginForm } from "@/components/auth/login-form";
 import { supabase } from "@/lib/supabase";
 import { getUserProgressSnapshot } from "@/lib/user-progress";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -68,13 +66,6 @@ export default async function DashboardAccountPage() {
     return (
         <main className="min-h-screen pt-32 px-4 relative z-10">
             <div className="container mx-auto text-center space-y-12 max-w-4xl">
-                <div className="text-left">
-                    <Link href="/dashboard" className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors group">
-                        <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
-                        Trở lại Dashboard
-                    </Link>
-                </div>
-
                 <header className="space-y-4">
                     <h1 className="text-5xl font-bold text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.3)]">
                         {isAuthenticated ? DASHBOARD_TITLE : LOGIN_TITLE}

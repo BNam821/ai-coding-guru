@@ -65,7 +65,7 @@ export function LoginForm() {
             const data = await res.json();
             if (data.success) {
                 router.refresh();
-                router.push("/dashboard");
+                router.push("/dashboard/account");
             } else {
                 setError(data.error);
             }
