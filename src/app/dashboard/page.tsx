@@ -106,7 +106,7 @@ function buildPath(series: LineDatum[], width: number, height: number) {
 
 function StatBlock({ title, value, description, icon, footer }: StatCard) {
     return (
-        <div className="flex h-full flex-col rounded-[1.6rem] border border-white/8 bg-[#141414]/96 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+        <div className="flex h-full flex-col rounded-[1.6rem] border border-white/20 bg-[#141414]/96 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
             <div className="mb-6 flex items-start gap-3">
                 <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] text-[#90defa]">
                     {icon}
@@ -169,7 +169,7 @@ function LeaderboardPanel({ data }: { data: LeaderboardUser[] }) {
                         <div
                             key={user.username}
                             className={cn(
-                                "flex items-center justify-between rounded-2xl border border-white/5 bg-white/[0.02] p-4 transition-all hover:bg-white/[0.04]",
+                                "flex items-center justify-between rounded-2xl border border-white/16 bg-white/[0.02] p-4 transition-all hover:bg-white/[0.04]",
                                 user.rank === 1 && "border-[#f6c453]/20 bg-[#f6c453]/[0.02]"
                             )}
                         >
@@ -207,7 +207,7 @@ function LineChartPanel({ data }: { data: LineDatum[] }) {
 
     return (
         <div className="space-y-5">
-            <div className="relative h-[220px] overflow-hidden rounded-[1.25rem] border border-white/6 bg-[#101010]">
+            <div className="relative h-[220px] overflow-hidden rounded-[1.25rem] border border-white/20 bg-[#101010]">
                 <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[length:100%_25%]" />
                 <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.035)_1px,transparent_1px)] bg-[length:16.66%_100%]" />
                 <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 h-full w-full">
@@ -222,7 +222,7 @@ function LineChartPanel({ data }: { data: LineDatum[] }) {
                 </svg>
                 <div className="absolute left-[58%] top-[44%] w-px bg-white/15" style={{ height: "45%" }} />
                 <div className="absolute left-[calc(58%-1.5rem)] top-[42%] h-3 w-3 rounded-full border-2 border-[#8de3ff] bg-[#0d0d0d]" />
-                <div className="absolute left-[calc(58%+0.75rem)] top-[34%] rounded-2xl border border-white/10 bg-[#232323]/95 px-4 py-3 shadow-2xl">
+                <div className="absolute left-[calc(58%+0.75rem)] top-[34%] rounded-2xl border border-white/20 bg-[#232323]/95 px-4 py-3 shadow-2xl">
                     <p className="text-xs text-white/45">Progress checkpoint</p>
                     <p className="mt-1 text-xl font-semibold text-white">{data[Math.min(6, data.length - 1)]?.value ?? 0}</p>
                 </div>
@@ -366,8 +366,8 @@ export default async function DashboardPage({
     return (
         <main className="relative z-10 min-h-screen bg-transparent px-4 pb-20 pt-28">
             <div className="mx-auto max-w-[1280px]">
-                <div className="overflow-hidden rounded-[2rem] border border-white/7 bg-[#0f0f10]/95 shadow-[0_28px_90px_rgba(0,0,0,0.4)]">
-                    <section className="border-b border-white/8 px-6 py-7 sm:px-8 lg:px-10">
+                <div className="overflow-hidden rounded-[2rem] border border-white/18 bg-[#0f0f10]/95 shadow-[0_28px_90px_rgba(0,0,0,0.4)]">
+                    <section className="border-b border-white/16 px-6 py-7 sm:px-8 lg:px-10">
                         <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
                             <div className="space-y-5">
                                 <div className="space-y-3">
@@ -435,7 +435,7 @@ export default async function DashboardPage({
                                 </div>
 
                                 <div className="grid gap-5 xl:grid-cols-[1.08fr_1fr]">
-                                    <section className="rounded-[1.8rem] border border-white/8 bg-[#141414]/96 p-6">
+                                    <section className="rounded-[1.8rem] border border-white/20 bg-[#141414]/96 p-6">
                                         <div className="mb-6">
                                             <div className="flex items-start justify-between gap-4">
                                                 <div>
@@ -452,7 +452,7 @@ export default async function DashboardPage({
                                         <BarChart data={barData} />
                                     </section>
 
-                                    <section className="rounded-[1.8rem] border border-white/8 bg-[#141414]/96 p-6">
+                                    <section className="rounded-[1.8rem] border border-white/20 bg-[#141414]/96 p-6">
                                         <div className="mb-6">
                                             <div className="flex items-start justify-between gap-4">
                                                 <div>
@@ -472,7 +472,7 @@ export default async function DashboardPage({
                                 </div>
 
                                 <section className="grid gap-5 xl:grid-cols-[1.05fr_0.95fr]">
-                                    <div className="rounded-[1.8rem] border border-white/8 bg-[#141414]/96 p-6">
+                                    <div className="rounded-[1.8rem] border border-white/20 bg-[#141414]/96 p-6">
                                         <div className="flex items-center justify-between gap-4">
                                             <div>
                                                 <h2 className="text-xl font-semibold tracking-tight text-white">Ưu tiên hiện tại</h2>
@@ -486,7 +486,7 @@ export default async function DashboardPage({
                                                 "Hãy duy trì điểm trung bình bài Kiểm tra của bạn ở mức trên 80%",
                                                 "Đăng tải một bài viết mới tại Wiki trong tuần này",
                                             ].map((task, index) => (
-                                                <div key={task} className="flex items-center justify-between rounded-2xl border border-white/8 bg-white/[0.025] px-4 py-3">
+                                                <div key={task} className="flex items-center justify-between rounded-2xl border border-white/16 bg-white/[0.025] px-4 py-3">
                                                     <div className="flex items-center gap-3">
                                                         <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/[0.04] text-white/56">{index + 1}</div>
                                                         <span className="text-sm text-white/72">{task}</span>
@@ -497,7 +497,7 @@ export default async function DashboardPage({
                                         </div>
                                     </div>
 
-                                    <div className="rounded-[1.8rem] border border-white/8 bg-[#141414]/96 p-6">
+                                    <div className="rounded-[1.8rem] border border-white/20 bg-[#141414]/96 p-6">
                                         <div className="flex items-center justify-between gap-4">
                                             <div>
                                                 <h2 className="text-xl font-semibold tracking-tight text-white">Truy cập nhanh</h2>
@@ -515,7 +515,7 @@ export default async function DashboardPage({
                                                 <Link
                                                     key={item.label}
                                                     href={item.href}
-                                                    className="rounded-2xl border border-white/8 bg-white/[0.025] px-4 py-4 text-sm text-white/72 transition-colors hover:bg-white/[0.05] hover:text-white"
+                                                    className="rounded-2xl border border-white/16 bg-white/[0.025] px-4 py-4 text-sm text-white/72 transition-colors hover:bg-white/[0.05] hover:text-white"
                                                 >
                                                     <div className="flex items-center justify-between">
                                                         <span>{item.label}</span>
@@ -529,7 +529,7 @@ export default async function DashboardPage({
                                 </section>
                             )}
                             articlesContent={(
-                                <section className="rounded-[1.8rem] border border-white/8 bg-[#141414]/96 p-6 sm:p-7">
+                                <section className="rounded-[1.8rem] border border-white/20 bg-[#141414]/96 p-6 sm:p-7">
                                     <WikiManagePage embedded />
                                 </section>
                             )}

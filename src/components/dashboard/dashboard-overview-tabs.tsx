@@ -117,8 +117,8 @@ export function DashboardOverviewTabs({
             {activeTab === "overview" ? overviewContent : null}
 
             {activeTab === "learning" ? (
-                <section className="grid gap-4 rounded-[1.6rem] border border-[#90defa]/12 bg-[#111214] p-5 lg:grid-cols-[0.9fr_1.2fr_1fr]">
-                    <div className="rounded-[1.35rem] border border-white/8 bg-white/[0.03] p-5">
+                <section className="grid gap-4 rounded-[1.6rem] border border-white/20 bg-[#111214] p-5 lg:grid-cols-[0.9fr_1.2fr_1fr]">
+                    <div className="rounded-[1.35rem] border border-white/20 bg-white/[0.03] p-5">
                         <p className="text-xs uppercase tracking-[0.28em] text-[#90defa]/72">Learning</p>
                         <p className="mt-4 text-3xl font-semibold tracking-tight text-white">{lessonCount}</p>
                         <p className="mt-2 text-sm leading-6 text-white/48">
@@ -133,7 +133,7 @@ export function DashboardOverviewTabs({
                         </Link>
                     </div>
 
-                    <div className="rounded-[1.35rem] border border-white/8 bg-white/[0.03] p-5">
+                    <div className="rounded-[1.35rem] border border-white/20 bg-white/[0.03] p-5">
                         <div className="flex items-center justify-between gap-3">
                             <div>
                                 <h3 className="text-base font-semibold text-white">3 bài học gần nhất</h3>
@@ -153,7 +153,7 @@ export function DashboardOverviewTabs({
                                 <Link
                                     key={lesson.lessonId}
                                     href={`/learn/${lesson.courseSlug}/${lesson.lessonSlug}`}
-                                    className="flex items-center justify-between gap-3 rounded-2xl border border-white/8 bg-[#0f0f10] px-4 py-3 transition-colors hover:bg-white/[0.05]"
+                                    className="flex items-center justify-between gap-3 rounded-2xl border border-white/16 bg-[#0f0f10] px-4 py-3 transition-colors hover:bg-white/[0.05]"
                                 >
                                     <div className="min-w-0">
                                         <p className="text-xs uppercase tracking-[0.22em] text-white/28">#{index + 1}</p>
@@ -163,14 +163,14 @@ export function DashboardOverviewTabs({
                                     <ChevronRight className="h-4 w-4 shrink-0 text-white/24" />
                                 </Link>
                             )) : (
-                                <div className="rounded-2xl border border-dashed border-white/10 bg-[#0f0f10] px-4 py-5 text-sm text-white/46">
+                                <div className="rounded-2xl border border-dashed border-white/20 bg-[#0f0f10] px-4 py-5 text-sm text-white/46">
                                     Chưa có lịch sử học. Hãy mở một bài trong <code>/learn</code> để hệ thống bắt đầu theo dõi.
                                 </div>
                             )}
                         </div>
                     </div>
 
-                    <div className="rounded-[1.35rem] border border-white/8 bg-white/[0.03] p-5">
+                    <div className="rounded-[1.35rem] border border-white/20 bg-white/[0.03] p-5">
                         <h3 className="text-base font-semibold text-white">Đề xuất tiếp theo</h3>
                         {latestLesson ? (
                             <p className="mt-2 text-sm leading-6 text-white/46">
@@ -183,7 +183,7 @@ export function DashboardOverviewTabs({
                         )}
 
                         {nextLesson ? (
-                            <div className="mt-5 rounded-[1.25rem] border border-[#90defa]/15 bg-[#90defa]/[0.06] p-4">
+                            <div className="mt-5 rounded-[1.25rem] border border-white/20 bg-[#90defa]/[0.06] p-4">
                                 <p className="text-xs uppercase tracking-[0.24em] text-[#90defa]/72">{nextLesson.courseTitle}</p>
                                 <p className="mt-2 text-lg font-semibold text-white">{nextLesson.lessonTitle}</p>
                                 <p className="mt-2 text-sm leading-6 text-white/48">
@@ -198,7 +198,7 @@ export function DashboardOverviewTabs({
                                 </Link>
                             </div>
                         ) : (
-                            <div className="mt-5 rounded-[1.25rem] border border-white/8 bg-[#0f0f10] p-4">
+                            <div className="mt-5 rounded-[1.25rem] border border-white/20 bg-[#0f0f10] p-4">
                                 <p className="text-sm leading-6 text-white/48">
                                     Không tìm thấy bài kế tiếp trong course gần nhất. Bạn có thể quay lại <code>/learn</code> để chọn course khác hoặc xem lại bài hiện tại.
                                 </p>
