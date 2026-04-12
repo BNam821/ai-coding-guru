@@ -197,10 +197,11 @@ function CourseItem({
 
             {isOpen && (
                 <div className="ml-4 space-y-1 border-l border-white/10 pl-2">
-                    {course.chapters.map((chapter) => (
+                    {course.chapters.map((chapter, chapterIndex) => (
                         <ChapterItem
                             key={chapter.id}
                             chapter={chapter}
+                            chapterLabel={`Chương ${chapter.order ?? chapterIndex + 1}`}
                             courseId={course.id}
                             courseSlug={course.slug}
                             pathname={pathname}
@@ -222,6 +223,7 @@ function CourseItem({
 // --- Chapter Item with inline edit ---
 function ChapterItem({
     chapter,
+    chapterLabel,
     courseId,
     courseSlug,
     pathname,
@@ -229,6 +231,7 @@ function ChapterItem({
     onLessonClick,
 }: {
     chapter: CourseWithChapters['chapters'][0];
+    chapterLabel: string;
     courseId: string;
     courseSlug: string;
     pathname: string;
@@ -340,11 +343,12 @@ function ChapterItem({
                                     ? "bg-blue-500/10 border-blue-500/20 text-blue-400"
                                     : "bg-white/5 border-transparent text-gray-500 hover:bg-white/10 hover:text-gray-300"
                             )}
+                            title={chapter.title}
                         >
                             <span className="shrink-0 transition-transform duration-200">
                                 {isOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
                             </span>
-                            <span className="truncate">{chapter.title}</span>
+                            <span className="truncate">{chapterLabel}</span>
                         </button>
 
                         {isAdmin && (
