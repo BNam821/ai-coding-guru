@@ -150,6 +150,7 @@ export async function POST(req: Request) {
 
             revalidatePath("/wiki");
             revalidatePath("/wiki/manage");
+            revalidatePath("/dashboard");
             revalidatePath(`/wiki/${slug}`);
 
             return NextResponse.json({
@@ -180,6 +181,7 @@ export async function POST(req: Request) {
         }
 
         revalidatePath("/wiki/manage");
+        revalidatePath("/dashboard");
         revalidatePath("/wiki/review");
 
         return NextResponse.json({
@@ -278,6 +280,7 @@ export async function PUT(req: Request) {
 
         revalidatePath("/wiki");
         revalidatePath("/wiki/manage");
+        revalidatePath("/dashboard");
         revalidatePath(`/wiki/${slug}`);
 
         return NextResponse.json({ success: true });
@@ -330,6 +333,7 @@ export async function DELETE(req: Request) {
 
         revalidatePath("/wiki");
         revalidatePath("/wiki/manage");
+        revalidatePath("/dashboard");
         revalidatePath(`/wiki/${slug}`);
 
         return NextResponse.json({ success: true, message: "Xóa bài thành công" });

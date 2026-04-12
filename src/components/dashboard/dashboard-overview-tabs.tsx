@@ -1,15 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { useId, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { BookOpen, ChevronRight, FileText, Layers3 } from "lucide-react";
 import type { NextLearningLesson, RecentLearningLesson } from "@/lib/user-progress";
 import { cn } from "@/lib/utils";
+
+export type DashboardTabKey = "overview" | "learning" | "articles";
 
 type DashboardOverviewTabsProps = {
     lessonCount: number;
     recentLessons: RecentLearningLesson[];
     nextLesson: NextLearningLesson | null;
+    overviewContent: ReactNode;
+    articlesContent: ReactNode;
+    initialTab?: DashboardTabKey;
 };
 
 function formatLessonTimestamp(value: string | null) {
@@ -30,30 +36,60 @@ export function DashboardOverviewTabs({
     lessonCount,
     recentLessons,
     nextLesson,
+    overviewContent,
+    articlesContent,
+    initialTab = "overview",
 }: DashboardOverviewTabsProps) {
-    const [isLearningOpen, setIsLearningOpen] = useState(false);
-    const panelId = useId();
+    const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+    const [activeTab, setActiveTab] = useState<DashboardTabKey>(initialTab);
     const latestLesson = recentLessons[0] || null;
+    const displayedRecentLessons = recentLessons.slice(0, 3);
+
+    useEffect(() => {
+        setActiveTab(initialTab);
+    }, [initialTab]);
+
+    const setTab = (tab: DashboardTabKey) => {
+        setActiveTab(tab);
+        const params = new URLSearchParams(searchParams.toString());
+
+        if (tab === "overview") {
+            params.delete("tab");
+        } else {
+            params.set("tab", tab);
+        }
+
+        const nextUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname;
+        router.replace(nextUrl, { scroll: false });
+    };
 
     return (
         <div className="space-y-4">
             <div className="flex flex-wrap gap-2">
-                <Link
-                    href="/dashboard"
-                    className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-white transition-colors"
+                <button
+                    type="button"
+                    onClick={() => setTab("overview")}
+                    aria-pressed={activeTab === "overview"}
+                    className={cn(
+                        "inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm transition-colors",
+                        activeTab === "overview"
+                            ? "border border-white/10 bg-white/[0.04] text-white"
+                            : "text-white/46 hover:bg-white/[0.04] hover:text-white/80",
+                    )}
                 >
                     <Layers3 className="h-4 w-4" />
                     Tổng quan
-                </Link>
+                </button>
 
                 <button
                     type="button"
-                    aria-controls={panelId}
-                    aria-expanded={isLearningOpen}
-                    onClick={() => setIsLearningOpen((value) => !value)}
+                    aria-pressed={activeTab === "learning"}
+                    onClick={() => setTab("learning")}
                     className={cn(
                         "inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm transition-colors",
-                        isLearningOpen
+                        activeTab === "learning"
                             ? "border border-[#90defa]/25 bg-[#90defa]/10 text-white"
                             : "text-white/46 hover:bg-white/[0.04] hover:text-white/80",
                     )}
@@ -62,22 +98,25 @@ export function DashboardOverviewTabs({
                     Học tập
                 </button>
 
-                <Link
-                    href="/wiki/manage"
-                    className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-white/46 transition-colors hover:bg-white/[0.04] hover:text-white/80"
+                <button
+                    type="button"
+                    aria-pressed={activeTab === "articles"}
+                    onClick={() => setTab("articles")}
+                    className={cn(
+                        "inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm transition-colors",
+                        activeTab === "articles"
+                            ? "border border-white/10 bg-white/[0.04] text-white"
+                            : "text-white/46 hover:bg-white/[0.04] hover:text-white/80",
+                    )}
                 >
                     <FileText className="h-4 w-4" />
                     Bài viết
-                </Link>
+                </button>
             </div>
 
-            <div
-                id={panelId}
-                className={cn(
-                    "overflow-hidden transition-all duration-300",
-                    isLearningOpen ? "max-h-[900px] opacity-100" : "max-h-0 opacity-0",
-                )}
-            >
+            {activeTab === "overview" ? overviewContent : null}
+
+            {activeTab === "learning" ? (
                 <section className="grid gap-4 rounded-[1.6rem] border border-[#90defa]/12 bg-[#111214] p-5 lg:grid-cols-[0.9fr_1.2fr_1fr]">
                     <div className="rounded-[1.35rem] border border-white/8 bg-white/[0.03] p-5">
                         <p className="text-xs uppercase tracking-[0.28em] text-[#90defa]/72">Learning</p>
@@ -97,13 +136,20 @@ export function DashboardOverviewTabs({
                     <div className="rounded-[1.35rem] border border-white/8 bg-white/[0.03] p-5">
                         <div className="flex items-center justify-between gap-3">
                             <div>
-                                <h3 className="text-base font-semibold text-white">5 bài học gần nhất</h3>
+                                <h3 className="text-base font-semibold text-white">3 bài học gần nhất</h3>
                                 <p className="mt-1 text-sm text-white/46">Lấy trực tiếp từ lịch sử học trong hệ thống.</p>
                             </div>
+                            <Link
+                                href="/history"
+                                className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-white/70 transition-colors hover:bg-white/[0.08] hover:text-white"
+                            >
+                                Xem tất cả
+                                <ChevronRight className="h-4 w-4" />
+                            </Link>
                         </div>
 
                         <div className="mt-5 space-y-3">
-                            {recentLessons.length > 0 ? recentLessons.map((lesson, index) => (
+                            {displayedRecentLessons.length > 0 ? displayedRecentLessons.map((lesson, index) => (
                                 <Link
                                     key={lesson.lessonId}
                                     href={`/learn/${lesson.courseSlug}/${lesson.lessonSlug}`}
@@ -167,7 +213,9 @@ export function DashboardOverviewTabs({
                         )}
                     </div>
                 </section>
-            </div>
+            ) : null}
+
+            {activeTab === "articles" ? articlesContent : null}
         </div>
     );
 }

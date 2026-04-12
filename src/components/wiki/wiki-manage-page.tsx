@@ -43,7 +43,7 @@ interface ManagePayload {
     pendingSubmissions: PendingSubmission[];
 }
 
-export function WikiManagePage() {
+export function WikiManagePage({ embedded = false }: { embedded?: boolean }) {
     const router = useRouter();
     const [data, setData] = useState<ManagePayload | null>(null);
     const [loading, setLoading] = useState(true);
@@ -164,10 +164,12 @@ export function WikiManagePage() {
         <div className="space-y-8">
             <div className="flex flex-wrap items-start justify-between gap-4">
                 <div className="space-y-3">
-                    <Link href="/wiki" className="inline-flex items-center gap-2 text-white/60 hover:text-white transition-colors group">
-                        <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
-                        <span>Quay lại Wiki</span>
-                    </Link>
+                    {!embedded ? (
+                        <Link href="/wiki" className="inline-flex items-center gap-2 text-white/60 hover:text-white transition-colors group">
+                            <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
+                            <span>Quay lại Wiki</span>
+                        </Link>
+                    ) : null}
                     <div>
                         <h1 className="text-4xl font-bold text-white">Quản lý bài viết</h1>
                         <p className="mt-2 max-w-3xl text-white/60">

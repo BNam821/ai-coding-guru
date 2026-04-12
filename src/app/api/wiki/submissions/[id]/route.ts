@@ -156,6 +156,7 @@ export async function PUT(
         }
 
         revalidatePath("/wiki/manage");
+        revalidatePath("/dashboard");
         revalidatePath("/wiki/review");
 
         return NextResponse.json({ success: true });
@@ -200,6 +201,7 @@ export async function DELETE(
         }
 
         revalidatePath("/wiki/manage");
+        revalidatePath("/dashboard");
         revalidatePath("/wiki/review");
 
         return NextResponse.json({ success: true });

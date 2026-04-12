@@ -85,7 +85,7 @@ export default function EditSubmissionPage({ params }: { params: Params }) {
             }
 
             sessionStorage.setItem("wiki_notice", "Bài viết đang duyệt đã được cập nhật.");
-            router.push("/wiki/manage");
+            router.push("/dashboard?tab=articles");
             router.refresh();
         } catch {
             setFormError("Không thể kết nối tới server.");
@@ -99,7 +99,7 @@ export default function EditSubmissionPage({ params }: { params: Params }) {
             <main className="min-h-screen pt-32 pb-20 px-4 relative z-10 text-center">
                 <GlassCard className="p-8 inline-block" hoverEffect={false}>
                     <h1 className="text-2xl font-bold text-red-400 mb-4">Lỗi: {pageError}</h1>
-                    <Link href="/wiki/manage" className="text-white hover:underline">Quay lại quản lý bài viết</Link>
+                    <Link href="/dashboard?tab=articles" className="text-white hover:underline">Quay lại quản lý bài viết</Link>
                 </GlassCard>
             </main>
         );
@@ -110,7 +110,7 @@ export default function EditSubmissionPage({ params }: { params: Params }) {
             <div className="absolute top-[20%] left-[-10%] w-[600px] h-[600px] bg-accent-secondary/5 rounded-full blur-[150px] -z-10" />
 
             <div className="container mx-auto max-w-4xl">
-                <Link href="/wiki/manage" className="inline-flex items-center gap-2 text-white/60 hover:text-white transition-colors mb-8 group">
+                <Link href="/dashboard?tab=articles" className="inline-flex items-center gap-2 text-white/60 hover:text-white transition-colors mb-8 group">
                     <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
                     <span>Quay lại quản lý bài viết</span>
                 </Link>

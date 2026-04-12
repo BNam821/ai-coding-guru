@@ -136,7 +136,7 @@ export function WikiClientPage({ initialData }: WikiClientPageProps) {
         <>
             {false && (
                 <div className="mb-6 flex justify-end">
-                    <Link href="/wiki/manage">
+                    <Link href="/dashboard?tab=articles">
                         <button className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-bold text-white hover:border-accent-secondary/30 hover:bg-white/10 transition-all">
                             Quản lý bài viết
                         </button>
