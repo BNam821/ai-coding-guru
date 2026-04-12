@@ -368,8 +368,6 @@ export default async function DashboardPage() {
 
     const tabs = [
         { label: "Overview", href: "/dashboard", active: true, icon: <Layers3 className="h-4 w-4" /> },
-        { label: "Account", href: "/dashboard/account", active: false, icon: <ShieldCheck className="h-4 w-4" /> },
-        { label: "History", href: "/history", active: false, icon: <Clock3 className="h-4 w-4" /> },
         { label: "Learning", href: "/learn", active: false, icon: <BookOpen className="h-4 w-4" /> },
         { label: "Writing", href: "/wiki/manage", active: false, icon: <FileText className="h-4 w-4" /> },
     ];
@@ -540,16 +538,16 @@ export default async function DashboardPage() {
                             <div className="rounded-[1.8rem] border border-white/8 bg-[#141414]/96 p-6">
                                 <div className="flex items-center justify-between gap-4">
                                     <div>
-                                        <h2 className="text-xl font-semibold tracking-tight text-white">Current Priorities</h2>
-                                        <p className="mt-2 text-sm text-white/46">Short list of what deserves attention next.</p>
+                                        <h2 className="text-xl font-semibold tracking-tight text-white">Ưu tiên hiện tại</h2>
+                                        <p className="mt-2 text-sm text-white/46">Tóm tắt những việc cần được quan tâm.</p>
                                     </div>
                                     <Star className="h-4 w-4 text-[#8fe1ff]" />
                                 </div>
                                 <div className="mt-6 space-y-3">
                                     {[
-                                        `Revisit ${recentLessonTitle}`,
-                                        "Stabilize your quiz average above 80%",
-                                        "Publish one new wiki note this week",
+                                        `Tiếp tục học ${recentLessonTitle}`,
+                                        "Hãy duy trì điểm trung bình bài Kiểm tra của bạn ở mức trên 80%",
+                                        "Đăng tải một bài viết mới tại Wiki trong tuần này",
                                     ].map((task, index) => (
                                         <div key={task} className="flex items-center justify-between rounded-2xl border border-white/8 bg-white/[0.025] px-4 py-3">
                                             <div className="flex items-center gap-3">
@@ -565,17 +563,17 @@ export default async function DashboardPage() {
                             <div className="rounded-[1.8rem] border border-white/8 bg-[#141414]/96 p-6">
                                 <div className="flex items-center justify-between gap-4">
                                     <div>
-                                        <h2 className="text-xl font-semibold tracking-tight text-white">Quick Routes</h2>
-                                        <p className="mt-2 text-sm text-white/46">Jump directly into the part of the platform that matches your current intent.</p>
+                                        <h2 className="text-xl font-semibold tracking-tight text-white">Truy cập nhanh</h2>
+                                        <p className="mt-2 text-sm text-white/46">Hãy tuy cập trực tiếp đến nền tảng phù hợp với mục đích hiện tại của bạn.</p>
                                     </div>
                                     <LineChart className="h-4 w-4 text-[#8fe1ff]" />
                                 </div>
                                 <div className="mt-6 grid gap-3 sm:grid-cols-2">
                                     {[
-                                        { label: "Open account", href: "/dashboard/account" },
-                                        { label: "Review history", href: "/history" },
-                                        { label: "Study lessons", href: "/learn" },
-                                        { label: "Create article", href: "/wiki/create" },
+                                        { label: "Mở tài khoản", href: "/dashboard/account" },
+                                        { label: "Xem lịch sử học", href: "/history" },
+                                        { label: "Bài học", href: "/learn" },
+                                        { label: "tạo bài viết mới", href: "/wiki/create" },
                                     ].map((item) => (
                                         <Link
                                             key={item.label}
