@@ -18,10 +18,56 @@ interface Question {
     explanation: string;
 }
 
-export function QuizGame() {
+interface QuizGameProps {
+    debugPreset?: "codeblock";
+}
+
+const DEBUG_QUESTIONS: Record<NonNullable<QuizGameProps["debugPreset"]>, Question[]> = {
+    codeblock: [
+        {
+            id: 1,
+            question: [
+                "Quan sát đoạn mã sau:",
+                "",
+                "```cpp",
+                "#include <iostream>",
+                "using namespace std;",
+                "",
+                "int main() {",
+                "    int x = 2;",
+                "    cout << x * 3;",
+                "    return 0;",
+                "}",
+                "```",
+                "",
+                "Chương trình sẽ in ra kết quả nào?",
+            ].join("\n"),
+            options: ["`5`", "`6`", "`23`", "Lỗi biên dịch"],
+            correctAnswer: 1,
+            explanation: "- **Đúng**: `2 * 3 = 6`.",
+        },
+        {
+            id: 2,
+            question: [
+                "Khối code này dùng kiểu dữ liệu nào cho biến `name`?",
+                "",
+                "```cpp",
+                "#include <string>",
+                "string name = \"Codex\";",
+                "```",
+            ].join("\n"),
+            options: ["`char`", "`string`", "`bool`", "`double`"],
+            correctAnswer: 1,
+            explanation: "- `name` được khai báo là **`string`**.",
+        },
+    ],
+};
+
+export function QuizGame({ debugPreset }: QuizGameProps) {
     const [questions, setQuestions] = useState<Question[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [refreshKey, setRefreshKey] = useState(0);
 
     // Game State
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -33,10 +79,7 @@ export function QuizGame() {
     const [estimatedSeconds, setEstimatedSeconds] = useState(10);
     const [syncState, setSyncState] = useState<"idle" | "saving" | "saved" | "error">("idle");
     const correctAnswersRef = useRef(0);
-
-    useEffect(() => {
-        fetchQuiz();
-    }, []);
+    const isDebugMode = Boolean(debugPreset);
 
     // Countdown logic for loading estimation
     useEffect(() => {
@@ -49,31 +92,50 @@ export function QuizGame() {
         return () => clearInterval(interval);
     }, [loading, estimatedSeconds]);
 
-    const fetchQuiz = async () => {
-        setLoading(true);
-        setError("");
-        setEstimatedSeconds(10); // Khởi tạo 10 giây dự kiến
-        try {
-            const res = await fetch("/api/quiz/generate", { method: "POST" });
-            const data = await res.json();
+    const resetGameState = (nextQuestions: Question[]) => {
+        setQuestions(nextQuestions);
+        setCurrentIndex(0);
+        setSelectedAnswer(null);
+        setShowExplanation(false);
+        setScore(0);
+        correctAnswersRef.current = 0;
+        setIsFinished(false);
+        setSyncState("idle");
+    };
 
-            if (!res.ok) throw new Error(data.error || "Failed to generate quiz");
-            if (!data.questions || data.questions.length === 0) throw new Error("No questions generated");
+    useEffect(() => {
+        const loadQuiz = async () => {
+            setLoading(true);
+            setError("");
+            setEstimatedSeconds(10); // Khởi tạo 10 giây dự kiến
 
-            setQuestions(data.questions);
-            setCurrentIndex(0);
-            setSelectedAnswer(null);
-            setShowExplanation(false);
-            setScore(0);
-            correctAnswersRef.current = 0;
-            setIsFinished(false);
-            setSyncState("idle");
-        } catch (err: any) {
-            console.error("Quiz Fetch Error:", err);
-            setError(err.message || "Có lỗi khi tạo bài kiểm tra. Vui lòng thử lại.");
-        } finally {
-            setLoading(false);
-        }
+            if (debugPreset) {
+                resetGameState(DEBUG_QUESTIONS[debugPreset]);
+                setLoading(false);
+                return;
+            }
+
+            try {
+                const res = await fetch("/api/quiz/generate", { method: "POST" });
+                const data = await res.json();
+
+                if (!res.ok) throw new Error(data.error || "Failed to generate quiz");
+                if (!data.questions || data.questions.length === 0) throw new Error("No questions generated");
+
+                resetGameState(data.questions);
+            } catch (err: any) {
+                console.error("Quiz Fetch Error:", err);
+                setError(err.message || "Có lỗi khi tạo bài kiểm tra. Vui lòng thử lại.");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        void loadQuiz();
+    }, [debugPreset, refreshKey]);
+
+    const fetchQuiz = () => {
+        setRefreshKey((prev) => prev + 1);
     };
 
     const handleAnswer = (index: number) => {
@@ -88,6 +150,11 @@ export function QuizGame() {
     };
 
     const syncScore = async (finalScore: number) => {
+        if (isDebugMode) {
+            setSyncState("idle");
+            return;
+        }
+
         try {
             setSyncState("saving");
             const actualScore = Math.round((finalScore / questions.length) * 100);
@@ -188,6 +255,7 @@ export function QuizGame() {
                         Bạn đã trả lời đúng <span className="text-white font-bold">{score}/{questions.length}</span> câu hỏi.
                     </p>
                     <p className="mt-4 text-sm text-gray-400">
+                        {isDebugMode && "Đang ở debug mode, kết quả không được lưu."}
                         {syncState === "saving" && "Đang đồng bộ kết quả vào dashboard..."}
                         {syncState === "saved" && "Kết quả đã được lưu vào dashboard."}
                         {syncState === "error" && "Chưa lưu được kết quả. Hãy thử làm lại hoặc kiểm tra kết nối."}
@@ -210,6 +278,13 @@ export function QuizGame() {
 
     return (
         <div className="max-w-3xl mx-auto space-y-8">
+            {isDebugMode && (
+                <div className="rounded-2xl border border-sky-400/20 bg-sky-400/10 px-4 py-3 text-sm text-sky-100">
+                    Debug mode đang bật với preset <code className="rounded bg-black/20 px-1.5 py-0.5 text-sky-200">?debug={debugPreset}</code>.
+                    Câu hỏi đang dùng dữ liệu mẫu để kiểm tra render Markdown và code block.
+                </div>
+            )}
+
             {/* Progress Bar & Header Info */}
             <div className="space-y-4">
                 <div className="flex items-center justify-between">
@@ -238,7 +313,7 @@ export function QuizGame() {
             {/* Question Card */}
             <GlassCard className="p-8 md:p-10 space-y-8 animate-fade-in-right">
                 <div className="p-6 md:p-8 rounded-2xl bg-yellow-400/5 border border-yellow-400/20 shadow-[0_0_30px_rgba(250,204,21,0.05)] mb-8">
-                    <div className="prose prose-invert prose-lg md:prose-xl max-w-none font-bold text-white tracking-tight leading-relaxed">
+                    <div className="prose prose-invert prose-lg md:prose-xl max-w-none font-bold text-white tracking-tight leading-relaxed [&_pre]:font-normal [&_pre]:text-sm [&_code]:font-mono">
                         <MarkdownRenderer content={currentQuestion.question} mode="safe" />
                     </div>
                 </div>

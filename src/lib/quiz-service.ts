@@ -11,6 +11,8 @@ export interface QuizQuestion {
     explanation: string;
 }
 
+const EXPLANATION_MAX_LENGTH = 150;
+
 function validateQuizQuestions(payload: unknown): QuizQuestion[] {
     if (!Array.isArray(payload) || payload.length === 0) {
         throw new Error("Quiz payload must be a non-empty array");
@@ -51,6 +53,10 @@ function validateQuizQuestions(payload: unknown): QuizQuestion[] {
 
         if (!explanation) {
             throw new Error(`Question ${index + 1} is missing explanation`);
+        }
+
+        if (explanation.length > EXPLANATION_MAX_LENGTH) {
+            throw new Error(`Question ${index + 1} explanation must be at most ${EXPLANATION_MAX_LENGTH} characters`);
         }
 
         return {
@@ -110,13 +116,20 @@ export async function generateQuizForUser(username: string): Promise<QuizQuestio
 
         Yêu cầu:
         1. Câu hỏi phải liên quan trực tiếp đến nội dung cung cấp.
-        2. Độ khó: Trung bình đến khó.
-        3. Mỗi câu có đúng 4 đáp án lựa chọn và chỉ 1 đáp án đúng.
-        4. "correctAnswer" phải là số nguyên 0, 1, 2 hoặc 3.
-        5. "options" phải là mảng đúng 4 chuỗi.
-        6. Mỗi câu phải có "explanation" ngắn gọn, rõ ràng.
-        7. Trả về JSON array thuần túy, không markdown, không code block, không giải thích thêm ngoài JSON.
-        ${attempt > 0 ? '8. Lần trả lời trước không đúng schema. Lần này bắt buộc bám sát schema tuyệt đối.' : ""}
+        2. Chỉ sử dụng thông tin có trong dữ liệu đầu vào. Không tự thêm kiến thức ngoài bài học, không suy diễn lan man, không đặt câu hỏi lạc đề.
+        3. Câu hỏi phải chặt chẽ, rõ ràng, không mơ hồ, không đánh đố bằng cách diễn đạt rối.
+        4. Độ khó: Trung bình đến khó.
+        5. Mỗi câu có đúng 4 đáp án lựa chọn và chỉ 1 đáp án đúng.
+        6. Các đáp án nhiễu phải hợp lý, bám sát ngữ cảnh bài học, nhưng không được gây hiểu sai do diễn đạt cẩu thả.
+        7. "correctAnswer" phải là số nguyên 0, 1, 2 hoặc 3.
+        8. "options" phải là mảng đúng 4 chuỗi.
+        9. "question" và "explanation" được phép dùng Markdown.
+        10. Nếu dữ liệu bài học có mã nguồn, cú pháp, hoặc đoạn chương trình, hãy ưu tiên tạo câu hỏi có snippet code để kiểm tra hiểu biết; dùng fenced code block chuẩn với ngôn ngữ phù hợp, ví dụ \`\`\`cpp ... \`\`\`.
+        11. "explanation" phải ngắn gọn nhưng chính xác, đi thẳng vào lý do đáp án đúng, tối đa ${EXPLANATION_MAX_LENGTH} ký tự.
+        12. Trong "explanation", ưu tiên dùng Markdown ngắn để làm rõ ý như **nhấn mạnh**, \`inline code\`, hoặc gạch đầu dòng rất ngắn nếu thực sự cần.
+        13. Không viết explanation lan man, không lặp lại nguyên đề bài, không thêm chi tiết ngoài dữ liệu nguồn.
+        14. Toàn bộ phản hồi phải là JSON array thuần túy hợp lệ. Không bọc toàn bộ output trong markdown hay code block. Không thêm bất kỳ lời dẫn hay ghi chú nào ngoài JSON.
+        ${attempt > 0 ? '15. Lần trả lời trước không đúng schema. Lần này bắt buộc bám sát schema tuyệt đối, đặc biệt là giới hạn explanation và định dạng JSON.' : ""}
 
         Dữ liệu bài học:
         ${fullContent}
@@ -125,10 +138,10 @@ export async function generateQuizForUser(username: string): Promise<QuizQuestio
         [
           {
             "id": 1,
-            "question": "Nội dung câu hỏi?",
+            "question": "Nội dung câu hỏi bằng Markdown nếu cần.",
             "options": ["Đáp án A", "Đáp án B", "Đáp án C", "Đáp án D"],
             "correctAnswer": 0,
-            "explanation": "Giải thích ngắn gọn."
+            "explanation": "**Đúng** vì \`x\` tăng sau vòng lặp; bám sát ví dụ trong bài."
           }
         ]
         `;

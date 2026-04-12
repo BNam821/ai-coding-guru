@@ -37,7 +37,14 @@ export interface LearnAiShortNumericQuestion {
 export type LearnAiQuestion = LearnAiCodeCompletionQuestion | LearnAiShortNumericQuestion;
 
 export function sanitizeModelJson(text: string) {
-    return text.replace(/```json/gi, "").replace(/```/g, "").trim();
+    const trimmed = text.trim();
+    const fencedBlockMatch = trimmed.match(/^```(?:json)?\s*\r?\n([\s\S]*?)\r?\n```$/i);
+
+    if (fencedBlockMatch) {
+        return fencedBlockMatch[1].trim();
+    }
+
+    return trimmed;
 }
 
 export function sanitizeAcceptedAnswers(values: string[]) {
