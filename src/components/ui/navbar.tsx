@@ -29,6 +29,7 @@ function AccountButton({
     avatarInitial,
     isActive,
     isOpen,
+    opensMenu,
     onClick,
     className,
     mobile = false,
@@ -39,6 +40,7 @@ function AccountButton({
     avatarInitial: string;
     isActive: boolean;
     isOpen: boolean;
+    opensMenu: boolean;
     onClick: () => void;
     className: string;
     mobile?: boolean;
@@ -53,8 +55,8 @@ function AccountButton({
             type="button"
             onClick={onClick}
             aria-label="\u0054\u00e0\u0069\u0020\u006b\u0068\u006f\u1ea3\u006e"
-            aria-haspopup="menu"
-            aria-expanded={isOpen}
+            aria-haspopup={opensMenu ? "menu" : undefined}
+            aria-expanded={opensMenu ? isOpen : undefined}
             className={cn(className, mobile && "w-full")}
         >
             <span
@@ -242,6 +244,12 @@ export function Navbar() {
     );
 
     const handleAccountToggle = (surface: "desktop" | "mobile") => {
+        if (!isLoggedIn) {
+            setOpenAccountMenu(null);
+            router.push("/login");
+            return;
+        }
+
         setOpenAccountMenu((current) => current === surface ? null : surface);
     };
 
@@ -382,6 +390,7 @@ export function Navbar() {
                                 avatarInitial={avatarInitial}
                                 isActive={accountIsActive}
                                 isOpen={openAccountMenu === "desktop"}
+                                opensMenu={isLoggedIn}
                                 onClick={() => handleAccountToggle("desktop")}
                                 className={accountButtonClassName}
                             />
@@ -434,6 +443,7 @@ export function Navbar() {
                                 avatarInitial={avatarInitial}
                                 isActive={accountIsActive}
                                 isOpen={openAccountMenu === "mobile"}
+                                opensMenu={isLoggedIn}
                                 onClick={() => handleAccountToggle("mobile")}
                                 className={accountButtonClassName}
                                 mobile

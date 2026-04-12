@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Bell, Megaphone, X } from "lucide-react";
 import { MarkdownRenderer } from "@/components/markdown/markdown-renderer";
@@ -28,6 +28,7 @@ export function AnnouncementWidget({
     panelClassName,
     panelSide = "down",
 }: AnnouncementWidgetProps) {
+    const widgetRef = useRef<HTMLDivElement | null>(null);
     const [isOpen, setIsOpen] = useState(false);
     const [announcements, setAnnouncements] = useState<SiteAnnouncement[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -76,8 +77,27 @@ export function AnnouncementWidget({
         };
     }, []);
 
+    useEffect(() => {
+        if (!isOpen) return;
+
+        const handlePointerDown = (event: MouseEvent) => {
+            const target = event.target as Node;
+            if (widgetRef.current?.contains(target)) {
+                return;
+            }
+
+            setIsOpen(false);
+        };
+
+        document.addEventListener("mousedown", handlePointerDown);
+
+        return () => {
+            document.removeEventListener("mousedown", handlePointerDown);
+        };
+    }, [isOpen]);
+
     return (
-        <div className={cn("relative z-[60] flex items-center", className)}>
+        <div ref={widgetRef} className={cn("relative z-[60] flex items-center", className)}>
             <AnimatePresence>
                 {isOpen && (
                     <motion.section
