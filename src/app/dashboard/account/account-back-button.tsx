@@ -8,7 +8,7 @@ export function AccountBackButton() {
 
     const handleBack = () => {
         let shouldGoDashboard = false;
-        
+
         if (typeof window !== 'undefined') {
             const previousPath = sessionStorage.getItem("previousPath");
             if (previousPath && ['/', '/login'].includes(previousPath)) {
@@ -29,7 +29,7 @@ export function AccountBackButton() {
             className="inline-flex items-center gap-2 text-white/60 hover:text-white transition-colors mb-8 group"
         >
             <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
-            <span>Trở lại</span>
+            <span>Quay lại Trung tâm quản lý</span>
         </button>
     );
 }

@@ -31,7 +31,7 @@ export default async function LearnLayout({
 
                 <div className="flex min-h-screen min-w-0 flex-1 flex-col overflow-x-clip">
                     {/* Mobile Header */}
-                    <header className="md:hidden flex items-center h-14 border-b border-white/10 px-4 sticky top-16 bg-black/55 backdrop-blur-md z-40">
+                    <header className="hidden items-center h-14 border-b border-white/10 px-4 sticky top-16 bg-black/55 backdrop-blur-md z-40">
                         <MobileSidebar courses={myCourses} isAdmin={isAdmin} />
                         <span className="ml-4 font-semibold text-lg bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600">
                             Học Tập

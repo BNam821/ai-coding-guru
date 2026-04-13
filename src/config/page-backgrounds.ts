@@ -28,7 +28,7 @@ const routeBackgrounds: RouteBackgroundEntry[] = [
     route: "/login",
     match: "exact",
     background: {
-      src: "/login_bg.jpg",
+      src: "/account_bg.jpg",
       opacity: 0.85,
       blur: "0px",
       overlayColor: "black",
@@ -39,7 +39,7 @@ const routeBackgrounds: RouteBackgroundEntry[] = [
     route: "/signup",
     match: "exact",
     background: {
-      src: "/signup_bg.jpg",
+      src: "/account_bg.jpg",
       opacity: 0.85,
       blur: "0px",
       overlayColor: "black",
