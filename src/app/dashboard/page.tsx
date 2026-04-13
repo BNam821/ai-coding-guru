@@ -12,6 +12,7 @@ import {
     Target,
     Trophy,
     Medal,
+    User,
 } from "lucide-react";
 import { AdminLoginForm } from "@/components/auth/login-form";
 import { DashboardOverviewTabs, type DashboardTabKey } from "@/components/dashboard/dashboard-overview-tabs";
@@ -444,9 +445,9 @@ export default async function DashboardPage({
                             <div className="flex flex-col gap-3 sm:flex-row">
                                 <Link
                                     href="/dashboard/account"
-                                    className="hidden"
+                                    className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/20 bg-white/5 px-5 py-3 text-sm font-medium text-white shadow-sm transition-transform hover:-translate-y-0.5 hover:bg-white/10"
                                 >
-                                    <span />
+                                    <User className="h-4 w-4" />
                                     Tài khoản
                                 </Link>
                                 <Link

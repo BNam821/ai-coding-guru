@@ -9,6 +9,7 @@ export const metadata: Metadata = {
 import { Navbar } from "@/components/ui/navbar";
 import { Footer } from "@/components/ui/footer";
 import { RouteBackground } from "@/components/ui/route-background";
+import { RouteTracker } from "@/components/ui/route-tracker";
 
 export default function RootLayout({
   children,
@@ -21,6 +22,7 @@ export default function RootLayout({
         className="overflow-x-clip antialiased bg-deep-space text-starlight selection:bg-accent-primary selection:text-deep-space"
       >
         <div className="relative flex min-h-screen flex-col overflow-x-clip">
+          <RouteTracker />
           <RouteBackground />
           <Navbar />
           <main className="flex-1 pb-24 sm:pb-0">

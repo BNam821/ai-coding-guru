@@ -122,7 +122,7 @@ function AccountMenuPanel({
             exit={{ opacity: 0, y: panelSide === "down" ? -8 : 8, scale: 0.98 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
             className={cn(
-                "absolute right-0 z-[70] w-[min(18rem,calc(100vw-1.5rem))] overflow-hidden rounded-3xl border border-white/12 bg-black/80 p-3 shadow-[0_20px_70px_rgba(0,0,0,0.45)] backdrop-blur-2xl",
+                "absolute right-0 z-[70] w-max max-w-[calc(100vw-1.5rem)] overflow-hidden rounded-3xl border border-white/12 bg-black/80 p-3 shadow-[0_20px_70px_rgba(0,0,0,0.45)] backdrop-blur-2xl",
                 panelSide === "down" ? "top-full mt-3 origin-top-right" : "bottom-full mb-3 origin-bottom-right",
             )}
         >
@@ -130,7 +130,7 @@ function AccountMenuPanel({
                 <Link
                     href="/dashboard/account"
                     onClick={onNavigate}
-                    className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white/82 transition-colors hover:bg-white/[0.08] hover:text-white"
+                    className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white/82 transition-colors hover:bg-white/[0.08] hover:text-white whitespace-nowrap"
                 >
                     <User className="h-4 w-4 text-white/60" />
                     <span>Tài khoản</span>
@@ -139,7 +139,7 @@ function AccountMenuPanel({
                 <Link
                     href="/dashboard"
                     onClick={onNavigate}
-                    className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white/82 transition-colors hover:bg-white/[0.08] hover:text-white"
+                    className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white/82 transition-colors hover:bg-white/[0.08] hover:text-white whitespace-nowrap"
                 >
                     <LayoutDashboard className="h-4 w-4 text-white/60" />
                     <span>Trung tâm quản lý</span>
@@ -148,7 +148,7 @@ function AccountMenuPanel({
                 <button
                     type="button"
                     onClick={onRequestLogout}
-                    className="flex w-full items-center gap-3 rounded-2xl border border-red-400/20 bg-red-500/10 px-4 py-3 text-left text-sm text-red-100 transition-colors hover:bg-red-500/16"
+                    className="flex w-full items-center gap-3 rounded-2xl border border-red-400/20 bg-red-500/10 px-4 py-3 text-left text-sm text-red-100 transition-colors hover:bg-red-500/16 whitespace-nowrap"
                 >
                     <LogOut className="h-4 w-4 text-red-200" />
                     <span>Đăng xuất</span>

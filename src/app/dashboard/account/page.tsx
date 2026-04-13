@@ -3,6 +3,7 @@ import { AccountContent } from "@/components/auth/account-content";
 import { AdminLoginForm } from "@/components/auth/login-form";
 import { supabase } from "@/lib/supabase";
 import { getUserProgressSnapshot } from "@/lib/user-progress";
+import { AccountBackButton } from "./account-back-button";
 
 export const dynamic = "force-dynamic";
 
@@ -65,8 +66,12 @@ export default async function DashboardAccountPage() {
 
     return (
         <main className="min-h-screen pt-32 px-4 relative z-10">
-            <div className="container mx-auto text-center space-y-12 max-w-4xl">
-                <header className="space-y-4">
+            <div className="container mx-auto max-w-4xl">
+                <div className="flex justify-start">
+                    <AccountBackButton />
+                </div>
+                <div className="text-center space-y-12">
+                    <header className="space-y-4">
                     <h1 className="text-5xl font-bold text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.3)]">
                         {isAuthenticated ? DASHBOARD_TITLE : LOGIN_TITLE}
                     </h1>
@@ -97,6 +102,7 @@ export default async function DashboardAccountPage() {
                         stats={{ postCount, memberCount, lessonCount, avgScore, currentLevel }}
                     />
                 )}
+                </div>
             </div>
         </main>
     );
