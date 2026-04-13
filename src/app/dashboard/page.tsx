@@ -75,27 +75,27 @@ function formatPercent(value: number) {
 function getKnowledgeTierBadge(level: number): DashboardBadge {
     if (level >= 7) {
         return {
-            label: "Kim cương",
+            label: "Rank: Kim cương",
             className: "border-[#7dd3fc]/80 bg-[#38bdf8]/12 text-[#d8f3ff] shadow-[0_0_24px_rgba(56,189,248,0.3)]",
         };
     }
 
     if (level >= 5) {
         return {
-            label: "Vàng",
+            label: "Rank: Vàng",
             className: "border-[#f6d365]/80 bg-[#f6d365]/12 text-[#fff2b3] shadow-[0_0_24px_rgba(246,211,101,0.28)]",
         };
     }
 
     if (level >= 3) {
         return {
-            label: "Bạc",
+            label: "Rank: Bạc",
             className: "border-[#d9e2ec]/80 bg-[#d9e2ec]/10 text-[#f5f7fa] shadow-[0_0_24px_rgba(217,226,236,0.24)]",
         };
     }
 
     return {
-        label: "Đồng",
+        label: "Rank: Đồng",
         className: "border-[#d4a373]/80 bg-[#d4a373]/10 text-[#f8dec4] shadow-[0_0_24px_rgba(212,163,115,0.24)]",
     };
 }
@@ -469,104 +469,104 @@ export default async function DashboardPage({
                             initialTab={initialTab}
                             overviewContent={(
                                 <section className="space-y-7 py-3">
-                                <div className="grid gap-5 md:grid-cols-3">
-                                    {statCards.map((card) => (
-                                        <StatBlock key={card.title} {...card} />
-                                    ))}
-                                </div>
-
-                                <div className="grid gap-5 xl:grid-cols-[1.08fr_1fr]">
-                                    <section className="rounded-[1.8rem] border border-white/20 bg-[#141414]/96 p-6">
-                                        <div className="mb-6">
-                                            <div className="flex items-start justify-between gap-4">
-                                                <div>
-                                                    <h2 className="text-xl font-semibold tracking-tight text-white">Tần suất học tập</h2>
-                                                    <p className="mt-2 max-w-lg text-sm leading-6 text-white/46">
-                                                        Biểu đồ tần suất làm bài kiểm tra của bạn. <br></br>Chỉ tính những lần hoàn thành đủ 10 câu hỏi.
-                                                    </p>
-                                                </div>
-                                                <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-3 py-2 text-xs text-white/52">
-                                                    Tuần này
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <BarChart data={barData} />
-                                    </section>
-
-                                    <section className="rounded-[1.8rem] border border-white/20 bg-[#141414]/96 p-6">
-                                        <div className="mb-6">
-                                            <div className="flex items-start justify-between gap-4">
-                                                <div>
-                                                    <h2 className="text-xl font-semibold tracking-tight text-white">Bảng xếp hạng</h2>
-                                                    <p className="mt-2 max-w-lg text-sm leading-6 text-white/46">
-                                                        Top 10 người dùng có cấp độ và kinh nghiệm cao nhất. <br></br> Cuộn để xem thêm.
-                                                    </p>
-                                                </div>
-                                                <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-xs text-white/44">
-                                                    <CheckCircle2 className="h-3.5 w-3.5 text-[#8edcf8]" />
-                                                    Cập nhật liên tục
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <LeaderboardPanel data={leaderboardData} />
-                                    </section>
-                                </div>
-
-                                <section className="grid gap-5 xl:grid-cols-[1.05fr_0.95fr]">
-                                    <div className="rounded-[1.8rem] border border-white/20 bg-[#141414]/96 p-6">
-                                        <div className="flex items-center justify-between gap-4">
-                                            <div>
-                                                <h2 className="text-xl font-semibold tracking-tight text-white">Ưu tiên hiện tại</h2>
-                                                <p className="mt-2 text-sm text-white/46">Tóm tắt những việc cần được quan tâm.</p>
-                                            </div>
-                                            <Star className="h-4 w-4 text-[#8fe1ff]" />
-                                        </div>
-                                        <div className="mt-6 space-y-3">
-                                            {[
-                                                `Tiếp tục học ${recentLessonTitle}`,
-                                                "Hãy duy trì điểm trung bình bài Kiểm tra của bạn ở mức trên 80%",
-                                                "Đăng tải một bài viết mới tại Wiki trong tuần này",
-                                            ].map((task, index) => (
-                                                <div key={task} className="flex items-center justify-between rounded-2xl border border-white/16 bg-white/[0.025] px-4 py-3">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/[0.04] text-white/56">{index + 1}</div>
-                                                        <span className="text-sm text-white/72">{task}</span>
-                                                    </div>
-                                                    <Activity className="h-4 w-4 text-white/28" />
-                                                </div>
-                                            ))}
-                                        </div>
+                                    <div className="grid gap-5 md:grid-cols-3">
+                                        {statCards.map((card) => (
+                                            <StatBlock key={card.title} {...card} />
+                                        ))}
                                     </div>
 
-                                    <div className="rounded-[1.8rem] border border-white/20 bg-[#141414]/96 p-6">
-                                        <div className="flex items-center justify-between gap-4">
-                                            <div>
-                                                <h2 className="text-xl font-semibold tracking-tight text-white">Truy cập nhanh</h2>
-                                                <p className="mt-2 text-sm text-white/46">Hãy tuy cập trực tiếp đến nền tảng phù hợp với mục đích hiện tại của bạn.</p>
-                                            </div>
-                                            <LineChart className="h-4 w-4 text-[#8fe1ff]" />
-                                        </div>
-                                        <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                                            {[
-                                                { label: "Mở tài khoản", href: "/dashboard/account" },
-                                                { label: "Xem lịch sử học", href: "/history" },
-                                                { label: "Bài học", href: "/learn" },
-                                                { label: "Tạo bài viết mới", href: "/wiki/create" },
-                                            ].map((item) => (
-                                                <Link
-                                                    key={item.label}
-                                                    href={item.href}
-                                                    className="rounded-2xl border border-white/16 bg-white/[0.025] px-4 py-4 text-sm text-white/72 transition-colors hover:bg-white/[0.05] hover:text-white"
-                                                >
-                                                    <div className="flex items-center justify-between">
-                                                        <span>{item.label}</span>
-                                                        <ChevronRight className="h-4 w-4 text-white/28" />
+                                    <div className="grid gap-5 xl:grid-cols-[1.08fr_1fr]">
+                                        <section className="rounded-[1.8rem] border border-white/20 bg-[#141414]/96 p-6">
+                                            <div className="mb-6">
+                                                <div className="flex items-start justify-between gap-4">
+                                                    <div>
+                                                        <h2 className="text-xl font-semibold tracking-tight text-white">Tần suất học tập</h2>
+                                                        <p className="mt-2 max-w-lg text-sm leading-6 text-white/46">
+                                                            Biểu đồ tần suất làm bài kiểm tra của bạn. <br></br>Chỉ tính những lần hoàn thành đủ 10 câu hỏi.
+                                                        </p>
                                                     </div>
-                                                </Link>
-                                            ))}
-                                        </div>
+                                                    <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-3 py-2 text-xs text-white/52">
+                                                        Tuần này
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <BarChart data={barData} />
+                                        </section>
+
+                                        <section className="rounded-[1.8rem] border border-white/20 bg-[#141414]/96 p-6">
+                                            <div className="mb-6">
+                                                <div className="flex items-start justify-between gap-4">
+                                                    <div>
+                                                        <h2 className="text-xl font-semibold tracking-tight text-white">Bảng xếp hạng</h2>
+                                                        <p className="mt-2 max-w-lg text-sm leading-6 text-white/46">
+                                                            Top 10 người dùng có cấp độ và kinh nghiệm cao nhất. <br></br> Cuộn để xem thêm.
+                                                        </p>
+                                                    </div>
+                                                    <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-xs text-white/44">
+                                                        <CheckCircle2 className="h-3.5 w-3.5 text-[#8edcf8]" />
+                                                        Cập nhật liên tục
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <LeaderboardPanel data={leaderboardData} />
+                                        </section>
                                     </div>
-                                </section>
+
+                                    <section className="grid gap-5 xl:grid-cols-[1.05fr_0.95fr]">
+                                        <div className="rounded-[1.8rem] border border-white/20 bg-[#141414]/96 p-6">
+                                            <div className="flex items-center justify-between gap-4">
+                                                <div>
+                                                    <h2 className="text-xl font-semibold tracking-tight text-white">Ưu tiên hiện tại</h2>
+                                                    <p className="mt-2 text-sm text-white/46">Tóm tắt những việc cần được quan tâm.</p>
+                                                </div>
+                                                <Star className="h-4 w-4 text-[#8fe1ff]" />
+                                            </div>
+                                            <div className="mt-6 space-y-3">
+                                                {[
+                                                    `Tiếp tục học ${recentLessonTitle}`,
+                                                    "Hãy duy trì điểm trung bình bài Kiểm tra của bạn ở mức trên 80%",
+                                                    "Đăng tải một bài viết mới tại Wiki trong tuần này",
+                                                ].map((task, index) => (
+                                                    <div key={task} className="flex items-center justify-between rounded-2xl border border-white/16 bg-white/[0.025] px-4 py-3">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/[0.04] text-white/56">{index + 1}</div>
+                                                            <span className="text-sm text-white/72">{task}</span>
+                                                        </div>
+                                                        <Activity className="h-4 w-4 text-white/28" />
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        <div className="rounded-[1.8rem] border border-white/20 bg-[#141414]/96 p-6">
+                                            <div className="flex items-center justify-between gap-4">
+                                                <div>
+                                                    <h2 className="text-xl font-semibold tracking-tight text-white">Truy cập nhanh</h2>
+                                                    <p className="mt-2 text-sm text-white/46">Hãy tuy cập trực tiếp đến nền tảng phù hợp với mục đích hiện tại của bạn.</p>
+                                                </div>
+                                                <LineChart className="h-4 w-4 text-[#8fe1ff]" />
+                                            </div>
+                                            <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                                                {[
+                                                    { label: "Mở tài khoản", href: "/dashboard/account" },
+                                                    { label: "Xem lịch sử học", href: "/history" },
+                                                    { label: "Bài học", href: "/learn" },
+                                                    { label: "Tạo bài viết mới", href: "/wiki/create" },
+                                                ].map((item) => (
+                                                    <Link
+                                                        key={item.label}
+                                                        href={item.href}
+                                                        className="rounded-2xl border border-white/16 bg-white/[0.025] px-4 py-4 text-sm text-white/72 transition-colors hover:bg-white/[0.05] hover:text-white"
+                                                    >
+                                                        <div className="flex items-center justify-between">
+                                                            <span>{item.label}</span>
+                                                            <ChevronRight className="h-4 w-4 text-white/28" />
+                                                        </div>
+                                                    </Link>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </section>
                                 </section>
                             )}
                             articlesContent={(
