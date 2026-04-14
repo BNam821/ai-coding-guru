@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { Book, ClipboardCheck, GraduationCap, Home, LayoutDashboard, LogOut, User } from "lucide-react";
+import { Book, ClipboardCheck, GraduationCap, Home, LayoutDashboard, LogOut, User, LogIn, UserPlus } from "lucide-react";
 import { AnnouncementWidget } from "@/components/ui/announcement-widget";
 import { cn } from "@/lib/utils";
 
@@ -107,10 +107,12 @@ function AccountButton({
 }
 
 function AccountMenuPanel({
+    isLoggedIn,
     panelSide = "down",
     onNavigate,
     onRequestLogout,
 }: {
+    isLoggedIn: boolean;
     panelSide?: "up" | "down";
     onNavigate: () => void;
     onRequestLogout: () => void;
@@ -127,32 +129,56 @@ function AccountMenuPanel({
             )}
         >
             <div className="space-y-2">
-                <Link
-                    href="/dashboard/account"
-                    onClick={onNavigate}
-                    className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white/82 transition-colors hover:bg-white/[0.08] hover:text-white whitespace-nowrap"
-                >
-                    <User className="h-4 w-4 text-white/60" />
-                    <span>Tài khoản</span>
-                </Link>
+                {isLoggedIn ? (
+                    <>
+                        <Link
+                            href="/dashboard/account"
+                            onClick={onNavigate}
+                            className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white/82 transition-colors hover:bg-white/[0.08] hover:text-white whitespace-nowrap"
+                        >
+                            <User className="h-4 w-4 text-white/60" />
+                            <span>Tài khoản</span>
+                        </Link>
 
-                <Link
-                    href="/dashboard"
-                    onClick={onNavigate}
-                    className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white/82 transition-colors hover:bg-white/[0.08] hover:text-white whitespace-nowrap"
-                >
-                    <LayoutDashboard className="h-4 w-4 text-white/60" />
-                    <span>Trung tâm quản lý</span>
-                </Link>
+                        <Link
+                            href="/dashboard"
+                            onClick={onNavigate}
+                            className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white/82 transition-colors hover:bg-white/[0.08] hover:text-white whitespace-nowrap"
+                        >
+                            <LayoutDashboard className="h-4 w-4 text-white/60" />
+                            <span>Trung tâm quản lý</span>
+                        </Link>
 
-                <button
-                    type="button"
-                    onClick={onRequestLogout}
-                    className="flex w-full items-center gap-3 rounded-2xl border border-red-400/20 bg-red-500/10 px-4 py-3 text-left text-sm text-red-100 transition-colors hover:bg-red-500/16 whitespace-nowrap"
-                >
-                    <LogOut className="h-4 w-4 text-red-200" />
-                    <span>Đăng xuất</span>
-                </button>
+                        <button
+                            type="button"
+                            onClick={onRequestLogout}
+                            className="flex w-full items-center gap-3 rounded-2xl border border-red-400/20 bg-red-500/10 px-4 py-3 text-left text-sm text-red-100 transition-colors hover:bg-red-500/16 whitespace-nowrap"
+                        >
+                            <LogOut className="h-4 w-4 text-red-200" />
+                            <span>Đăng xuất</span>
+                        </button>
+                    </>
+                ) : (
+                    <>
+                        <Link
+                            href="/login"
+                            onClick={onNavigate}
+                            className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white/82 transition-colors hover:bg-white/[0.08] hover:text-white whitespace-nowrap"
+                        >
+                            <LogIn className="h-4 w-4 text-white/60" />
+                            <span>Đăng nhập</span>
+                        </Link>
+
+                        <Link
+                            href="/signup"
+                            onClick={onNavigate}
+                            className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white/82 transition-colors hover:bg-white/[0.08] hover:text-white whitespace-nowrap"
+                        >
+                            <UserPlus className="h-4 w-4 text-white/60" />
+                            <span>Đăng ký</span>
+                        </Link>
+                    </>
+                )}
             </div>
         </motion.section>
     );
@@ -244,12 +270,6 @@ export function Navbar() {
     );
 
     const handleAccountToggle = (surface: "desktop" | "mobile") => {
-        if (!isLoggedIn) {
-            setOpenAccountMenu(null);
-            router.push("/login");
-            return;
-        }
-
         setOpenAccountMenu((current) => current === surface ? null : surface);
     };
 
@@ -390,13 +410,14 @@ export function Navbar() {
                                 avatarInitial={avatarInitial}
                                 isActive={accountIsActive}
                                 isOpen={openAccountMenu === "desktop"}
-                                opensMenu={isLoggedIn}
+                                opensMenu={true}
                                 onClick={() => handleAccountToggle("desktop")}
                                 className={accountButtonClassName}
                             />
                             <AnimatePresence>
                                 {openAccountMenu === "desktop" && (
                                     <AccountMenuPanel
+                                        isLoggedIn={isLoggedIn}
                                         onNavigate={handleMenuNavigate}
                                         onRequestLogout={handleRequestLogout}
                                     />
@@ -443,7 +464,7 @@ export function Navbar() {
                                 avatarInitial={avatarInitial}
                                 isActive={accountIsActive}
                                 isOpen={openAccountMenu === "mobile"}
-                                opensMenu={isLoggedIn}
+                                opensMenu={true}
                                 onClick={() => handleAccountToggle("mobile")}
                                 className={accountButtonClassName}
                                 mobile
@@ -451,6 +472,7 @@ export function Navbar() {
                             <AnimatePresence>
                                 {openAccountMenu === "mobile" && (
                                     <AccountMenuPanel
+                                        isLoggedIn={isLoggedIn}
                                         panelSide="up"
                                         onNavigate={handleMenuNavigate}
                                         onRequestLogout={handleRequestLogout}
