@@ -80,7 +80,7 @@ export default function CodeGradingPage() {
             <header className="h-16 border-b border-white/10 flex items-center justify-between px-6 bg-black/40 backdrop-blur-md shrink-0">
                 <div className="flex items-center gap-4">
                     <div className="px-3 py-1 bg-yellow-400/20 text-yellow-300 text-xs font-black tracking-widest uppercase rounded ring-1 ring-yellow-400/50">
-                        {problem.language}
+                        {problem.language === "cpp" ? "C++" : problem.language.toUpperCase()}
                     </div>
                     <h1 className="font-bold text-white tracking-wide text-lg drop-shadow-md">{problem.title}</h1>
                 </div>
@@ -151,6 +151,20 @@ export default function CodeGradingPage() {
                                         theme="vs-dark"
                                         value={userCode}
                                         onChange={(val) => setUserCode(val || "")}
+                                        onMount={(editor, monaco) => {
+                                            const model = editor.getModel();
+                                            if (model) {
+                                                const matches = model.findMatches("...", true, false, true, null, true);
+                                                const decorations = matches.map(match => ({
+                                                    range: match.range,
+                                                    options: { 
+                                                        inlineClassName: 'skeleton-placeholder-highlight',
+                                                        hoverMessage: { value: 'Thay thế bằng code của bạn' }
+                                                    }
+                                                }));
+                                                editor.createDecorationsCollection(decorations);
+                                            }
+                                        }}
                                         options={{
                                             minimap: { enabled: false },
                                             fontSize: 15,
@@ -235,6 +249,13 @@ export default function CodeGradingPage() {
                 }
                 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
                     background: rgba(255, 255, 255, 0.2);
+                }
+                .skeleton-placeholder-highlight {
+                    color: #60a5fa !important;
+                    font-weight: 800;
+                    background: rgba(96, 165, 250, 0.1);
+                    border-bottom: 2px dashed #60a5fa;
+                    border-radius: 2px;
                 }
             `}</style>
         </main>
