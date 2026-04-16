@@ -1,4 +1,4 @@
-import { createClient } from "./supabase-client";
+import { supabase } from "./supabase";
 
 export interface CodingProblem {
     id: string;
@@ -62,7 +62,6 @@ int main() {
  * Nếu chưa dựng database hoặc lỗi mạng, tự động fallback sang câu hỏi mock (như trong ảnh).
  */
 export async function getRandomCodingProblem(): Promise<CodingProblem> {
-    const supabase = createClient();
     try {
         // Lấy toàn bộ id (giả định số lượng ít) hoặc rpc chọn random. Tạm thời fetch giới hạn.
         const { data, error } = await supabase
@@ -86,7 +85,6 @@ export async function getRandomCodingProblem(): Promise<CodingProblem> {
  * Lấy chi tiết 1 bài tập theo ID.
  */
 export async function getCodingProblemById(id: string): Promise<CodingProblem | null> {
-    const supabase = createClient();
     try {
         const { data, error } = await supabase
             .from("coding_problems")
@@ -111,7 +109,6 @@ export async function getCodingProblemById(id: string): Promise<CodingProblem | 
  * Láy danh sách toàn bộ các tags duy nhất từ tất cả bài học.
  */
 export async function getUniqueLessonTags(): Promise<string[]> {
-    const supabase = createClient();
     const { data, error } = await supabase.rpc('get_unique_lesson_tags');
     
     // Nếu rpc chưa được định nghĩa, fallback sang query chay (tốn kém hơn nhưng an toàn)
@@ -128,8 +125,10 @@ export async function getUniqueLessonTags(): Promise<string[]> {
 /**
  * Lấy bài tập thông minh dựa trên lịch sử học (3 bài gần nhất) và bỏ qua các bài đã đạt 100đ.
  */
-export async function getSmartCodingProblem(username: string): Promise<{ problem: CodingProblem | null, status: 'ok' | 'exhausted' }> {
-    const supabase = createClient();
+export async function getSmartCodingProblem(
+    username: string,
+    options?: { excludeProblemId?: string }
+): Promise<{ problem: CodingProblem | null, status: 'ok' | 'exhausted' }> {
 
     // 1. Lấy 3 bài học gần nhất của user để lấy tags
     const { data: recentLessons } = await supabase
@@ -166,7 +165,12 @@ export async function getSmartCodingProblem(username: string): Promise<{ problem
     let query = supabase.from('coding_problems').select('*');
     if (completedIds.length > 0) {
         // Đảm bảo syntax IN đúng với UUID list
-        query = query.not('id', 'in', `(${completedIds.join(',')})`);
+        const quotedCompletedIds = completedIds.map((id: string) => `"${id}"`).join(',');
+        query = query.not('id', 'in', `(${quotedCompletedIds})`);
+    }
+
+    if (options?.excludeProblemId) {
+        query = query.neq('id', options.excludeProblemId);
     }
 
     const { data: allAvailable } = await query;
@@ -218,7 +222,6 @@ export async function getSmartCodingProblem(username: string): Promise<{ problem
  * Ghi lại điểm số bài tập của user.
  */
 export async function recordProblemScore(username: string, problemId: string, score: number) {
-    const supabase = createClient();
     const { error } = await supabase
         .from('user_problem_history')
         .upsert({ 
@@ -226,7 +229,7 @@ export async function recordProblemScore(username: string, problemId: string, sc
             problem_id: problemId, 
             score, 
             updated_at: new Date().toISOString() 
-        }, { onConflict: 'username, problem_id' });
+        }, { onConflict: 'username,problem_id' });
     
     if (error) console.error("Error recording problem score:", error);
 }
@@ -235,6 +238,5 @@ export async function recordProblemScore(username: string, problemId: string, sc
  * Xóa lịch sử làm bài bài tập của user.
  */
 export async function resetProblemHistory(username: string) {
-    const supabase = createClient();
     await supabase.from('user_problem_history').delete().eq('username', username);
 }

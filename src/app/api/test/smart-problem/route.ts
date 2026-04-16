@@ -13,9 +13,11 @@ export async function GET(req: Request) {
     }
 
     const username = session.username;
+    const { searchParams } = new URL(req.url);
+    const excludeProblemId = searchParams.get("excludeProblemId") || undefined;
 
     try {
-        const { problem, status } = await getSmartCodingProblem(username);
+        const { problem, status } = await getSmartCodingProblem(username, { excludeProblemId });
         
         if (status === 'exhausted') {
             // Reset history as requested

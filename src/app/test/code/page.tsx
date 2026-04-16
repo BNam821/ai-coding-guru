@@ -26,7 +26,7 @@ export default function CodeGradingPage() {
 
     const searchParams = useSearchParams();
 
-    const loadProblem = async () => {
+    const loadProblem = async (options?: { excludeProblemId?: string }) => {
         const specificId = searchParams.get("id");
         let p: CodingProblem | null = null;
         
@@ -42,7 +42,10 @@ export default function CodeGradingPage() {
         
         // Smart Fetch
         try {
-            const res = await fetch("/api/test/smart-problem", { cache: "no-store" });
+            const smartProblemUrl = options?.excludeProblemId
+                ? `/api/test/smart-problem?excludeProblemId=${encodeURIComponent(options.excludeProblemId)}`
+                : "/api/test/smart-problem";
+            const res = await fetch(smartProblemUrl, { cache: "no-store" });
             const data = await res.json();
             
             if (data.status === 'exhausted') {
@@ -126,7 +129,7 @@ export default function CodeGradingPage() {
             router.push("/test/code");
         } else {
             // Nếu đang ở trang tổng quát sẵn, chỉ cần gọi lại hàm load bài tập mới
-            loadProblem();
+            loadProblem({ excludeProblemId: problem?.id });
         }
     };
 
