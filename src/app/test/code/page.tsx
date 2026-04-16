@@ -19,6 +19,7 @@ export default function CodeGradingPage() {
     const [feedback, setFeedback] = useState("");
     const [isExhausted, setIsExhausted] = useState(false);
     const [exhaustedMessage, setExhaustedMessage] = useState("");
+    const [isLoadingNextProblem, setIsLoadingNextProblem] = useState(false);
     
     // Lưu instance của editor và decoration IDs
     const editorRef = useRef<any>(null);
@@ -118,18 +119,23 @@ export default function CodeGradingPage() {
         }
     }, [userCode]);
 
-    const handleNewProblem = () => {
+    const handleNewProblem = async () => {
         // Xóa trạng thái hiện tại
         setScore(null);
         setActualOutput("");
         setFeedback("");
+        setIsLoadingNextProblem(true);
         
         // Nếu đang ở bài tập cụ thể (?id=...), quay về trang tổng quát
-        if (searchParams.get("id")) {
-            router.push("/test/code");
-        } else {
-            // Nếu đang ở trang tổng quát sẵn, chỉ cần gọi lại hàm load bài tập mới
-            loadProblem({ excludeProblemId: problem?.id });
+        try {
+            if (searchParams.get("id")) {
+                router.push("/test/code");
+            } else {
+                // Nếu đang ở trang tổng quát, tải bài mới
+                await loadProblem({ excludeProblemId: problem?.id });
+            }
+        } finally {
+            setIsLoadingNextProblem(false);
         }
     };
 
@@ -177,16 +183,17 @@ export default function CodeGradingPage() {
                     {score === 100 && (
                         <button 
                             onClick={handleNewProblem}
-                            className="flex items-center gap-2 px-6 py-2.5 bg-green-500 hover:bg-green-400 text-white font-extrabold rounded-xl transition-all shadow-[0_0_20px_rgba(34,197,94,0.3)] animate-bounce-slow"
+                            disabled={isLoadingNextProblem}
+                            className="flex items-center gap-2 px-6 py-2.5 bg-green-500 hover:bg-green-400 disabled:opacity-70 disabled:cursor-not-allowed text-white font-extrabold rounded-xl transition-all shadow-[0_0_20px_rgba(34,197,94,0.3)] animate-bounce-slow"
                         >
-                            <CheckCircle2 size={20} />
+                            {isLoadingNextProblem ? <Loader2 size={20} className="animate-spin" /> : <CheckCircle2 size={20} />}
                             <span className="uppercase tracking-wider">Làm bài tập khác</span>
                         </button>
                     )}
 
                     <button 
                         onClick={handleEvaluate}
-                        disabled={isEvaluating || score === 100}
+                        disabled={isEvaluating || score === 100 || isLoadingNextProblem}
                         className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-br from-yellow-400 to-orange-500 hover:from-yellow-300 hover:to-orange-400 text-black font-extrabold rounded-xl transition-all shadow-[0_0_20px_rgba(250,204,21,0.3)] hover:shadow-[0_0_30px_rgba(250,204,21,0.5)] border border-yellow-300/50 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                     >
                         {isEvaluating ? <Loader2 size={20} className="animate-spin" /> : <Play size={20} fill="currentColor" />}
@@ -324,6 +331,15 @@ export default function CodeGradingPage() {
                     </Panel>
                 </PanelGroup>
             </div>
+
+            {isLoadingNextProblem && (
+                <div className="absolute inset-0 z-50 bg-black/65 backdrop-blur-sm flex items-center justify-center">
+                    <div className="px-7 py-5 rounded-2xl bg-black/70 border border-white/15 shadow-2xl flex items-center gap-3">
+                        <Loader2 className="w-5 h-5 text-yellow-400 animate-spin" />
+                        <span className="text-sm font-bold tracking-wide text-white/90">Đang chuyển sang bài tập mới...</span>
+                    </div>
+                </div>
+            )}
             
             <style jsx global>{`
                 .custom-scrollbar::-webkit-scrollbar {
