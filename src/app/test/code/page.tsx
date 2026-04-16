@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { Editor } from "@monaco-editor/react";
 import { MarkdownRenderer } from "@/components/markdown/markdown-renderer";
 import { Play, CheckCircle2, XCircle, AlertCircle, Loader2 } from "lucide-react";
-import { getRandomCodingProblem, CodingProblem } from "@/lib/coding-problems-service";
+import { getRandomCodingProblem, getCodingProblemById, CodingProblem } from "@/lib/coding-problems-service";
 
 export default function CodeGradingPage() {
     const [problem, setProblem] = useState<CodingProblem | null>(null);
@@ -16,14 +17,26 @@ export default function CodeGradingPage() {
     const [score, setScore] = useState<number | null>(null);
     const [feedback, setFeedback] = useState("");
 
+    const searchParams = useSearchParams();
+
     useEffect(() => {
         const loadProblem = async () => {
-            const p = await getRandomCodingProblem();
+            const specificId = searchParams.get("id");
+            let p: CodingProblem | null = null;
+            
+            if (specificId) {
+                p = await getCodingProblemById(specificId);
+            }
+            
+            if (!p) {
+                p = await getRandomCodingProblem();
+            }
+            
             setProblem(p);
-            setUserCode(p.skeleton_code);
+            setUserCode(p ? p.skeleton_code : "");
         };
         loadProblem();
-    }, []);
+    }, [searchParams]);
 
     const handleEvaluate = async () => {
         if (!problem) return;
@@ -91,6 +104,33 @@ export default function CodeGradingPage() {
                             <div className="prose prose-invert prose-yellow max-w-none whitespace-pre-wrap">
                                 <MarkdownRenderer content={problem.description} mode="safe" />
                             </div>
+
+                            {/* Samples Section */}
+                            <div className="mt-8 pt-8 border-t border-white/10 space-y-6">
+                                <div className="space-y-3">
+                                    <h3 className="text-sm font-black uppercase tracking-widest text-yellow-400/80 flex items-center gap-2">
+                                        <div className="w-1.5 h-4 bg-yellow-400 rounded-full" />
+                                        Dữ liệu đầu vào (Input)
+                                    </h3>
+                                    <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+                                        <pre className="font-mono text-sm text-gray-300 whitespace-pre-wrap">
+                                            {problem.expected_input || "Không có dữ liệu đầu vào."}
+                                        </pre>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-3">
+                                    <h3 className="text-sm font-black uppercase tracking-widest text-orange-400/80 flex items-center gap-2">
+                                        <div className="w-1.5 h-4 bg-orange-400 rounded-full" />
+                                        Kết quả mong muốn (Output)
+                                    </h3>
+                                    <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+                                        <pre className="font-mono text-sm text-gray-300 whitespace-pre-wrap">
+                                            {problem.expected_output}
+                                        </pre>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </Panel>
 
@@ -131,26 +171,6 @@ export default function CodeGradingPage() {
                             <Panel defaultSize={40} minSize={20}>
                                 <div className="h-full grid grid-cols-2 gap-4 p-4 bg-black/40 backdrop-blur-sm overflow-y-auto">
                                     
-                                    {/* Input */}
-                                    <div className="bg-white/5 border border-white/10 rounded-xl p-4 flex flex-col">
-                                        <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-2">
-                                            Input
-                                        </h3>
-                                        <pre className="flex-1 font-mono text-sm text-gray-300 overflow-auto whitespace-pre-wrap">
-                                            {problem.expected_input || "Không có dữ liệu đầu vào."}
-                                        </pre>
-                                    </div>
-
-                                    {/* Expected Output */}
-                                    <div className="bg-white/5 border border-white/10 rounded-xl p-4 flex flex-col">
-                                        <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-2">
-                                            Output Mong Muốn
-                                        </h3>
-                                        <pre className="flex-1 font-mono text-sm text-gray-300 overflow-auto whitespace-pre-wrap">
-                                            {problem.expected_output}
-                                        </pre>
-                                    </div>
-
                                     {/* Actual Output */}
                                     <div className="bg-white/5 border border-white/10 rounded-xl p-4 flex flex-col">
                                         <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-2">

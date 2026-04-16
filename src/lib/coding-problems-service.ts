@@ -80,3 +80,29 @@ export async function getRandomCodingProblem(): Promise<CodingProblem> {
     // Nếu lỗi hoặc chưa có bảng, trả về bảng giả
     return mockProblems[0];
 }
+
+/**
+ * Lấy chi tiết 1 bài tập theo ID.
+ */
+export async function getCodingProblemById(id: string): Promise<CodingProblem | null> {
+    const supabase = createClient();
+    try {
+        const { data, error } = await supabase
+            .from("coding_problems")
+            .select("*")
+            .eq("id", id)
+            .single();
+        
+        if (!error && data) {
+            return data as CodingProblem;
+        }
+
+        // Check in mock if not found in DB (for test purposes)
+        const mock = mockProblems.find(p => p.id === id);
+        if (mock) return mock;
+
+    } catch (err) {
+        console.error("Lỗi khi lấy bài tập theo ID:", err);
+    }
+    return null;
+}

@@ -132,7 +132,12 @@ export default function AdminManageProblemsPage() {
                                     {filteredProblems.map((p) => (
                                         <tr key={p.id} className="hover:bg-white/[0.02] transition-colors group">
                                             <td className="px-8 py-6">
-                                                <div className="font-bold text-white group-hover:text-yellow-400 transition-colors">{p.title}</div>
+                                                <Link 
+                                                    href={`/test/code?id=${p.id}`}
+                                                    className="font-bold text-white hover:text-yellow-400 transition-colors cursor-pointer group-hover:translate-x-1 inline-block"
+                                                >
+                                                    {p.title}
+                                                </Link>
                                                 <div className="text-xs text-gray-500 line-clamp-1 mt-1 opacity-60">{p.description.substring(0, 100)}...</div>
                                             </td>
                                             <td className="px-8 py-6">
