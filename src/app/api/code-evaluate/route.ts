@@ -38,8 +38,9 @@ Yêu cầu nghiêm ngặt:
    - QUY TẮC SỐ 2: Không được tự tiện "suy luận" rằng học sinh định viết gì. Nếu code không chạy được -> 0 điểm.
    - TIÊU CHÍ TRỪ 5 ĐIỂM MỖI LỖI: Chỉ áp dụng khi output CỰC KỲ GIỐNG mẫu nhưng sai khác ở mức độ RẤT NHỎ (ví dụ: khoảng trắng thừa/thiếu, khác biệt in hoa/in thường).
 3. "feedback": Nhận xét bằng tiếng Việt (Markdown). 
-   - Nếu chấm 0 điểm do code trống/skeleton, hãy phản hồi: "Bạn chưa hoàn thiện nội dung mã nguồn. Vui lòng thay thế phần '...' bằng logic giải bài toán."
-   - Chỉ ra lỗi sai cụ thể nếu có.
+   - CHỈ nhận xét về logic bài làm của học sinh, lỗi sai nếu có, hoặc lời khuyên tối ưu code.
+   - TUYỆT ĐỐI KHÔNG đưa vào các thông tin như: tiêu chí chấm điểm, quy tắc trừ điểm, điểm số cụ thể (nằm ở trường score riêng), hay bất kỳ thông tin hệ thống nào không liên quan trực tiếp đến nội dung bài tập.
+   - Nếu chấm 0 điểm do code trống/skeleton, hãy phản hồi ngắn gọn: "Bạn chưa hoàn thiện nội dung mã nguồn. Vui lòng thay thế phần '...' bằng logic giải bài toán."
 
 Phản hồi LUÔN LUÔN phải đúng chuẩn JSON sau:
 {

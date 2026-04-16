@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useEffect, useState, useRef } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { Editor } from "@monaco-editor/react";
 import { MarkdownRenderer } from "@/components/markdown/markdown-renderer";
@@ -9,6 +9,7 @@ import { Play, CheckCircle2, XCircle, AlertCircle, Loader2 } from "lucide-react"
 import { getRandomCodingProblem, getCodingProblemById, CodingProblem } from "@/lib/coding-problems-service";
 
 export default function CodeGradingPage() {
+    const router = useRouter();
     const [problem, setProblem] = useState<CodingProblem | null>(null);
     const [userCode, setUserCode] = useState("");
     const [isEvaluating, setIsEvaluating] = useState(false);
@@ -16,6 +17,10 @@ export default function CodeGradingPage() {
     const [actualOutput, setActualOutput] = useState("");
     const [score, setScore] = useState<number | null>(null);
     const [feedback, setFeedback] = useState("");
+    
+    // Lưu instance của editor và decoration IDs
+    const editorRef = useRef<any>(null);
+    const decorationsRef = useRef<string[]>([]);
 
     const searchParams = useSearchParams();
 
@@ -66,6 +71,43 @@ export default function CodeGradingPage() {
         }
     };
 
+    // Hàm cập nhật vùng highlight cho "..."
+    const updatePlaceholders = (editor: any) => {
+        const model = editor.getModel();
+        if (!model) return;
+
+        const matches = model.findMatches("...", true, false, true, null, true);
+        const newDecorations = matches.map((match: any) => ({
+            range: match.range,
+            options: { 
+                inlineClassName: 'skeleton-placeholder-highlight',
+                hoverMessage: { value: 'Thay thế bằng code của bạn' }
+            }
+        }));
+
+        decorationsRef.current = editor.deltaDecorations(decorationsRef.current, newDecorations);
+    };
+
+    // Theo dõi thay đổi của userCode để cập nhật highlight
+    useEffect(() => {
+        if (editorRef.current) {
+            updatePlaceholders(editorRef.current);
+        }
+    }, [userCode]);
+
+    const handleNewProblem = () => {
+        // Xóa trạng thái hiện tại
+        setScore(null);
+        setActualOutput("");
+        setFeedback("");
+        // Chuyển hướng về trang test/code không có ID để load bài ngẫu nhiên
+        router.push("/test/code");
+        // Force refresh nếu đang ở sẵn test/code không ID
+        if (!searchParams.get("id")) {
+            router.refresh();
+        }
+    };
+
     if (!problem) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-transparent">
@@ -85,14 +127,27 @@ export default function CodeGradingPage() {
                     <h1 className="font-bold text-white tracking-wide text-lg drop-shadow-md">{problem.title}</h1>
                 </div>
                 
-                <button 
-                    onClick={handleEvaluate}
-                    disabled={isEvaluating}
-                    className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-br from-yellow-400 to-orange-500 hover:from-yellow-300 hover:to-orange-400 text-black font-extrabold rounded-xl transition-all shadow-[0_0_20px_rgba(250,204,21,0.3)] hover:shadow-[0_0_30px_rgba(250,204,21,0.5)] border border-yellow-300/50 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-                >
-                    {isEvaluating ? <Loader2 size={20} className="animate-spin" /> : <Play size={20} fill="currentColor" />}
-                    <span className="uppercase tracking-wider">Nộp bài & Chạy</span>
-                </button>
+                <div className="flex items-center gap-3">
+                    {/* Nút Làm bài tập khác - Chỉ hiện khi hoàn thành 100 điểm */}
+                    {score === 100 && (
+                        <button 
+                            onClick={handleNewProblem}
+                            className="flex items-center gap-2 px-6 py-2.5 bg-green-500 hover:bg-green-400 text-white font-extrabold rounded-xl transition-all shadow-[0_0_20px_rgba(34,197,94,0.3)] animate-bounce-slow"
+                        >
+                            <CheckCircle2 size={20} />
+                            <span className="uppercase tracking-wider">Làm bài tập khác</span>
+                        </button>
+                    )}
+
+                    <button 
+                        onClick={handleEvaluate}
+                        disabled={isEvaluating || score === 100}
+                        className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-br from-yellow-400 to-orange-500 hover:from-yellow-300 hover:to-orange-400 text-black font-extrabold rounded-xl transition-all shadow-[0_0_20px_rgba(250,204,21,0.3)] hover:shadow-[0_0_30px_rgba(250,204,21,0.5)] border border-yellow-300/50 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                    >
+                        {isEvaluating ? <Loader2 size={20} className="animate-spin" /> : <Play size={20} fill="currentColor" />}
+                        <span className="uppercase tracking-wider">Nộp bài & Chạy</span>
+                    </button>
+                </div>
             </header>
 
             {/* Workspace Area */}
@@ -152,18 +207,8 @@ export default function CodeGradingPage() {
                                         value={userCode}
                                         onChange={(val) => setUserCode(val || "")}
                                         onMount={(editor, monaco) => {
-                                            const model = editor.getModel();
-                                            if (model) {
-                                                const matches = model.findMatches("...", true, false, true, null, true);
-                                                const decorations = matches.map(match => ({
-                                                    range: match.range,
-                                                    options: { 
-                                                        inlineClassName: 'skeleton-placeholder-highlight',
-                                                        hoverMessage: { value: 'Thay thế bằng code của bạn' }
-                                                    }
-                                                }));
-                                                editor.createDecorationsCollection(decorations);
-                                            }
+                                            editorRef.current = editor;
+                                            updatePlaceholders(editor);
                                         }}
                                         options={{
                                             minimap: { enabled: false },
@@ -256,6 +301,13 @@ export default function CodeGradingPage() {
                     background: rgba(96, 165, 250, 0.1);
                     border-bottom: 2px dashed #60a5fa;
                     border-radius: 2px;
+                }
+                @keyframes bounce-slow {
+                    0%, 100% { transform: translateY(0); }
+                    50% { transform: translateY(-4px); }
+                }
+                .animate-bounce-slow {
+                    animation: bounce-slow 2s infinite ease-in-out;
                 }
             `}</style>
         </main>
