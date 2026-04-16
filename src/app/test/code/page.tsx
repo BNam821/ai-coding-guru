@@ -26,39 +26,40 @@ export default function CodeGradingPage() {
 
     const searchParams = useSearchParams();
 
+    const loadProblem = async () => {
+        const specificId = searchParams.get("id");
+        let p: CodingProblem | null = null;
+        
+        if (specificId) {
+            p = await getCodingProblemById(specificId);
+            if (p) {
+                setProblem(p);
+                setUserCode(p.skeleton_code);
+                setIsExhausted(false);
+                return;
+            }
+        }
+        
+        // Smart Fetch
+        try {
+            const res = await fetch("/api/test/smart-problem");
+            const data = await res.json();
+            
+            if (data.status === 'exhausted') {
+                setIsExhausted(true);
+                setExhaustedMessage(data.message);
+                setProblem(null);
+            } else if (data.problem) {
+                setProblem(data.problem);
+                setUserCode(data.problem.skeleton_code);
+                setIsExhausted(false);
+            }
+        } catch (err) {
+            console.error("Error smart fetching:", err);
+        }
+    };
+
     useEffect(() => {
-        const loadProblem = async () => {
-            const specificId = searchParams.get("id");
-            let p: CodingProblem | null = null;
-            
-            if (specificId) {
-                p = await getCodingProblemById(specificId);
-                if (p) {
-                    setProblem(p);
-                    setUserCode(p.skeleton_code);
-                    setIsExhausted(false);
-                    return;
-                }
-            }
-            
-            // Smart Fetch
-            try {
-                const res = await fetch("/api/test/smart-problem");
-                const data = await res.json();
-                
-                if (data.status === 'exhausted') {
-                    setIsExhausted(true);
-                    setExhaustedMessage(data.message);
-                    setProblem(null);
-                } else if (data.problem) {
-                    setProblem(data.problem);
-                    setUserCode(data.problem.skeleton_code);
-                    setIsExhausted(false);
-                }
-            } catch (err) {
-                console.error("Error smart fetching:", err);
-            }
-        };
         loadProblem();
     }, [searchParams]);
 
@@ -119,11 +120,13 @@ export default function CodeGradingPage() {
         setScore(null);
         setActualOutput("");
         setFeedback("");
-        // Chuyển hướng về trang test/code không có ID để load bài ngẫu nhiên
-        router.push("/test/code");
-        // Force refresh nếu đang ở sẵn test/code không ID
-        if (!searchParams.get("id")) {
-            router.refresh();
+        
+        // Nếu đang ở bài tập cụ thể (?id=...), quay về trang tổng quát
+        if (searchParams.get("id")) {
+            router.push("/test/code");
+        } else {
+            // Nếu đang ở trang tổng quát sẵn, chỉ cần gọi lại hàm load bài tập mới
+            loadProblem();
         }
     };
 
