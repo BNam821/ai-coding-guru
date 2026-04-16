@@ -1,5 +1,6 @@
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import remarkBreaks from "remark-breaks";
 import remarkMath from "remark-math";
 import remarkDirective from "remark-directive";
 import rehypeHighlight from "rehype-highlight";
@@ -67,8 +68,8 @@ export function MarkdownRenderer({
             <ReactMarkdown
                 remarkPlugins={
                     mode === "lite"
-                        ? [remarkGfm]
-                        : [remarkGfm, remarkMath, remarkDirective, remarkHeadingIds, remarkCallouts]
+                        ? [remarkGfm, remarkBreaks]
+                        : [remarkGfm, remarkBreaks, remarkMath, remarkDirective, remarkHeadingIds, remarkCallouts]
                 }
                 rehypePlugins={getRehypePlugins(mode)}
                 components={mergedComponents}

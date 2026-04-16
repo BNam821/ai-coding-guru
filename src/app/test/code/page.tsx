@@ -101,7 +101,7 @@ export default function CodeGradingPage() {
                     {/* Left Panel: Description */}
                     <Panel defaultSize={35} minSize={20}>
                         <div className="h-full overflow-y-auto p-6 custom-scrollbar bg-black/40 backdrop-blur-sm border-r border-white/10">
-                            <div className="prose prose-invert prose-yellow max-w-none whitespace-pre-wrap">
+                            <div className="prose prose-invert prose-yellow max-w-none">
                                 <MarkdownRenderer content={problem.description} mode="safe" />
                             </div>
 
