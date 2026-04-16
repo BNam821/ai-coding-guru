@@ -10,6 +10,7 @@
     },
     "dependencies": {
         "@google/generative-ai": "^0.24.1",
+        "@monaco-editor/react": "^4.7.0",
         "@supabase/ssr": "^0.8.0",
         "@supabase/supabase-js": "^2.95.2",
         "@tailwindcss/typography": "^0.5.19",
@@ -26,6 +27,7 @@
         "react": "19.2.3",
         "react-dom": "19.2.3",
         "react-markdown": "^10.1.0",
+        "react-resizable-panels": "^2.1.7",
         "rehype-autolink-headings": "^7.1.0",
         "rehype-highlight": "^7.0.2",
         "rehype-katex": "^7.0.1",
