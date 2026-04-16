@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { cn } from "@/lib/utils";
 import { CodingProblem } from "@/lib/coding-problems-service";
 
 interface ProblemFormProps {
