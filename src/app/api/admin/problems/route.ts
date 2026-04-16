@@ -32,9 +32,10 @@ export async function POST(req: Request) {
 
     try {
         const body = await req.json();
+        const { tags, ...rest } = body;
         const { data, error } = await supabaseAdmin
             .from("coding_problems")
-            .insert([body])
+            .insert([{ ...rest, tags: tags || [] }])
             .select();
 
         if (error) throw error;
@@ -51,13 +52,13 @@ export async function PUT(req: Request) {
 
     try {
         const body = await req.json();
-        const { id, ...updateData } = body;
+        const { id, tags, ...updateData } = body;
         
         if (!id) return NextResponse.json({ error: "Missing ID" }, { status: 400 });
 
         const { data, error } = await supabaseAdmin
             .from("coding_problems")
-            .update(updateData)
+            .update({ ...updateData, tags: tags || [] })
             .eq("id", id)
             .select();
 

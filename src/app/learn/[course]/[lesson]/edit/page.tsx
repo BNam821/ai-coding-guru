@@ -17,6 +17,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ course: s
     const [content, setContent] = useState("");
     const [order, setOrder] = useState(1);
     const [aiQuestionEnabled, setAiQuestionEnabled] = useState(false);
+    const [tags, setTags] = useState(""); // Comma separated string for UI
 
     // Structure Selection
     const [courses, setCourses] = useState<CourseWithChapters[]>([]);
@@ -93,6 +94,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ course: s
                     if (contentData.success) {
                         setContent(contentData.lesson.content || "");
                         setAiQuestionEnabled(Boolean(contentData.lesson.ai_question_enabled));
+                        setTags(contentData.lesson.tags?.join(", ") || "");
                     }
                 } else {
                     setError("Không tìm thấy bài học.");
@@ -126,6 +128,7 @@ export default function EditLessonPage({ params }: { params: Promise<{ course: s
                     chapter_id: selectedChapterId,
                     order,
                     ai_question_enabled: aiQuestionEnabled,
+                    tags: tags.split(",").map(t => t.trim()).filter(t => t !== ""),
                 }),
             });
 
@@ -253,6 +256,19 @@ export default function EditLessonPage({ params }: { params: Promise<{ course: s
                                     onChange={(e) => setOrder(parseInt(e.target.value))}
                                     className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white text-sm focus:outline-none focus:border-accent-secondary/50"
                                     min={1}
+                                />
+                            </div>
+
+                            <div className="space-y-3">
+                                <label className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-white/40">
+                                    <Hash size={14} /> Tags (Phân cách bằng dấu phẩy)
+                                </label>
+                                <input
+                                    type="text"
+                                    value={tags}
+                                    onChange={(e) => setTags(e.target.value)}
+                                    placeholder="ví dụ: toan-hoc, logic, mang"
+                                    className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white text-sm focus:outline-none focus:border-accent-secondary/50"
                                 />
                             </div>
 

@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { geminiModel } from "@/lib/gemini";
+import { getSession } from "@/lib/auth";
+import { recordProblemScore } from "@/lib/coding-problems-service";
 
 export async function POST(req: Request) {
     try {
@@ -62,6 +64,12 @@ Phản hồi LUÔN LUÔN phải đúng chuẩn JSON sau:
         }
 
         const parsedData = JSON.parse(cleanJson);
+
+        // Ghi lại lịch sử (nếu có user trong session)
+        const session = await getSession();
+        if (session && session.username && problemObj.id) {
+            await recordProblemScore(session.username, problemObj.id, parsedData.score || 0);
+        }
 
         return NextResponse.json(parsedData);
     } catch (error) {

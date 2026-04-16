@@ -10,7 +10,7 @@ export async function POST(req: Request) {
     }
 
     try {
-        const { title, slug, content, chapter_id, order, ai_question_enabled } = await req.json();
+        const { title, slug, content, chapter_id, order, ai_question_enabled, tags } = await req.json();
 
         // Validate required fields
         if (!title || !slug || !chapter_id) {
@@ -26,6 +26,7 @@ export async function POST(req: Request) {
                 chapter_id,
                 order,
                 ai_question_enabled: Boolean(ai_question_enabled),
+                tags: tags || [],
             }])
             .select()
             .single();
@@ -51,7 +52,7 @@ export async function PUT(req: Request) {
     }
 
     try {
-        const { id, title, slug, content, chapter_id, order, ai_question_enabled } = await req.json();
+        const { id, title, slug, content, chapter_id, order, ai_question_enabled, tags } = await req.json();
 
         if (!id) {
             return NextResponse.json({ success: false, error: "Missing Lesson ID" }, { status: 400 });
@@ -66,6 +67,7 @@ export async function PUT(req: Request) {
                 chapter_id,
                 order,
                 ai_question_enabled: Boolean(ai_question_enabled),
+                tags: tags || [],
             })
             .eq("id", id);
 

@@ -17,6 +17,8 @@ export default function CodeGradingPage() {
     const [actualOutput, setActualOutput] = useState("");
     const [score, setScore] = useState<number | null>(null);
     const [feedback, setFeedback] = useState("");
+    const [isExhausted, setIsExhausted] = useState(false);
+    const [exhaustedMessage, setExhaustedMessage] = useState("");
     
     // Lưu instance của editor và decoration IDs
     const editorRef = useRef<any>(null);
@@ -31,14 +33,31 @@ export default function CodeGradingPage() {
             
             if (specificId) {
                 p = await getCodingProblemById(specificId);
+                if (p) {
+                    setProblem(p);
+                    setUserCode(p.skeleton_code);
+                    setIsExhausted(false);
+                    return;
+                }
             }
             
-            if (!p) {
-                p = await getRandomCodingProblem();
+            // Smart Fetch
+            try {
+                const res = await fetch("/api/test/smart-problem");
+                const data = await res.json();
+                
+                if (data.status === 'exhausted') {
+                    setIsExhausted(true);
+                    setExhaustedMessage(data.message);
+                    setProblem(null);
+                } else if (data.problem) {
+                    setProblem(data.problem);
+                    setUserCode(data.problem.skeleton_code);
+                    setIsExhausted(false);
+                }
+            } catch (err) {
+                console.error("Error smart fetching:", err);
             }
-            
-            setProblem(p);
-            setUserCode(p ? p.skeleton_code : "");
         };
         loadProblem();
     }, [searchParams]);
@@ -107,6 +126,26 @@ export default function CodeGradingPage() {
             router.refresh();
         }
     };
+
+    if (isExhausted) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center bg-transparent px-6 text-center">
+                <div className="bg-black/60 backdrop-blur-xl border border-white/10 p-10 rounded-3xl max-w-2xl shadow-2xl animate-fade-in">
+                    <CheckCircle2 className="w-20 h-20 text-green-400 mx-auto mb-6 animate-bounce" />
+                    <h2 className="text-3xl font-black text-white mb-4 uppercase tracking-tighter">Tuyệt vời!</h2>
+                    <p className="text-xl text-white/70 leading-relaxed mb-8">
+                        {exhaustedMessage}
+                    </p>
+                    <button 
+                        onClick={handleNewProblem}
+                        className="px-10 py-4 bg-yellow-400 hover:bg-yellow-300 text-black font-black rounded-2xl transition-all shadow-xl hover:scale-105"
+                    >
+                        BẮT ĐẦU LẠI TỪ ĐẦU
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     if (!problem) {
         return (

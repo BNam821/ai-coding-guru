@@ -8,7 +8,9 @@ import {
     Loader2, 
     ArrowLeft,
     CheckCircle2,
-    AlertTriangle
+    AlertTriangle,
+    Hash,
+    Tag
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -33,7 +35,9 @@ export function ProblemForm({ initialData, isEdit }: ProblemFormProps) {
         solution_code: "",
         expected_input: "",
         expected_output: "",
+        tags: [] as string[],
     });
+    const [availableTags, setAvailableTags] = useState<string[]>([]);
 
     useEffect(() => {
         if (initialData) {
@@ -45,8 +49,17 @@ export function ProblemForm({ initialData, isEdit }: ProblemFormProps) {
                 solution_code: initialData.solution_code,
                 expected_input: initialData.expected_input || "",
                 expected_output: initialData.expected_output,
+                tags: initialData.tags || [],
             });
         }
+
+        // Fetch available tags from lessons
+        fetch("/api/admin/tags")
+            .then(res => res.json())
+            .then(data => {
+                if (Array.isArray(data)) setAvailableTags(data);
+            })
+            .catch(err => console.error("Error fetching tags:", err));
     }, [initialData]);
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -83,6 +96,15 @@ export function ProblemForm({ initialData, isEdit }: ProblemFormProps) {
         } finally {
             setIsSaving(false);
         }
+    };
+
+    const toggleTag = (tag: string) => {
+        setFormData(prev => {
+            const tags = prev.tags.includes(tag)
+                ? prev.tags.filter(t => t !== tag)
+                : [...prev.tags, tag];
+            return { ...prev, tags };
+        });
     };
 
     return (
@@ -189,6 +211,33 @@ export function ProblemForm({ initialData, isEdit }: ProblemFormProps) {
                             placeholder="Dữ liệu in ra stdout mong đợi..."
                             className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white focus:border-yellow-400/50 outline-none transition-all resize-none text-xs font-mono border-yellow-400/20"
                         />
+                    </div>
+
+                    <div className="space-y-4">
+                        <label className="text-sm font-black uppercase tracking-widest text-gray-500 flex items-center gap-2">
+                            <Hash size={16} /> Tags (Chọn từ bài học)
+                        </label>
+                        <div className="flex flex-wrap gap-2 p-1">
+                            {availableTags.length > 0 ? (
+                                availableTags.map(tag => (
+                                    <button
+                                        key={tag}
+                                        type="button"
+                                        onClick={() => toggleTag(tag)}
+                                        className={cn(
+                                            "px-3 py-1.5 rounded-lg text-xs font-bold transition-all border",
+                                            formData.tags.includes(tag)
+                                                ? "bg-yellow-400 border-yellow-500 text-black shadow-[0_0_10px_rgba(250,204,21,0.2)]"
+                                                : "bg-white/5 border-white/10 text-white/40 hover:bg-white/10"
+                                        )}
+                                    >
+                                        {tag}
+                                    </button>
+                                ))
+                            ) : (
+                                <p className="text-[10px] text-gray-600 italic">Chưa có tag nào được định nghĩa trong bài học.</p>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
