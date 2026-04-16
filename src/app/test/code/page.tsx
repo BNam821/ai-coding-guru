@@ -42,7 +42,7 @@ export default function CodeGradingPage() {
         
         // Smart Fetch
         try {
-            const res = await fetch("/api/test/smart-problem");
+            const res = await fetch("/api/test/smart-problem", { cache: "no-store" });
             const data = await res.json();
             
             if (data.status === 'exhausted') {

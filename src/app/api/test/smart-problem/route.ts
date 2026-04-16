@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { getSmartCodingProblem, resetProblemHistory } from "@/lib/coding-problems-service";
 import { getSession } from "@/lib/auth"; // Assuming local getSession or similar exists to get user
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: Request) {
     // We need the username to fetch history. 
     // Usually retrieved from session.
