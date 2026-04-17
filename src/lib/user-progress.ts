@@ -36,6 +36,13 @@ export type NextLearningLesson = {
     courseTitle: string;
 };
 
+export type RecentProblem = {
+    id: string;
+    title: string;
+    score: number;
+    updatedAt: string;
+};
+
 type LearningHistoryRow = {
     lesson_id?: string | null;
     course_slug?: string | null;
@@ -286,6 +293,42 @@ export async function getDashboardLearningDetails(username: string, limit = 5): 
             courseTitle: course.title,
         } : null,
     };
+}
+
+/**
+ * Láy 3 bài tập code mà người dùng vừa thực hiện gần đây nhất.
+ */
+export async function getRecentCodingProblems(username: string, limit = 3): Promise<RecentProblem[]> {
+    try {
+        const { data, error } = await supabaseAdmin
+            .from('user_problem_history')
+            .select(`
+                problem_id,
+                score,
+                updated_at,
+                coding_problems (
+                    title
+                )
+            `)
+            .eq('username', username)
+            .order('updated_at', { ascending: false })
+            .limit(limit);
+
+        if (error) {
+            console.error("Lỗi khi lấy bài tập gần đây:", error);
+            return [];
+        }
+
+        return (data || []).map((row: any) => ({
+            id: row.problem_id,
+            title: row.coding_problems?.title || "Bài tập không xác định",
+            score: row.score,
+            updatedAt: row.updated_at
+        }));
+    } catch (err) {
+        console.error("Lỗi hệ thống khi lấy bài tập gần đây:", err);
+        return [];
+    }
 }
 
 export interface LeaderboardUser {

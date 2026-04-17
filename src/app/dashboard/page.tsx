@@ -24,9 +24,11 @@ import {
     getDashboardLearningDetails,
     getLeaderboardData,
     getUserProgressSnapshot,
+    getRecentCodingProblems,
     type LeaderboardUser,
     type NextLearningLesson,
     type RecentLearningLesson,
+    type RecentProblem,
 } from "@/lib/user-progress";
 import { cn } from "@/lib/utils";
 
@@ -147,8 +149,8 @@ function StatBlock({ title, value, description, icon, footer }: StatCard) {
             </div>
             <p className="text-sm text-white/48">{title}</p>
             <p className="mt-2 text-[2rem] font-semibold tracking-tight text-white">{value}</p>
-            <p className="mt-3 text-sm leading-6 text-white/46">{description}</p>
-            {footer ? <div className="mt-5">{footer}</div> : null}
+            {description && <p className="mt-3 text-sm leading-6 text-white/46">{description}</p>}
+            {footer ? <div className={cn(description ? "mt-5" : "mt-2")}>{footer}</div> : null}
         </div>
     );
 }
@@ -313,9 +315,10 @@ export default async function DashboardPage({
     let leaderboardData: LeaderboardUser[] = [];
     let recentLearningLessons: RecentLearningLesson[] = [];
     let nextLearningLesson: NextLearningLesson | null = null;
+    let recentProblems: RecentProblem[] = [];
 
     try {
-        const [postsRes, currentUserRes, progressSnapshot, fetchedChartsData, fetchedLeaderboard, learningDetails] = await Promise.all([
+        const [postsRes, currentUserRes, progressSnapshot, fetchedChartsData, fetchedLeaderboard, learningDetails, fetchedRecentProblems] = await Promise.all([
             supabase
                 .from("wiki_posts")
                 .select("*", { count: "exact", head: true })
@@ -329,6 +332,7 @@ export default async function DashboardPage({
             getDashboardChartsData(session.username),
             getLeaderboardData(),
             getDashboardLearningDetails(session.username),
+            getRecentCodingProblems(session.username, 10),
         ]);
 
         postCount = postsRes.count || 0;
@@ -347,6 +351,7 @@ export default async function DashboardPage({
         leaderboardData = fetchedLeaderboard;
         recentLearningLessons = learningDetails.recentLessons;
         nextLearningLesson = learningDetails.nextLesson;
+        recentProblems = fetchedRecentProblems;
     } catch (error) {
         console.error("Failed to fetch dashboard overview:", error);
     }
@@ -355,10 +360,36 @@ export default async function DashboardPage({
     const accuracyRate = totalAnsweredQuestions > 0 ? (totalCorrectAnswers / totalAnsweredQuestions) * 100 : 0;
     const statCards: StatCard[] = [
         {
-            title: "Số bài đã học",
-            value: `${uniqueLessonCount}`,
-            description: "Tính theo số bài duy nhất đã xem trong /learn, không cộng số lần mở lại cùng một bài.",
-            icon: <BookOpen className="h-4 w-4" />,
+            title: "Bài tập gần đây",
+            value: recentProblems.length > 0 ? `${recentProblems.length} bài đã làm` : "Chưa có bài tập",
+            description: "",
+            icon: <Activity className="h-4 w-4" />,
+            footer: (
+                <div className="space-y-1 max-h-[110px] overflow-y-auto pr-1 no-scrollbar CustomScrollbar">
+                    {recentProblems.map((p) => (
+                        <Link
+                            key={p.id}
+                            href={`/test/code?id=${p.id}`}
+                            className="flex items-center justify-between group py-1.5 px-2 hover:bg-white/5 rounded-lg border border-transparent hover:border-white/10 transition-all"
+                        >
+                            <span className="text-[11px] font-medium text-white/70 group-hover:text-[#90defa] transition-colors truncate pr-2">
+                                {p.title}
+                            </span>
+                            <div className="flex items-center gap-2 shrink-0">
+                                <span className="text-[10px] text-white/30 italic">
+                                    {p.score}đ
+                                </span>
+                                <ChevronRight className="h-3 w-3 text-white/10 group-hover:text-[#90defa]" />
+                            </div>
+                        </Link>
+                    ))}
+                    {recentProblems.length === 0 && (
+                        <Link href="/test/code" className="text-[11px] text-[#90defa] hover:underline flex items-center gap-1">
+                            Bắt đầu luyện tập ngay <ArrowRight size={10} />
+                        </Link>
+                    )}
+                </div>
+            )
         },
         {
             title: "Tỉ lệ chính xác",
@@ -480,9 +511,9 @@ export default async function DashboardPage({
                                             <div className="mb-6">
                                                 <div className="flex items-start justify-between gap-4">
                                                     <div>
-                                                        <h2 className="text-xl font-semibold tracking-tight text-white">Tần suất học tập</h2>
+                                                        <h2 className="text-xl font-semibold tracking-tight text-white">Tần suất kiểm tra: Trắc nghiệm</h2>
                                                         <p className="mt-2 max-w-lg text-sm leading-6 text-white/46">
-                                                            Biểu đồ tần suất làm bài kiểm tra của bạn. <br></br>Chỉ tính những lần hoàn thành đủ 10 câu hỏi.
+                                                            Biểu đồ tần suất làm bài kiểm tra trắc nghiệm của bạn. <br></br>Chỉ tính những lần hoàn thành đủ 10 câu hỏi.
                                                         </p>
                                                     </div>
                                                     <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-3 py-2 text-xs text-white/52">
