@@ -426,7 +426,7 @@ export default async function DashboardPage({
     let lineData = chartsData?.lessonCompletionRates || [];
 
     if (barData.length === 0) barData = buildBarData(postCount, lessonCount, quizCount, avgScore || 74);
-    if (codeBarData.length === 0) codeBarData = barData.map(d => ({ ...d, value: Math.round(d.value * 0.6) })); 
+    if (codeBarData.length === 0) codeBarData = barData.map((d: any) => ({ ...d, value: Math.round(d.value * 0.6) })); 
     if (lineData.length === 0) lineData = buildLineData(lessonCount, quizCount, postCount);
 
     const knowledgeTierBadge = getKnowledgeTierBadge(experience.level);
