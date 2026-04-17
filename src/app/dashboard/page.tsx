@@ -78,7 +78,7 @@ function formatPercent(value: number) {
 function getKnowledgeTierBadge(level: number): DashboardBadge {
     if (level >= 7) {
         return {
-            label: "Rank: Kim cương",
+            label: "Rank Kim cương",
             className: "border-[#7dd3fc]/80 bg-[#38bdf8]/12 text-[#d8f3ff] shadow-[0_0_24px_rgba(56,189,248,0.3)]",
             effectClassName: "rank-badge rank-badge--diamond",
         };
@@ -86,7 +86,7 @@ function getKnowledgeTierBadge(level: number): DashboardBadge {
 
     if (level >= 5) {
         return {
-            label: "Rank: Vàng",
+            label: "Rank Vàng",
             className: "border-[#f6d365]/80 bg-[#f6d365]/12 text-[#fff2b3] shadow-[0_0_24px_rgba(246,211,101,0.28)]",
             effectClassName: "rank-badge rank-badge--gold",
         };
@@ -94,14 +94,14 @@ function getKnowledgeTierBadge(level: number): DashboardBadge {
 
     if (level >= 3) {
         return {
-            label: "Rank: Bạc",
+            label: "Rank Bạc",
             className: "border-[#d9e2ec]/80 bg-[#d9e2ec]/10 text-[#f5f7fa] shadow-[0_0_24px_rgba(217,226,236,0.24)]",
             effectClassName: "rank-badge rank-badge--silver",
         };
     }
 
     return {
-        label: "Rank: Đồng",
+        label: "Rank Đồng",
         className: "border-[#d4a373]/80 bg-[#d4a373]/10 text-[#f8dec4] shadow-[0_0_24px_rgba(212,163,115,0.24)]",
         effectClassName: "rank-badge rank-badge--bronze",
     };
