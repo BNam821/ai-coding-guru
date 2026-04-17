@@ -1,4 +1,5 @@
 import { supabase } from "./supabase";
+import { supabaseAdmin } from "./supabase-admin";
 
 export interface CodingProblem {
     id: string;
@@ -222,6 +223,7 @@ export async function getSmartCodingProblem(
  * Ghi lại điểm số bài tập của user.
  */
 export async function recordProblemScore(username: string, problemId: string, score: number) {
+    // 1. Lưu lịch sử bài làm (ngắn hạn)
     const { error } = await supabase
         .from('user_problem_history')
         .upsert({ 
@@ -231,7 +233,50 @@ export async function recordProblemScore(username: string, problemId: string, sc
             updated_at: new Date().toISOString() 
         }, { onConflict: 'username,problem_id' });
     
-    if (error) console.error("Error recording problem score:", error);
+    if (error) {
+        console.error("Error recording problem score:", error);
+        return;
+    }
+
+    // 2. Logic cộng XP trực tiếp nếu đạt 100 điểm
+    if (score === 100) {
+        try {
+            // Kiểm tra xem đã nhận thưởng cho bài tập này chưa
+            const { data: alreadyRewardeded } = await supabaseAdmin
+                .from('user_completed_problems')
+                .select('username')
+                .eq('username', username)
+                .eq('problem_id', problemId)
+                .maybeSingle();
+
+            if (!alreadyRewardeded) {
+                // Đánh dấu đã nhận thưởng
+                const { error: awardError } = await supabaseAdmin
+                    .from('user_completed_problems')
+                    .insert({ username, problem_id: problemId });
+
+                if (!awardError) {
+                    // Cộng 20 XP vào bảng users (cộng thẳng)
+                    const { data: user } = await supabaseAdmin
+                        .from('users')
+                        .select('coding_xp')
+                        .eq('username', username)
+                        .single();
+                    
+                    const newXp = (user?.coding_xp || 0) + 20;
+
+                    await supabaseAdmin
+                        .from('users')
+                        .update({ coding_xp: newXp })
+                        .eq('username', username);
+                    
+                    console.log(`[XP] Awarded 20 XP to ${username} for problem ${problemId}`);
+                }
+            }
+        } catch (awardLevelError) {
+            console.error("Lỗi khi xử lý cộng XP thưởng:", awardLevelError);
+        }
+    }
 }
 
 /**

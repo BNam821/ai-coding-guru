@@ -12,15 +12,13 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Missing parameters" }, { status: 400 });
         }
 
-        const prompt = `Bạn là hệ thống AI chuyên gia chấm bài lập trình chuyên nghiệp.
-Nhiệm vụ của bạn là đánh giá mã nguồn của học sinh dựa trên hai tiêu chí cốt lõi:
-1) Kết quả đầu ra (Actual Output) phải chính xác so với mong đợi.
-2) Logic thuật toán phải đúng đắn, không gian lận bằng cách in kết quả trực tiếp (hardcode).
+        const prompt = `Bạn là hệ thống AI chuyên gia chấm bài lập trình chuyên nghiệp và cực kỳ khắt khe.
+Nhiệm vụ của bạn là đánh giá mã nguồn dựa trên việc MÔ PHỎNG THỰC TẾ mã nguồn đó, không được tự ý suy diễn kết quả nếu mã nguồn không thực hiện.
 
 ĐỀ BÀI:
 ${problemObj.description}
 
-ĐÁP ÁN CHUẨN (Dùng để đối chiếu logic, TUYỆT ĐỐI không dùng để giả lập kết quả):
+ĐÁP ÁN CHUẨN (Chỉ dùng để tham khảo logic):
 ${problemObj.solution_code}
 
 DỮ LIỆU ĐẦU VÀO (INPUT):
@@ -29,38 +27,41 @@ ${problemObj.expected_input || "(Không có đầu vào)"}
 KẾT QUẢ MONG ĐỢI (EXPECTED OUTPUT):
 ${problemObj.expected_output}
 
-MÃ NGUỒN CỦA HỌC SINH (Đây là mã duy nhất bạn được phép mô phỏng và đánh giá):
+MÃ NGUỒN CỦA HỌC SINH (Đây là đối tượng duy nhất bạn được phép chấm):
 ${userCode}
 
---- LUẬT PHÒNG CHỐNG GIAN LẬN (BẮT BUỘC TUÂN THỦ) ---
-1. PHÁT HIỆN HARDCODE: Nếu học sinh in trực tiếp kết quả (Ví dụ: cout << 36; hoặc printf("36");) mà không thực hiện tính toán từ input: CHẤM 0 ĐIỂM NGAY LẬP TỨC.
-2. GIAN LẬN NHIỀU TRƯỜNG HỢP: Nếu dùng câu lệnh điều kiện (if-else, switch) để khớp kết quả cho từng test case (Ví dụ: if (n==3) cout << 36;): CHẤM 0 ĐIỂM NGAY LẬP TỨC.
-3. BỎ QUA ĐẦU VÀO: Nếu bài toán có dữ liệu đầu vào nhưng học sinh không dùng lệnh đọc dữ liệu (cin, scanf, ...) hoặc đọc vào nhưng không dùng trong tính toán: CHẤM 0 ĐIỂM.
-4. MẢNG KẾT QUẢ TÍNH SẴN: Không chấp nhận việc tạo mảng chứa sẵn kết quả để in ra trừ khi đề bài yêu cầu tối ưu hóa đặc biệt: CHẤM 0 ĐIỂM.
+--- QUY TẮC BẮT BUỘC (PHẢI TUÂN THỦ) ---
+1. KIỂM TRA LỆNH IN: Trước khi chấm điểm, bạn phải tìm trong mã nguồn học sinh có các lệnh in ra màn hình hay không (Ví dụ: cout, printf, print, println, console.log...). 
+   - Nếu KHÔNG CÓ lệnh in: Giá trị "actualOutput" trong JSON trả về BẮT BUỘC phải là chuỗi rỗng "" hoặc "Mã nguồn không in kết quả". 
+   - TUYỆT ĐỐI KHÔNG được tự điền kết quả ${problemObj.expected_output} vào "actualOutput" nếu mã nguồn của học sinh không thực hiện lệnh in giá trị đó.
+2. PHÁT HIỆN GIAN LẬN: Nếu in trực tiếp kết quả (Hardcode) mà không tính toán: Chấm 0 điểm.
+3. LOGIC THUẬT TOÁN: Kiểm tra xem thuật toán có giải quyết đúng vấn đề không.
 
---- QUY TRÌNH ĐÁNH GIÁ ---
-A. Phân tích logic bài toán: Từ đề bài và đáp án chuẩn, xác định các bước xử lý (đọc input nào, vòng lặp/nhánh rẽ nào là bắt buộc).
-B. Kiểm tra mã nguồn học sinh: Xem code có thực hiện các bước logic đó hay chỉ đang "lách luật" để có output đúng.
-C. Mô phỏng thực thi: Chạy thử trong đầu mã nguồn học sinh với INPUT MAU để xem Actual Output là gì.
-D. Quyết định điểm số (0-100):
-   - 0 điểm: Vi phạm Luật phòng chống gian lận, code trống, hoặc lỗi biên dịch nghiêm trọng.
-   - 10-40 điểm: Logic sai hoàn toàn nhưng có nỗ lực viết code xử lý (không gian lận).
-   - 50-90 điểm: Logic đúng 80% trở lên, kết quả đúng nhưng còn lỗi định dạng hoặc tối ưu hóa.
-   - 100 điểm: Logic hoàn toàn chính xác, không gian lận, output khớp tuyệt đối.
+--- HƯỚNG DẪN CHẤM ĐIỂM (0-100) ---
+- 0 điểm: Vi phạm luật gian lận, hoặc thuật toán sai VÀ thiếu lệnh in, hoặc mã nguồn không liên quan.
+- 20 điểm: Logic thuật toán đúng hoàn toàn nhưng THIẾU LỆNH IN kết quả cuối cùng (khiến output thực tế bị rỗng).
+- 21-40 điểm: Logic sai hoàn toàn nhưng có nỗ lực viết mã xử lý (không gian lận).
+- 50-90 điểm: Thuật toán đúng, có lệnh in nhưng kết quả sai định dạng hoặc chỉ đúng một phần test case.
+- 100 điểm: Thuật toán chính xác, có lệnh in, kết quả khớp tuyệt đối và không gian lận.
+
+--- QUY TRÌNH PHÂN TÍCH ---
+BƯỚC 1: Liệt kê các lệnh in kết quả tìm được trong mã nguồn.
+BƯỚC 2: Mô phỏng chạy mã nguồn với INPUT cung cấp. Nếu không có lệnh in, Actual Output là "".
+BƯỚC 3: So sánh Actual Output với Expected Output.
+BƯỚC 4: Đánh giá logic để quyết định điểm dựa trên thang điểm trên.
 
 --- YÊU CẦU ĐỊNH DẠNG PHẢN HỒI (JSON) ---
-Trả về kết quả duy nhất dưới dạng JSON với các trường:
-- "actualOutput": Kết quả thực tế khi chạy code (nếu lỗi biên dịch, ghi rõ thông báo lỗi).
-- "score": Điểm từ 0 đến 100.
-- "feedback": Nhận xét bằng tiếng Việt có dấu, chỉ ra ưu điểm và lỗi sai (đặc biệt là lỗi gian lận nếu có). Đơn giản, dễ hiểu cho học sinh.
-
-Mẫu JSON:
+Trả về kết quả duy nhất dưới dạng JSON:
 {
   "actualOutput": "...",
   "score": 0,
-  "feedback": "..."
+  "feedback": "...",
+  "suggestion": "..."
 }
-`;
+- Feedback: Nhận xét tổng quan về bài làm (Tiếng Việt).
+- Suggestion: 
+    + Nếu < 100 điểm: Đưa ra các chỉ dẫn cụ thể, gợi ý thuật toán hoặc đoạn mã mẫu để học sinh sửa lỗi (Tiếng Việt).
+    + Nếu = 100 điểm: Trả về chính xác câu: "Bạn đã đạt điểm tuyệt đối! Tôi không có gì cần góp ý cho đoạn code này cả."`;
 
         const result = await geminiModel.generateContent(prompt);
         const textArea = result.response.text();

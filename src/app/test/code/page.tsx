@@ -5,8 +5,8 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { Editor } from "@monaco-editor/react";
 import { MarkdownRenderer } from "@/components/markdown/markdown-renderer";
-import { Play, CheckCircle2, XCircle, AlertCircle, Loader2 } from "lucide-react";
-import { getRandomCodingProblem, getCodingProblemById, CodingProblem } from "@/lib/coding-problems-service";
+import { Play, CheckCircle2, XCircle, AlertCircle, Loader2, Lightbulb, ChevronRight, X } from "lucide-react";
+import { getCodingProblemById, CodingProblem } from "@/lib/coding-problems-service";
 
 export default function CodeGradingPage() {
     const router = useRouter();
@@ -17,14 +17,14 @@ export default function CodeGradingPage() {
     const [actualOutput, setActualOutput] = useState("");
     const [score, setScore] = useState<number | null>(null);
     const [feedback, setFeedback] = useState("");
+    const [suggestion, setSuggestion] = useState("");
     const [isExhausted, setIsExhausted] = useState(false);
     const [exhaustedMessage, setExhaustedMessage] = useState("");
     const [isLoadingNextProblem, setIsLoadingNextProblem] = useState(false);
+    const [showSuggestions, setShowSuggestions] = useState(false);
     
-    // Lưu instance của editor và decoration IDs
     const editorRef = useRef<any>(null);
     const decorationsRef = useRef<string[]>([]);
-
     const searchParams = useSearchParams();
 
     const loadProblem = async (options?: { excludeProblemId?: string }) => {
@@ -41,7 +41,6 @@ export default function CodeGradingPage() {
             }
         }
         
-        // Smart Fetch
         try {
             const smartProblemUrl = options?.excludeProblemId
                 ? `/api/test/smart-problem?excludeProblemId=${encodeURIComponent(options.excludeProblemId)}`
@@ -73,6 +72,8 @@ export default function CodeGradingPage() {
         setActualOutput("");
         setScore(null);
         setFeedback("");
+        setSuggestion("");
+        setShowSuggestions(false);
 
         try {
             const res = await fetch("/api/code-evaluate", {
@@ -81,13 +82,14 @@ export default function CodeGradingPage() {
                 body: JSON.stringify({
                     userCode,
                     problemId: problem.id,
-                    problemObj: problem // Pass whole object to avoid DB lookup on logic layer if possible
+                    problemObj: problem
                 }),
             });
             const data = await res.json();
             setActualOutput(data.actualOutput || "");
             setScore(data.score ?? 0);
             setFeedback(data.feedback || "Không có phản hồi");
+            setSuggestion(data.suggestion || "");
         } catch (error) {
             setFeedback("Có lỗi xảy ra khi chấm bài.");
         } finally {
@@ -95,7 +97,6 @@ export default function CodeGradingPage() {
         }
     };
 
-    // Hàm cập nhật vùng highlight cho "..."
     const updatePlaceholders = (editor: any) => {
         const model = editor.getModel();
         if (!model) return;
@@ -112,7 +113,6 @@ export default function CodeGradingPage() {
         decorationsRef.current = editor.deltaDecorations(decorationsRef.current, newDecorations);
     };
 
-    // Theo dõi thay đổi của userCode để cập nhật highlight
     useEffect(() => {
         if (editorRef.current) {
             updatePlaceholders(editorRef.current);
@@ -120,18 +120,17 @@ export default function CodeGradingPage() {
     }, [userCode]);
 
     const handleNewProblem = async () => {
-        // Xóa trạng thái hiện tại
         setScore(null);
         setActualOutput("");
         setFeedback("");
+        setSuggestion("");
+        setShowSuggestions(false);
         setIsLoadingNextProblem(true);
         
-        // Nếu đang ở bài tập cụ thể (?id=...), quay về trang tổng quát
         try {
             if (searchParams.get("id")) {
                 router.push("/test/code");
             } else {
-                // Nếu đang ở trang tổng quát, tải bài mới
                 await loadProblem({ excludeProblemId: problem?.id });
             }
         } finally {
@@ -179,7 +178,6 @@ export default function CodeGradingPage() {
                 </div>
                 
                 <div className="flex items-center gap-3">
-                    {/* Nút Làm bài tập khác - Chỉ hiện khi hoàn thành 100 điểm */}
                     {score === 100 && (
                         <button 
                             onClick={handleNewProblem}
@@ -212,7 +210,6 @@ export default function CodeGradingPage() {
                                 <MarkdownRenderer content={problem.description} mode="safe" />
                             </div>
 
-                            {/* Samples Section */}
                             <div className="mt-8 pt-8 border-t border-white/10 space-y-6">
                                 <div className="space-y-3">
                                     <h3 className="text-sm font-black uppercase tracking-widest text-yellow-400/80 flex items-center gap-2">
@@ -241,7 +238,6 @@ export default function CodeGradingPage() {
                         </div>
                     </Panel>
 
-                    {/* Resizer */}
                     <PanelResizeHandle className="w-2 bg-white/5 hover:bg-yellow-400/50 transition-colors cursor-col-resize flex items-center justify-center">
                         <div className="h-8 w-1 bg-white/20 rounded-full" />
                     </PanelResizeHandle>
@@ -249,45 +245,81 @@ export default function CodeGradingPage() {
                     {/* Right Panel: Editor & I/O */}
                     <Panel defaultSize={65} minSize={30}>
                         <PanelGroup direction="vertical">
-                            {/* Editor */}
                             <Panel defaultSize={60} minSize={20}>
-                                <div className="h-full w-full">
-                                    <Editor
-                                        height="100%"
-                                        language={problem.language}
-                                        theme="vs-dark"
-                                        value={userCode}
-                                        onChange={(val) => setUserCode(val || "")}
-                                        onMount={(editor, monaco) => {
-                                            editorRef.current = editor;
-                                            updatePlaceholders(editor);
-                                        }}
-                                        options={{
-                                            minimap: { enabled: false },
-                                            fontSize: 15,
-                                            padding: { top: 16 },
-                                            smoothScrolling: true,
-                                            cursorBlinking: "smooth",
-                                        }}
-                                    />
-                                </div>
+                                <PanelGroup direction="horizontal">
+                                    <Panel minSize={30}>
+                                        <div className="h-full w-full">
+                                            <Editor
+                                                height="100%"
+                                                language={problem.language}
+                                                theme="vs-dark"
+                                                value={userCode}
+                                                onChange={(val) => setUserCode(val || "")}
+                                                onMount={(editor) => {
+                                                    editorRef.current = editor;
+                                                    updatePlaceholders(editor);
+                                                }}
+                                                options={{
+                                                    minimap: { enabled: false },
+                                                    fontSize: 15,
+                                                    padding: { top: 16 },
+                                                    smoothScrolling: true,
+                                                    cursorBlinking: "smooth",
+                                                }}
+                                            />
+                                        </div>
+                                    </Panel>
+
+                                    {showSuggestions && score !== null && score < 100 && (
+                                        <>
+                                            <PanelResizeHandle className="w-2 bg-white/5 hover:bg-blue-400/50 transition-colors cursor-col-resize flex items-center justify-center">
+                                                <div className="h-8 w-1 bg-white/20 rounded-full" />
+                                            </PanelResizeHandle>
+                                            <Panel defaultSize={40} minSize={20}>
+                                                <div className="h-full bg-blue-500/5 border-l border-white/10 flex flex-col overflow-hidden">
+                                                    <div className="h-10 border-b border-white/10 flex items-center justify-between px-4 bg-black/20 shrink-0">
+                                                        <div className="flex items-center gap-2 text-blue-400 font-bold text-xs uppercase tracking-widest">
+                                                            <Lightbulb size={14} />
+                                                            Gợi ý sửa lỗi
+                                                        </div>
+                                                        <button 
+                                                            onClick={() => setShowSuggestions(false)}
+                                                            className="p-1 hover:bg-white/10 rounded-md transition-colors text-gray-500 hover:text-white"
+                                                        >
+                                                            <X size={14} />
+                                                        </button>
+                                                    </div>
+                                                    <div className="flex-1 overflow-auto p-4 custom-scrollbar bg-black/40">
+                                                        {suggestion ? (
+                                                            <div className="prose prose-sm prose-invert max-w-none feedback-markdown">
+                                                                <MarkdownRenderer content={suggestion} mode="lite" />
+                                                            </div>
+                                                        ) : (
+                                                            <div className="h-full flex items-center justify-center text-gray-600 italic text-xs">
+                                                                Đang tải gợi ý...
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </Panel>
+                                        </>
+                                    )}
+                                </PanelGroup>
                             </Panel>
 
-                            {/* Horizontal Resizer */}
                             <PanelResizeHandle className="h-2 bg-white/5 hover:bg-yellow-400/50 transition-colors cursor-row-resize flex items-center justify-center">
                                 <div className="w-8 h-1 bg-white/20 rounded-full" />
                             </PanelResizeHandle>
 
-                            {/* I/O & Feedback Grids */}
                             <Panel defaultSize={40} minSize={20}>
-                                <div className="h-full grid grid-cols-2 gap-4 p-4 bg-black/40 backdrop-blur-sm overflow-y-auto">
+                                <div className="h-full grid grid-cols-[3fr_7fr] gap-4 p-4 bg-black/40 backdrop-blur-sm overflow-y-auto">
                                     
                                     {/* Actual Output */}
-                                    <div className="bg-white/5 border border-white/10 rounded-xl p-4 flex flex-col">
+                                    <div className="bg-white/5 border border-white/10 rounded-xl p-4 flex flex-col h-full">
                                         <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-2">
                                             Output Thực Tế
                                         </h3>
-                                        <pre className="flex-1 font-mono text-sm text-gray-300 overflow-auto whitespace-pre-wrap relative">
+                                        <pre className="flex-1 font-mono text-sm text-gray-300 overflow-auto whitespace-pre-wrap relative bg-black/20 p-3 rounded-lg border border-white/5">
                                             {isEvaluating ? (
                                                 <span className="text-yellow-400/50 italic animate-pulse">Running...</span>
                                             ) : (
@@ -296,35 +328,54 @@ export default function CodeGradingPage() {
                                         </pre>
                                     </div>
 
-                                    {/* AI Feedback */}
-                                    <div className="bg-white/5 border border-white/10 rounded-xl p-4 flex flex-col overflow-hidden">
-                                        <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 flex flex-wrap justify-between items-center gap-2">
-                                            <span>AI Nhận Xét</span>
+                                    {/* AI Review Column (Expanded) */}
+                                    <div className="bg-white/5 border border-white/10 rounded-xl p-4 flex flex-col h-full overflow-hidden">
+                                        <h3 className="text-xs font-bold text-gray-400 cursor-default uppercase tracking-wider mb-3 flex flex-wrap justify-between items-center gap-2 shrink-0">
+                                            <div className="flex items-center gap-4">
+                                                <span className="flex items-center gap-2">
+                                                    <AlertCircle size={14} className="text-yellow-400" />
+                                                    AI Nhận Xét
+                                                </span>
+                                                
+                                                {/* Nút Xem gợi ý - Chỉ hiện khi score < 100 */}
+                                                {score !== null && score < 100 && (
+                                                    <button 
+                                                        onClick={() => setShowSuggestions(!showSuggestions)}
+                                                        className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] uppercase font-black transition-all ring-1 animate-pulse
+                                                            ${showSuggestions 
+                                                                ? 'bg-blue-500 text-white ring-blue-400 shadow-[0_0_10px_rgba(59,130,246,0.5)]' 
+                                                                : 'bg-blue-500/10 text-blue-400 ring-blue-500/30 hover:bg-blue-500/20'}`}
+                                                    >
+                                                        <Lightbulb size={12} fill={showSuggestions ? "currentColor" : "none"} />
+                                                        {showSuggestions ? "Đang hiện gợi ý" : "Xem gợi ý từ AI"}
+                                                        <ChevronRight size={10} className={`transition-transform ${showSuggestions ? 'rotate-90' : ''}`} />
+                                                    </button>
+                                                )}
+                                            </div>
+
                                             {score !== null && (
-                                                <span className={`px-2 py-0.5 rounded text-xs ${score >= 80 ? 'bg-green-500/20 text-green-400' : score >= 50 ? 'bg-yellow-500/20 text-yellow-400' : 'bg-red-500/20 text-red-400'}`}>
+                                                <span className={`px-2 py-0.5 rounded text-[10px] font-black tracking-tighter ${score >= 80 ? 'bg-green-500/20 text-green-400' : score >= 50 ? 'bg-yellow-500/20 text-yellow-400' : 'bg-red-500/20 text-red-400'}`}>
                                                     ĐIỂM: {score}/100
                                                 </span>
                                             )}
                                         </h3>
-                                        <div className="flex-1 text-sm text-gray-300 overflow-auto flex flex-col">
+                                        
+                                        <div className="flex-1 overflow-auto bg-black/20 rounded-lg border border-white/5 custom-scrollbar">
                                             {isEvaluating ? (
-                                                <div className="flex items-center gap-2 text-yellow-400/50 my-auto justify-center animate-pulse">
-                                                    <Loader2 size={16} className="animate-spin" /> AI đang đọc code...
+                                                <div className="h-full flex items-center gap-2 text-yellow-400/50 justify-center animate-pulse py-4">
+                                                    <Loader2 size={16} className="animate-spin" /> AI đang chấm điểm...
+                                                </div>
+                                            ) : feedback ? (
+                                                <div className="prose prose-sm prose-invert p-3 max-w-none prose-p:my-0 prose-p:leading-relaxed feedback-markdown">
+                                                    <MarkdownRenderer content={feedback} mode="lite" />
                                                 </div>
                                             ) : (
-                                                feedback ? (
-                                                    <div className="prose prose-sm prose-invert p-2 bg-black/20 rounded">
-                                                        <MarkdownRenderer content={feedback} mode="safe" />
-                                                    </div>
-                                                ) : (
-                                                    <div className="my-auto text-center text-gray-600 italic text-xs">
-                                                        Nộp bài để nhận phản hồi từ AI
-                                                    </div>
-                                                )
+                                                <div className="h-full flex items-center justify-center text-gray-600 italic text-xs py-4">
+                                                    Nộp bài để nhận nhận xét từ AI
+                                                </div>
                                             )}
                                         </div>
                                     </div>
-                                    
                                 </div>
                             </Panel>
                         </PanelGroup>
@@ -369,6 +420,17 @@ export default function CodeGradingPage() {
                 }
                 .animate-bounce-slow {
                     animation: bounce-slow 2s infinite ease-in-out;
+                }
+                .feedback-markdown p {
+                    margin-top: 0 !important;
+                    margin-bottom: 0.5rem !important;
+                }
+                .feedback-markdown p:last-child {
+                    margin-bottom: 0 !important;
+                }
+                /* Đảm bảo baseline của chữ không bị cắt */
+                .feedback-markdown {
+                    line-height: 1.6;
                 }
             `}</style>
         </main>

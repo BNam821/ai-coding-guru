@@ -75,7 +75,7 @@ export function calculateExperience(totalExperience: number): ExperienceSummary 
 }
 
 export async function getUserProgressSnapshot(username: string): Promise<UserProgressSnapshot> {
-    const [lessonCountRes, recentLessonRes, scoresRes] = await Promise.all([
+    const [lessonCountRes, recentLessonRes, scoresRes, userRes] = await Promise.all([
         supabaseAdmin
             .from("user_learning_history")
             .select("lesson_id", { count: "exact", head: true })
@@ -90,6 +90,11 @@ export async function getUserProgressSnapshot(username: string): Promise<UserPro
             .from("quiz_scores")
             .select("score, correct_answers, total_questions")
             .eq("username", username),
+        supabaseAdmin
+            .from("users")
+            .select("coding_xp")
+            .eq("username", username)
+            .maybeSingle(),
     ]);
 
     const uniqueLessonCount = lessonCountRes.count || 0;
@@ -132,7 +137,8 @@ export async function getUserProgressSnapshot(username: string): Promise<UserPro
         return acc + distance;
     }, 0);
 
-    const totalExperience = uniqueLessonCount * 10 + totalCorrectAnswers * 5;
+    const codingXp = userRes.data?.coding_xp || 0;
+    const totalExperience = uniqueLessonCount * 10 + totalCorrectAnswers * 5 + codingXp;
 
     return {
         uniqueLessonCount,
@@ -291,8 +297,8 @@ export interface LeaderboardUser {
 }
 
 export async function getLeaderboardData(): Promise<LeaderboardUser[]> {
-    // Fetch all users
-    const { data: users } = await supabaseAdmin.from('users').select('username, display_name');
+    // Fetch all users with coding_xp
+    const { data: users } = await supabaseAdmin.from('users').select('username, display_name, coding_xp');
     if (!users) return [];
 
     // Fetch learning history and group by username + lesson_slug to get unique lesson count
@@ -334,7 +340,8 @@ export async function getLeaderboardData(): Promise<LeaderboardUser[]> {
     const userStats = users.map(user => {
         const uniqueLessonCount = userLessonCounts[user.username] || 0;
         const totalCorrectAnswers = userCorrectAnswers[user.username] || 0;
-        const totalExperience = uniqueLessonCount * 10 + totalCorrectAnswers * 5;
+        const codingXp = (user as any).coding_xp || 0;
+        const totalExperience = uniqueLessonCount * 10 + totalCorrectAnswers * 5 + codingXp;
         const experience = calculateExperience(totalExperience);
 
         return {
