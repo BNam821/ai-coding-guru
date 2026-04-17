@@ -175,6 +175,7 @@ export async function getDashboardChartsData(username: string) {
     startOfWeek.setDate(startOfWeek.getDate() - diffToMonday);
     startOfWeek.setHours(0, 0, 0, 0);
 
+    // 1. Dữ liệu trắc nghiệm
     const { data: recentScores } = await supabaseAdmin
         .from('quiz_scores')
         .select('created_at, total_questions')
@@ -182,7 +183,25 @@ export async function getDashboardChartsData(username: string) {
         .gte('created_at', startOfWeek.toISOString())
         .order('created_at', { ascending: true });
 
+    // 2. Dữ liệu bài tập Code (Sử dụng user_problem_history)
+    const { data: recentCodeActivity } = await supabaseAdmin
+        .from('user_problem_history')
+        .select('updated_at')
+        .eq('username', username)
+        .gte('updated_at', startOfWeek.toISOString())
+        .order('updated_at', { ascending: true });
+
     const learningFrequency = Array.from({ length: 7 }).map((_, i) => {
+        const d = new Date(startOfWeek);
+        d.setDate(d.getDate() + i);
+        return {
+            date: getVnDateString(d),
+            label: d.toLocaleDateString('vi-VN', { weekday: 'short' }),
+            sessions: 0
+        };
+    });
+
+    const codingFrequency = Array.from({ length: 7 }).map((_, i) => {
         const d = new Date(startOfWeek);
         d.setDate(d.getDate() + i);
         return {
@@ -198,6 +217,15 @@ export async function getDashboardChartsData(username: string) {
         const dayMatch = learningFrequency.find(d => d.date === scoreDateStr);
         if (dayMatch) {
             dayMatch.sessions += (score.total_questions || 10) / 10;
+        }
+    }
+
+    for (const activity of (recentCodeActivity || [])) {
+        if (!activity.updated_at) continue;
+        const codeDateStr = getVnDateString(activity.updated_at);
+        const dayMatch = codingFrequency.find(d => d.date === codeDateStr);
+        if (dayMatch) {
+            dayMatch.sessions += 1;
         }
     }
 
@@ -236,6 +264,7 @@ export async function getDashboardChartsData(username: string) {
 
     return {
         learningFrequency,
+        codingFrequency,
         lessonCompletionRates
     };
 }

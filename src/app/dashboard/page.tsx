@@ -422,9 +422,11 @@ export default async function DashboardPage({
     ];
 
     let barData = chartsData?.learningFrequency?.map((d: any) => ({ label: d.label, value: d.sessions })) || [];
+    let codeBarData = chartsData?.codingFrequency?.map((d: any) => ({ label: d.label, value: d.sessions })) || [];
     let lineData = chartsData?.lessonCompletionRates || [];
 
     if (barData.length === 0) barData = buildBarData(postCount, lessonCount, quizCount, avgScore || 74);
+    if (codeBarData.length === 0) codeBarData = barData.map(d => ({ ...d, value: Math.round(d.value * 0.6) })); 
     if (lineData.length === 0) lineData = buildLineData(lessonCount, quizCount, postCount);
 
     const knowledgeTierBadge = getKnowledgeTierBadge(experience.level);
@@ -545,28 +547,20 @@ export default async function DashboardPage({
 
                                     <section className="grid gap-5 xl:grid-cols-[1.05fr_0.95fr]">
                                         <div className="rounded-[1.8rem] border border-white/20 bg-[#141414]/96 p-6">
-                                            <div className="flex items-center justify-between gap-4">
-                                                <div>
-                                                    <h2 className="text-xl font-semibold tracking-tight text-white">Ưu tiên hiện tại</h2>
-                                                    <p className="mt-2 text-sm text-white/46">Tóm tắt những việc cần được quan tâm.</p>
-                                                </div>
-                                                <Star className="h-4 w-4 text-[#8fe1ff]" />
-                                            </div>
-                                            <div className="mt-6 space-y-3">
-                                                {[
-                                                    `Tiếp tục học ${recentLessonTitle}`,
-                                                    "Hãy duy trì điểm trung bình bài Kiểm tra của bạn ở mức trên 80%",
-                                                    "Đăng tải một bài viết mới tại Wiki trong tuần này",
-                                                ].map((task, index) => (
-                                                    <div key={task} className="flex items-center justify-between rounded-2xl border border-white/16 bg-white/[0.025] px-4 py-3">
-                                                        <div className="flex items-center gap-3">
-                                                            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/[0.04] text-white/56">{index + 1}</div>
-                                                            <span className="text-sm text-white/72">{task}</span>
-                                                        </div>
-                                                        <Activity className="h-4 w-4 text-white/28" />
+                                            <div className="mb-6">
+                                                <div className="flex items-start justify-between gap-4">
+                                                    <div>
+                                                        <h2 className="text-xl font-semibold tracking-tight text-white">Tần suất kiểm tra: Bài tập Code</h2>
+                                                        <p className="mt-2 max-w-lg text-sm leading-6 text-white/46">
+                                                            Biểu đồ tần suất giải bài tập lập trình của bạn trong tuần này. <br></br>Chỉ tính những bài tập đã được hệ thống ghi nhận.
+                                                        </p>
                                                     </div>
-                                                ))}
+                                                    <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-3 py-2 text-xs text-white/52">
+                                                        Tuần này
+                                                    </div>
+                                                </div>
                                             </div>
+                                            <BarChart data={codeBarData} />
                                         </div>
 
                                         <div className="rounded-[1.8rem] border border-white/20 bg-[#141414]/96 p-6">
