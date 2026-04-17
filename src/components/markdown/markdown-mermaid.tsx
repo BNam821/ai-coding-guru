@@ -52,7 +52,6 @@ const MarkdownMermaidComponent = ({ code, className }: MarkdownMermaidProps) => 
                     theme: "base",
                     securityLevel: "loose",
                     fontFamily: "inherit",
-                    suppressConsole: true,
                     themeVariables: {
                         darkMode: true,
                         primaryColor: "#0b0d11", // Khớp với nền deep-space
