@@ -39,13 +39,15 @@ ${userCode}
 4. TỐI ƯU HÓA (VÒNG LẶP): Nếu đề bài yêu cầu in lặp lại nội dung giống nhau hoặc theo quy luật nhiều lần:
    - Sử dụng vòng lặp (for, while, loop...): Chấm 100 điểm (nếu kết quả đúng).
    - In thủ công lặp lại bằng nhiều câu lệnh in (ví dụ: in 5 dòng bằng 5 lệnh cout): Chỉ chấm tối đa 40 điểm dù kết quả đúng.
+5. ĐỘ PHỨC TẠP THỜI GIAN: Bạn phải đánh giá độ phức tạp của mã nguồn (Big O). 
+   - Nếu thuật toán có độ phức tạp thời gian quá lớn so với mức tối ưu (ví dụ: dùng O(n^2) trong khi có thể giải bằng O(n) hoặc O(n log n)): TRỪ TRỰC TIẾP 50 ĐIỂM khỏi tổng số điểm đáng lẽ đạt được.
 
 --- HƯỚNG DẪN CHẤM ĐIỂM (0-100) ---
 - 0 điểm: Vi phạm luật gian lận (in thẳng đáp án của bài toán cần tính toán), hoặc thuật toán sai VÀ thiếu lệnh in.
 - 20 điểm: Logic thuật toán đúng hoàn toàn nhưng THIẾU LỆNH IN kết quả cuối cùng.
 - 40 điểm: Kết quả đúng nhưng cách làm "thủ công", không tối ưu (ví dụ: dùng nhiều lệnh in thay vì dùng vòng lặp cho các bài toán lặp lại).
-- 50-90 điểm: Thuật toán đúng, có lệnh in nhưng kết quả sai định dạng hoặc chỉ đúng một phần test case.
-- 100 điểm: Thuật toán chính xác, có lệnh in, sử dụng vòng lặp/logic tối ưu (nếu cần), kết quả khớp tuyệt đối.
+- 50-90 điểm: Thuật toán đúng, có lệnh in nhưng kết quả sai định dạng hoặc chỉ đúng một phần test case, hoặc thuật toán KHÔNG TỐI ƯU về thời gian (bị trừ 50 điểm).
+- 100 điểm: Thuật toán chính xác, có lệnh in, sử dụng vòng lặp/logic tối ưu, độ phức tạp thời gian ĐẠT MỨC TỐI ƯU, kết quả khớp tuyệt đối.
 
 --- QUY TRÌNH PHÂN TÍCH ---
 BƯỚC 1: Liệt kê các lệnh in kết quả tìm được trong mã nguồn.
@@ -63,7 +65,7 @@ Trả về kết quả duy nhất dưới dạng JSON:
 }
 - Feedback: Nhận xét tổng quan về bài làm (Tiếng Việt).
 - Suggestion: 
-    + Nếu < 100 điểm: Đưa ra các chỉ dẫn cụ thể, gợi ý thuật toán hoặc đoạn mã mẫu để học sinh sửa lỗi (Tiếng Việt). Nếu bị 40 điểm do in thủ công thay vì dùng vòng lặp, hãy giải thích rõ ưu điểm của vòng lặp và gợi ý cách chuyển đổi.
+    + Nếu < 100 điểm: Đưa ra các chỉ dẫn cụ thể, gợi ý thuật toán hoặc đoạn mã mẫu để học sinh sửa lỗi (Tiếng Việt). Nếu bị 40 điểm do in thủ công thay vì dùng vòng lặp, hãy giải thích rõ ưu điểm của vòng lặp. Nếu bị trừ 50 điểm vì độ phức tạp thời gian, hãy ghi rõ độ phức tạp Big O hiện tại của học sinh và mức độ tối ưu mong muốn.
     + Nếu = 100 điểm: Trả về chính xác câu: "Bạn đã đạt điểm tuyệt đối! Tôi không có gì cần góp ý cho đoạn code này cả."`;
 
         const result = await geminiModel.generateContent(prompt);
