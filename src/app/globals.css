@@ -321,6 +321,153 @@ html {
   background: rgba(255, 255, 255, 0.08);
 }
 
+.rank-badge {
+  --rank-flame-rgb: 212, 132, 69;
+  --rank-flame-edge-rgb: 255, 221, 173;
+  --rank-flame-shadow-rgb: 255, 123, 49;
+  --rank-glow-alpha: 0.2;
+  --rank-halo-alpha: 0.16;
+  --rank-text-alpha: 0.2;
+  --rank-before-opacity: 0.6;
+  --rank-after-opacity: 0.7;
+  --rank-blend-mode: normal;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  isolation: isolate;
+  overflow: visible;
+  text-shadow: 0 0 12px rgba(var(--rank-flame-edge-rgb), var(--rank-text-alpha));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 0 18px rgba(var(--rank-flame-shadow-rgb), var(--rank-glow-alpha)),
+    0 0 34px rgba(var(--rank-flame-rgb), var(--rank-halo-alpha));
+}
+
+.rank-badge::before,
+.rank-badge::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+}
+
+.rank-badge::before {
+  inset: -4px;
+  border-radius: inherit;
+  background:
+    radial-gradient(circle at 14% 62%, rgba(var(--rank-flame-rgb), 0.95), transparent 22%),
+    radial-gradient(circle at 86% 58%, rgba(var(--rank-flame-rgb), 0.92), transparent 22%),
+    radial-gradient(circle at 50% -18%, rgba(var(--rank-flame-edge-rgb), 0.98), transparent 38%),
+    linear-gradient(180deg, rgba(var(--rank-flame-rgb), 0.45), transparent 72%);
+  filter: blur(8px) saturate(1.2);
+  opacity: var(--rank-before-opacity);
+  mix-blend-mode: var(--rank-blend-mode);
+  transform-origin: 50% 100%;
+  z-index: -2;
+  animation: rank-flame-flicker 2.5s ease-in-out infinite;
+}
+
+.rank-badge::after {
+  inset: -1px;
+  border-radius: inherit;
+  background:
+    linear-gradient(90deg, rgba(var(--rank-flame-edge-rgb), 0.45), transparent 18%, transparent 82%, rgba(var(--rank-flame-edge-rgb), 0.45)),
+    linear-gradient(180deg, rgba(var(--rank-flame-edge-rgb), 0.7), transparent 35%, transparent 72%, rgba(var(--rank-flame-rgb), 0.2));
+  filter: blur(1.5px);
+  opacity: var(--rank-after-opacity);
+  mix-blend-mode: var(--rank-blend-mode);
+  z-index: -1;
+  animation: rank-flame-pulse 1.6s ease-in-out infinite alternate;
+}
+
+.rank-badge__label {
+  position: relative;
+  z-index: 1;
+}
+
+.rank-badge--bronze {
+  --rank-flame-rgb: 208, 128, 62;
+  --rank-flame-edge-rgb: 255, 216, 168;
+  --rank-flame-shadow-rgb: 183, 91, 41;
+  --rank-glow-alpha: 0.16;
+  --rank-halo-alpha: 0.12;
+  --rank-text-alpha: 0.16;
+  --rank-before-opacity: 0.46;
+  --rank-after-opacity: 0.54;
+  --rank-blend-mode: normal;
+}
+
+.rank-badge--silver {
+  --rank-flame-rgb: 210, 225, 245;
+  --rank-flame-edge-rgb: 255, 255, 255;
+  --rank-flame-shadow-rgb: 160, 190, 245;
+  --rank-glow-alpha: 0.6;
+  --rank-halo-alpha: 0.5;
+  --rank-text-alpha: 0.8;
+  --rank-before-opacity: 0.95;
+  --rank-after-opacity: 1;
+  --rank-blend-mode: screen;
+}
+
+.rank-badge--gold {
+  --rank-flame-rgb: 250, 185, 45;
+  --rank-flame-edge-rgb: 255, 245, 190;
+  --rank-flame-shadow-rgb: 255, 155, 20;
+  --rank-glow-alpha: 0.55;
+  --rank-halo-alpha: 0.45;
+  --rank-text-alpha: 0.75;
+  --rank-before-opacity: 0.95;
+  --rank-after-opacity: 1;
+  --rank-blend-mode: screen;
+}
+
+.rank-badge--diamond {
+  --rank-flame-rgb: 30, 180, 255;
+  --rank-flame-edge-rgb: 200, 244, 255;
+  --rank-flame-shadow-rgb: 10, 120, 255;
+  --rank-glow-alpha: 0.65;
+  --rank-halo-alpha: 0.5;
+  --rank-text-alpha: 0.85;
+  --rank-before-opacity: 1;
+  --rank-after-opacity: 1;
+  --rank-blend-mode: screen;
+}
+
+@keyframes rank-flame-flicker {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(0.98, 0.96);
+  }
+
+  33% {
+    transform: translate3d(0, -2px, 0) scale(1.02, 1.08);
+  }
+
+  66% {
+    transform: translate3d(0, 1px, 0) scale(0.99, 1.02);
+  }
+}
+
+@keyframes rank-flame-pulse {
+  0% {
+    transform: scale(0.995);
+  }
+
+  50% {
+    transform: scale(1.02);
+  }
+
+  100% {
+    transform: scale(1.01);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rank-badge::before,
+  .rank-badge::after {
+    animation: none;
+  }
+}
+
 @media (max-width: 639px) {
   .markdown-content th,
   .markdown-content td {
