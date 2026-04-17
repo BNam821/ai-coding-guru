@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import type { MarkdownComponentOptions } from "./markdown-types";
 import { MarkdownAnchorLink } from "./markdown-anchor-link";
 import { MarkdownCodeBlock } from "./markdown-code-block";
+import { MarkdownMermaid } from "./markdown-mermaid";
 
 function normalizeLanguage(rawLanguage?: string): string | undefined {
     if (!rawLanguage) {
@@ -283,6 +284,10 @@ export function createMarkdownComponents(options: MarkdownComponentOptions = {})
                 const code = extractText(childProps.children).replace(/\n$/, "");
                 const languageMatch = childProps.className?.match(/language-([a-zA-Z0-9#+-]+)/);
                 const language = normalizeLanguage(languageMatch?.[1]);
+
+                if (language === "mermaid") {
+                    return <MarkdownMermaid code={code} />;
+                }
 
                 return (
                     <MarkdownCodeBlock
