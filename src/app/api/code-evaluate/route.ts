@@ -35,14 +35,17 @@ ${userCode}
    - Nếu KHÔNG CÓ lệnh in: Giá trị "actualOutput" trong JSON trả về BẮT BUỘC phải là chuỗi rỗng "" hoặc "Mã nguồn không in kết quả". 
    - TUYỆT ĐỐI KHÔNG được tự điền kết quả ${problemObj.expected_output} vào "actualOutput" nếu mã nguồn của học sinh không thực hiện lệnh in giá trị đó.
 2. PHÁT HIỆN GIAN LẬN: Nếu in trực tiếp kết quả (Hardcode) mà không tính toán: Chấm 0 điểm.
-3. LOGIC THUẬT TOÁN: Kiểm tra xem thuật toán có giải quyết đúng vấn đề không.
+3. LOGIC THUẬT TOÁN: Kiểm tra xem thuật toán có giải quyết đúng vấn đề không. Đừng chỉ đối chiếu với đáp án chuẩn, hãy chấp nhận các cách giải khác nhau miễn là đúng logic và hiệu quả.
+4. TỐI ƯU HÓA (VÒNG LẶP): Nếu đề bài yêu cầu in lặp lại nội dung giống nhau hoặc theo quy luật nhiều lần:
+   - Sử dụng vòng lặp (for, while, loop...): Chấm 100 điểm (nếu kết quả đúng).
+   - In thủ công lặp lại bằng nhiều câu lệnh in (ví dụ: in 5 dòng bằng 5 lệnh cout): Chỉ chấm tối đa 40 điểm dù kết quả đúng.
 
 --- HƯỚNG DẪN CHẤM ĐIỂM (0-100) ---
-- 0 điểm: Vi phạm luật gian lận, hoặc thuật toán sai VÀ thiếu lệnh in, hoặc mã nguồn không liên quan.
-- 20 điểm: Logic thuật toán đúng hoàn toàn nhưng THIẾU LỆNH IN kết quả cuối cùng (khiến output thực tế bị rỗng).
-- 21-40 điểm: Logic sai hoàn toàn nhưng có nỗ lực viết mã xử lý (không gian lận).
+- 0 điểm: Vi phạm luật gian lận (in thẳng đáp án của bài toán cần tính toán), hoặc thuật toán sai VÀ thiếu lệnh in.
+- 20 điểm: Logic thuật toán đúng hoàn toàn nhưng THIẾU LỆNH IN kết quả cuối cùng.
+- 40 điểm: Kết quả đúng nhưng cách làm "thủ công", không tối ưu (ví dụ: dùng nhiều lệnh in thay vì dùng vòng lặp cho các bài toán lặp lại).
 - 50-90 điểm: Thuật toán đúng, có lệnh in nhưng kết quả sai định dạng hoặc chỉ đúng một phần test case.
-- 100 điểm: Thuật toán chính xác, có lệnh in, kết quả khớp tuyệt đối và không gian lận.
+- 100 điểm: Thuật toán chính xác, có lệnh in, sử dụng vòng lặp/logic tối ưu (nếu cần), kết quả khớp tuyệt đối.
 
 --- QUY TRÌNH PHÂN TÍCH ---
 BƯỚC 1: Liệt kê các lệnh in kết quả tìm được trong mã nguồn.
@@ -60,7 +63,7 @@ Trả về kết quả duy nhất dưới dạng JSON:
 }
 - Feedback: Nhận xét tổng quan về bài làm (Tiếng Việt).
 - Suggestion: 
-    + Nếu < 100 điểm: Đưa ra các chỉ dẫn cụ thể, gợi ý thuật toán hoặc đoạn mã mẫu để học sinh sửa lỗi (Tiếng Việt).
+    + Nếu < 100 điểm: Đưa ra các chỉ dẫn cụ thể, gợi ý thuật toán hoặc đoạn mã mẫu để học sinh sửa lỗi (Tiếng Việt). Nếu bị 40 điểm do in thủ công thay vì dùng vòng lặp, hãy giải thích rõ ưu điểm của vòng lặp và gợi ý cách chuyển đổi.
     + Nếu = 100 điểm: Trả về chính xác câu: "Bạn đã đạt điểm tuyệt đối! Tôi không có gì cần góp ý cho đoạn code này cả."`;
 
         const result = await geminiModel.generateContent(prompt);

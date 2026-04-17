@@ -371,7 +371,7 @@ export default async function DashboardPage({
         {
             title: "Kinh nghiệm",
             value: `Lv${experience.level} · ${experience.currentLevelExperience}/${experience.requiredExperience} XP`,
-            description: `${totalExperience} XP tổng. +10 mỗi bài đã học, +5 mỗi câu trả lời đúng.`,
+            description: `${totalExperience} XP tổng. +10 mỗi bài đã học, +5 mỗi câu trả lời đúng, +20 với mỗi bài tập code đã hoàn thành.`,
             icon: <Flame className="h-4 w-4" />,
             footer: (
                 <div className="space-y-2">
