@@ -10,6 +10,13 @@ type QuizScoreInsertPayload = {
     total_questions?: number;
     question_sources?: QuizQuestionSource[];
     question_payload?: QuizQuestion[];
+    question_results?: Array<{
+        questionId?: number;
+        source?: QuizQuestionSource;
+        selectedAnswer?: number;
+        correctAnswer?: number;
+        isCorrect?: boolean;
+    }>;
 };
 
 async function insertQuizScoreWithFallback(payload: QuizScoreInsertPayload) {
@@ -58,7 +65,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
         }
 
-        const { score, correctAnswers, totalQuestions, questionSources, questionPayload } = await req.json();
+        const { score, correctAnswers, totalQuestions, questionSources, questionPayload, questionResults } = await req.json();
 
         if (typeof score !== 'number' || score < 0 || score > 100) {
             return NextResponse.json({ success: false, error: "Invalid score" }, { status: 400 });
@@ -92,6 +99,13 @@ export async function POST(req: Request) {
             return NextResponse.json({ success: false, error: "Invalid questionPayload" }, { status: 400 });
         }
 
+        if (
+            questionResults !== undefined &&
+            (!Array.isArray(questionResults) || questionResults.some((result) => !result || typeof result !== "object"))
+        ) {
+            return NextResponse.json({ success: false, error: "Invalid questionResults" }, { status: 400 });
+        }
+
         const payload: QuizScoreInsertPayload = {
             username: session.username,
             score,
@@ -99,6 +113,7 @@ export async function POST(req: Request) {
             ...(typeof totalQuestions === "number" ? { total_questions: totalQuestions } : {}),
             ...(Array.isArray(questionSources) ? { question_sources: questionSources as QuizQuestionSource[] } : {}),
             ...(Array.isArray(questionPayload) ? { question_payload: questionPayload as QuizQuestion[] } : {}),
+            ...(Array.isArray(questionResults) ? { question_results: questionResults } : {}),
         };
 
         await insertQuizScoreWithFallback(payload);

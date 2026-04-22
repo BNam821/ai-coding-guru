@@ -25,6 +25,14 @@ interface Question {
     };
 }
 
+interface QuestionResult {
+    questionId: number;
+    source: Question["source"];
+    selectedAnswer: number;
+    correctAnswer: number;
+    isCorrect: boolean;
+}
+
 export interface QuizGameGenerationConfig {
     mode: "auto" | "custom";
     selectedLessonIds?: string[];
@@ -120,6 +128,7 @@ export function QuizGame({ debugPreset, generationConfig }: QuizGameProps) {
     const [estimatedSeconds, setEstimatedSeconds] = useState(getInitialEstimatedSeconds(generationConfig));
     const [syncState, setSyncState] = useState<"idle" | "saving" | "saved" | "error">("idle");
     const correctAnswersRef = useRef(0);
+    const questionResultsRef = useRef<QuestionResult[]>([]);
     const questionCardRef = useRef<HTMLDivElement>(null);
     const explanationRef = useRef<HTMLDivElement>(null);
     const isDebugMode = Boolean(debugPreset);
@@ -143,6 +152,7 @@ export function QuizGame({ debugPreset, generationConfig }: QuizGameProps) {
         setShowExplanation(false);
         setScore(0);
         correctAnswersRef.current = 0;
+        questionResultsRef.current = [];
         setIsFinished(false);
         setSyncState("idle");
     };
@@ -193,6 +203,14 @@ export function QuizGame({ debugPreset, generationConfig }: QuizGameProps) {
         setSelectedAnswer(index);
         setShowExplanation(true);
 
+        questionResultsRef.current.push({
+            questionId: questions[currentIndex].id,
+            source: questions[currentIndex].source,
+            selectedAnswer: index,
+            correctAnswer: questions[currentIndex].correctAnswer,
+            isCorrect: index === questions[currentIndex].correctAnswer,
+        });
+
         if (index === questions[currentIndex].correctAnswer) {
             correctAnswersRef.current += 1;
             setScore((prev) => prev + 1);
@@ -224,6 +242,7 @@ export function QuizGame({ debugPreset, generationConfig }: QuizGameProps) {
                     totalQuestions: questions.length,
                     questionSources: questions.map((question) => question.source),
                     questionPayload: questions,
+                    questionResults: questionResultsRef.current,
                 }),
             });
 

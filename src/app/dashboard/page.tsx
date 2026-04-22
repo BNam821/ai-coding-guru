@@ -147,15 +147,19 @@ function buildPath(series: LineDatum[], width: number, height: number) {
 
 function StatBlock({ title, value, description, icon, footer }: StatCard) {
     return (
-        <div className="flex h-full flex-col rounded-[1.6rem] border border-white/20 bg-[#141414]/96 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
-            <div className="mb-6 flex items-start gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] text-[#90defa]">
+        <div className="relative flex h-full flex-col overflow-hidden rounded-[1.6rem] border border-white/28 bg-[linear-gradient(180deg,rgba(26,28,31,0.98),rgba(15,16,18,0.98))] p-5 shadow-[0_18px_45px_rgba(0,0,0,0.34),inset_0_1px_0_rgba(255,255,255,0.06)]">
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#90defa]/80 to-transparent" />
+            <div className="mb-6 flex items-start justify-between gap-3">
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-[#90defa]/20 bg-[#90defa]/10 text-[#90defa] shadow-[0_0_24px_rgba(144,222,250,0.12)]">
                     {icon}
                 </div>
+                <span className="rounded-full border border-white/12 bg-white/[0.05] px-3 py-1 text-[10px] uppercase tracking-[0.24em] text-white/42">
+                    Tóm tắt
+                </span>
             </div>
-            <p className="text-sm text-white/48">{title}</p>
+            <p className="text-sm font-medium text-white/58">{title}</p>
             <p className="mt-2 text-[2rem] font-semibold tracking-tight text-white">{value}</p>
-            {description && <p className="mt-3 text-sm leading-6 text-white/46">{description}</p>}
+            {description && <p className="mt-3 text-sm leading-6 text-white/54">{description}</p>}
             {footer ? <div className={cn(description ? "mt-5" : "mt-2")}>{footer}</div> : null}
         </div>
     );
@@ -332,6 +336,26 @@ export default async function DashboardPage({
         recommendedLessons: [],
         attemptCount: 0,
         averageScore: 0,
+            rawChartData: {
+                summary: {
+                    attempts: 0,
+                    averageScore: 0,
+                    totalQuestions: 0,
+                    totalCorrectAnswers: 0,
+                    totalWrongAnswers: 0,
+                    accuracyRate: 0,
+                    recentQuestionCount: 0,
+                    recentCorrectAnswers: 0,
+                    recentWrongAnswers: 0,
+                },
+            scoreTrend: [],
+            weakLessons: [],
+            strongLessons: [],
+            lessonCoverage: [],
+            lessonPerformance: [],
+            wrongByLesson: [],
+            wrongByChapter: [],
+        },
     };
 
     try {
@@ -459,8 +483,8 @@ export default async function DashboardPage({
     return (
         <main className="relative z-10 min-h-screen bg-transparent px-4 pb-20 pt-28">
             <div className="mx-auto max-w-[1280px]">
-                <div className="overflow-hidden rounded-[2rem] border border-white/18 bg-[#0f0f10]/95 shadow-[0_28px_90px_rgba(0,0,0,0.4)]">
-                    <section className="border-b border-white/16 px-6 py-7 sm:px-8 lg:px-10">
+                <div className="overflow-hidden rounded-[2rem] border border-white/20 bg-[radial-gradient(circle_at_top,rgba(80,173,214,0.12),transparent_26%),linear-gradient(180deg,rgba(14,14,16,0.98),rgba(9,10,12,0.98))] shadow-[0_32px_110px_rgba(0,0,0,0.48)]">
+                    <section className="border-b border-white/14 bg-white/[0.015] px-6 py-7 sm:px-8 lg:px-10">
                         <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
                             <div className="space-y-5">
                                 <div className="space-y-3">
@@ -519,7 +543,7 @@ export default async function DashboardPage({
                         </div>
                     </section>
 
-                    <section className="px-6 py-4 sm:px-8 lg:px-10">
+                    <section className="bg-[linear-gradient(180deg,rgba(255,255,255,0.02),transparent_18%)] px-6 py-4 sm:px-8 lg:px-10">
                         <DashboardOverviewTabs
                             lessonCount={uniqueLessonCount}
                             recentLessons={recentLearningLessons}
@@ -535,7 +559,8 @@ export default async function DashboardPage({
                                     </div>
 
                                     <div className="grid gap-5 xl:grid-cols-[1.08fr_1fr]">
-                                        <section className="rounded-[1.8rem] border border-white/20 bg-[#141414]/96 p-6">
+                                        <section className="relative overflow-hidden rounded-[1.8rem] border border-white/28 bg-[linear-gradient(180deg,rgba(27,29,33,0.98),rgba(18,19,22,0.98))] p-6 shadow-[0_22px_50px_rgba(0,0,0,0.3)]">
+                                            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#90defa]/70 to-transparent" />
                                             <div className="mb-6">
                                                 <div className="flex items-start justify-between gap-4">
                                                     <div>
@@ -552,7 +577,8 @@ export default async function DashboardPage({
                                             <BarChart data={barData} />
                                         </section>
 
-                                        <section className="rounded-[1.8rem] border border-white/20 bg-[#141414]/96 p-6">
+                                        <section className="relative overflow-hidden rounded-[1.8rem] border border-white/28 bg-[linear-gradient(180deg,rgba(28,27,22,0.98),rgba(18,19,22,0.98))] p-6 shadow-[0_22px_50px_rgba(0,0,0,0.3)]">
+                                            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#f6c453]/70 to-transparent" />
                                             <div className="mb-6">
                                                 <div className="flex items-start justify-between gap-4">
                                                     <div>
@@ -572,7 +598,8 @@ export default async function DashboardPage({
                                     </div>
 
                                     <section className="grid gap-5 xl:grid-cols-[1.05fr_0.95fr]">
-                                        <div className="rounded-[1.8rem] border border-white/20 bg-[#141414]/96 p-6">
+                                        <div className="relative overflow-hidden rounded-[1.8rem] border border-white/28 bg-[linear-gradient(180deg,rgba(23,30,34,0.98),rgba(18,19,22,0.98))] p-6 shadow-[0_22px_50px_rgba(0,0,0,0.3)]">
+                                            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#66d9ef]/70 to-transparent" />
                                             <div className="mb-6">
                                                 <div className="flex items-start justify-between gap-4">
                                                     <div>
@@ -589,7 +616,8 @@ export default async function DashboardPage({
                                             <BarChart data={codeBarData} />
                                         </div>
 
-                                        <div className="rounded-[1.8rem] border border-white/20 bg-[#141414]/96 p-6">
+                                        <div className="relative overflow-hidden rounded-[1.8rem] border border-white/28 bg-[linear-gradient(180deg,rgba(31,25,36,0.98),rgba(18,19,22,0.98))] p-6 shadow-[0_22px_50px_rgba(0,0,0,0.3)]">
+                                            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#c084fc]/60 to-transparent" />
                                             <div className="flex items-center justify-between gap-4">
                                                 <div>
                                                     <h2 className="text-xl font-semibold tracking-tight text-white">Truy cập nhanh</h2>
@@ -621,7 +649,8 @@ export default async function DashboardPage({
                                 </section>
                             )}
                             articlesContent={(
-                                <section className="rounded-[1.8rem] border border-white/20 bg-[#141414]/96 p-6 sm:p-7">
+                                <section className="relative overflow-hidden rounded-[1.8rem] border border-white/28 bg-[linear-gradient(180deg,rgba(27,29,33,0.98),rgba(18,19,22,0.98))] p-6 shadow-[0_22px_50px_rgba(0,0,0,0.3)] sm:p-7">
+                                    <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/55 to-transparent" />
                                     <WikiManagePage embedded />
                                 </section>
                             )}

@@ -27,6 +27,7 @@
         "next": "^16.2.1",
         "react": "19.2.3",
         "react-dom": "19.2.3",
+        "react-google-charts": "^5.2.1",
         "react-markdown": "^10.1.0",
         "react-resizable-panels": "^2.1.7",
         "rehype-autolink-headings": "^7.1.0",

@@ -120,9 +120,10 @@ export function DashboardOverviewTabs({
             {activeTab === "overview" ? overviewContent : null}
 
             {activeTab === "learning" ? (
-                <section className="space-y-4 rounded-[1.6rem] border border-white/20 bg-[#111214] p-5">
+                <section className="space-y-4 rounded-[1.6rem] border border-white/28 bg-[linear-gradient(180deg,rgba(18,20,23,0.98),rgba(13,14,16,0.98))] p-5 shadow-[0_22px_50px_rgba(0,0,0,0.3)]">
                     <div className="grid gap-4 xl:grid-cols-[1.25fr_0.95fr]">
-                        <div className="rounded-[1.35rem] border border-[#90defa]/20 bg-[radial-gradient(circle_at_top_left,rgba(144,222,250,0.16),transparent_42%),#0f1113] p-5">
+                        <div className="relative overflow-hidden rounded-[1.35rem] border border-[#90defa]/28 bg-[radial-gradient(circle_at_top_left,rgba(144,222,250,0.18),transparent_42%),linear-gradient(180deg,rgba(15,17,19,0.98),rgba(12,13,15,0.98))] p-5 shadow-[0_18px_38px_rgba(0,0,0,0.28)]">
+                            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#90defa]/75 to-transparent" />
                             <div className="flex items-start justify-between gap-3">
                                 <div>
                                     <div className="inline-flex items-center gap-2 rounded-full border border-[#90defa]/20 bg-[#90defa]/10 px-3 py-1 text-xs font-medium text-[#c9f3ff]">
@@ -154,6 +155,24 @@ export function DashboardOverviewTabs({
                                 ))}
                             </div>
 
+                            <div className="mt-6 rounded-[1.25rem] border border-white/14 bg-[#0f1113] p-4">
+                                <div className="flex items-center justify-between gap-3">
+                                    <div>
+                                        <h4 className="text-sm font-semibold uppercase tracking-[0.24em] text-white/74">Biểu đồ AI</h4>
+                                        <p className="mt-1 text-xs leading-5 text-white/42">
+                                            Xem trang biểu đồ riêng để theo dõi số câu sai theo bài học và theo chương.
+                                        </p>
+                                    </div>
+                                    <Link
+                                        href="/dashboard/charts"
+                                        className="inline-flex items-center gap-2 rounded-xl border border-[#90defa]/22 bg-[#90defa]/10 px-4 py-2 text-sm font-medium text-[#d9f7ff] transition-colors hover:bg-[#90defa]/16"
+                                    >
+                                        Hiển thị biểu đồ
+                                        <ChevronRight className="h-4 w-4" />
+                                    </Link>
+                                </div>
+                            </div>
+
                             {!aiEvaluation.hasData ? (
                                 <div className="mt-5 inline-flex items-center gap-2 rounded-xl border border-amber-400/20 bg-amber-400/10 px-3 py-2 text-xs text-amber-100">
                                     <TriangleAlert className="h-3.5 w-3.5" />
@@ -162,7 +181,8 @@ export function DashboardOverviewTabs({
                             ) : null}
                         </div>
 
-                        <div className="rounded-[1.35rem] border border-white/20 bg-white/[0.03] p-5">
+                        <div className="relative overflow-hidden rounded-[1.35rem] border border-white/28 bg-[linear-gradient(180deg,rgba(28,30,34,0.98),rgba(17,18,21,0.98))] p-5 shadow-[0_18px_38px_rgba(0,0,0,0.28)]">
+                            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#ffe08a]/60 to-transparent" />
                             <div className="flex items-center gap-2 text-[#90defa]">
                                 <Sparkles className="h-4 w-4" />
                                 <p className="text-xs uppercase tracking-[0.28em] text-[#90defa]/72">Gợi ý ôn lại</p>
@@ -197,7 +217,8 @@ export function DashboardOverviewTabs({
                     </div>
 
                     <div className="grid gap-4 lg:grid-cols-[0.9fr_1.2fr_1fr]">
-                        <div className="rounded-[1.35rem] border border-white/20 bg-white/[0.03] p-5">
+                        <div className="relative overflow-hidden rounded-[1.35rem] border border-white/28 bg-[linear-gradient(180deg,rgba(28,30,34,0.98),rgba(17,18,21,0.98))] p-5 shadow-[0_18px_38px_rgba(0,0,0,0.28)]">
+                            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#90defa]/55 to-transparent" />
                             <p className="text-xs uppercase tracking-[0.28em] text-[#90defa]/72">Learning</p>
                             <p className="mt-4 text-3xl font-semibold tracking-tight text-white">{lessonCount}</p>
                             <p className="mt-2 text-sm leading-6 text-white/48">
@@ -212,7 +233,8 @@ export function DashboardOverviewTabs({
                             </Link>
                         </div>
 
-                        <div className="rounded-[1.35rem] border border-white/20 bg-white/[0.03] p-5">
+                        <div className="relative overflow-hidden rounded-[1.35rem] border border-white/28 bg-[linear-gradient(180deg,rgba(28,30,34,0.98),rgba(17,18,21,0.98))] p-5 shadow-[0_18px_38px_rgba(0,0,0,0.28)]">
+                            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/50 to-transparent" />
                             <div className="flex items-center justify-between gap-3">
                                 <div>
                                     <h3 className="text-base font-semibold text-white">3 bài học gần nhất</h3>
@@ -249,7 +271,8 @@ export function DashboardOverviewTabs({
                             </div>
                         </div>
 
-                        <div className="rounded-[1.35rem] border border-white/20 bg-white/[0.03] p-5">
+                        <div className="relative overflow-hidden rounded-[1.35rem] border border-white/28 bg-[linear-gradient(180deg,rgba(28,30,34,0.98),rgba(17,18,21,0.98))] p-5 shadow-[0_18px_38px_rgba(0,0,0,0.28)]">
+                            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#8af0ff]/55 to-transparent" />
                             <h3 className="text-base font-semibold text-white">Đề xuất tiếp theo</h3>
                             {latestLesson ? (
                                 <p className="mt-2 text-sm leading-6 text-white/46">
