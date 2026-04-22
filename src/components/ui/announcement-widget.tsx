@@ -21,18 +21,33 @@ type AnnouncementWidgetProps = {
     className?: string;
     panelClassName?: string;
     panelSide?: "up" | "down";
+    viewerKey?: string | null;
 };
+
+const ANNOUNCEMENT_READ_EVENT = "announcements:read-state-changed";
+
+function getAnnouncementFingerprint(announcements: SiteAnnouncement[]) {
+    return announcements
+        .map((announcement) => `${announcement.id}:${announcement.updated_at}`)
+        .join("|");
+}
+
+function getAnnouncementReadStorageKey(viewerKey?: string | null) {
+    return `announcement:last-read:${viewerKey || "guest"}`;
+}
 
 export function AnnouncementWidget({
     className,
     panelClassName,
     panelSide = "down",
+    viewerKey,
 }: AnnouncementWidgetProps) {
     const widgetRef = useRef<HTMLDivElement | null>(null);
     const [isOpen, setIsOpen] = useState(false);
     const [announcements, setAnnouncements] = useState<SiteAnnouncement[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [hasUnreadAnnouncements, setHasUnreadAnnouncements] = useState(false);
 
     useEffect(() => {
         let isMounted = true;
@@ -76,6 +91,57 @@ export function AnnouncementWidget({
             window.removeEventListener("announcements:changed", handleChanged);
         };
     }, []);
+
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+
+        const fingerprint = getAnnouncementFingerprint(announcements);
+
+        if (!fingerprint) {
+            setHasUnreadAnnouncements(false);
+            return;
+        }
+
+        const storageKey = getAnnouncementReadStorageKey(viewerKey);
+        const lastReadFingerprint = window.sessionStorage.getItem(storageKey);
+        setHasUnreadAnnouncements(lastReadFingerprint !== fingerprint);
+    }, [announcements, viewerKey]);
+
+    useEffect(() => {
+        if (!isOpen || typeof window === "undefined") return;
+
+        const fingerprint = getAnnouncementFingerprint(announcements);
+        const storageKey = getAnnouncementReadStorageKey(viewerKey);
+
+        if (fingerprint) {
+            window.sessionStorage.setItem(storageKey, fingerprint);
+        } else {
+            window.sessionStorage.removeItem(storageKey);
+        }
+
+        setHasUnreadAnnouncements(false);
+        window.dispatchEvent(new CustomEvent(ANNOUNCEMENT_READ_EVENT, { detail: { viewerKey, fingerprint } }));
+    }, [announcements, isOpen, viewerKey]);
+
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+
+        const handleReadStateChanged = (event: Event) => {
+            const customEvent = event as CustomEvent<{ viewerKey?: string | null; fingerprint?: string }>;
+            if ((customEvent.detail?.viewerKey || null) !== (viewerKey || null)) {
+                return;
+            }
+
+            const currentFingerprint = getAnnouncementFingerprint(announcements);
+            setHasUnreadAnnouncements(Boolean(currentFingerprint) && customEvent.detail?.fingerprint !== currentFingerprint);
+        };
+
+        window.addEventListener(ANNOUNCEMENT_READ_EVENT, handleReadStateChanged);
+
+        return () => {
+            window.removeEventListener(ANNOUNCEMENT_READ_EVENT, handleReadStateChanged);
+        };
+    }, [announcements, viewerKey]);
 
     useEffect(() => {
         if (!isOpen) return;
@@ -180,8 +246,12 @@ export function AnnouncementWidget({
                 )}
             >
                 <Bell className="h-5 w-5" />
-                <span className="absolute right-1.5 top-1.5 h-3.5 w-3.5 rounded-full bg-red-500 shadow-[0_0_16px_rgba(239,68,68,0.9)]" />
-                <span className="absolute right-1.5 top-1.5 h-3.5 w-3.5 animate-ping rounded-full bg-red-400/70" />
+                {hasUnreadAnnouncements ? (
+                    <>
+                        <span className="absolute right-1.5 top-1.5 h-3.5 w-3.5 rounded-full bg-red-500 shadow-[0_0_16px_rgba(239,68,68,0.9)]" />
+                        <span className="absolute right-1.5 top-1.5 h-3.5 w-3.5 animate-ping rounded-full bg-red-400/70" />
+                    </>
+                ) : null}
             </button>
         </div>
     );

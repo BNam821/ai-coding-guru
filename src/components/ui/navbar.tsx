@@ -424,7 +424,7 @@ export function Navbar() {
                                 )}
                             </AnimatePresence>
                         </div>
-                        <AnnouncementWidget />
+                        <AnnouncementWidget viewerKey={session?.username} />
                     </div>
                 </div>
             </nav>
@@ -480,7 +480,7 @@ export function Navbar() {
                                 )}
                             </AnimatePresence>
                         </div>
-                        <AnnouncementWidget panelSide="up" />
+                        <AnnouncementWidget panelSide="up" viewerKey={session?.username} />
                     </div>
                 </div>
             </nav>
