@@ -3,6 +3,7 @@ import {
     type LearnAiQuestion,
     type LearnAiQuestionRequest,
     sanitizeCodeAnswer,
+    sanitizeKeywordGroups,
     sanitizeModelJson,
     sanitizeNumericAnswer,
     validateLearnAiQuestion,
@@ -27,11 +28,13 @@ Ngữ cảnh:
 Nội dung được phép dùng:
 ${truncatedSectionContent}
 
-Luật chọn loại câu hỏi:
-1. Mặc định ưu tiên "code_completion".
-2. Chỉ dùng "short_numeric" nếu phần kiến thức này phù hợp với một câu hỏi có đáp án số duy nhất, rõ ràng, không mơ hồ, có thể kiểm tra cục bộ.
-3. Nếu phân vân giữa 2 loại, bắt buộc chọn "code_completion".
-4. Không tạo trắc nghiệm A/B/C/D và không tạo câu trả lời văn bản tự do.
+Quy tắc chọn loại câu hỏi:
+1. Dùng "code_completion" khi người học cần điền một đoạn code ngắn, cụ thể, có thể xác định đúng sai dựa trên placeholder.
+2. Dùng "short_concept" khi cần trả lời khái niệm, định nghĩa, vai trò, so sánh ngắn hoặc giải thích ngắn. Đây là lựa chọn mặc định cho các mục không cần điền code và không có đáp án số duy nhất.
+3. Chỉ dùng "short_numeric" nếu section cho phép một đáp án số duy nhất, rõ ràng, không mơ hồ.
+4. Nếu phân vân giữa "code_completion" và "short_concept", ưu tiên "short_concept" cho nội dung lý thuyết và ưu tiên "code_completion" cho nội dung cú pháp hoặc đoạn code.
+5. Không tạo trắc nghiệm A/B/C/D.
+6. Không tạo câu hỏi yêu cầu chép nguyên văn một câu dài từ bài học.
 
 Schema bắt buộc:
 - Nếu là "code_completion":
@@ -45,6 +48,22 @@ Schema bắt buộc:
   "acceptedAnswers": ["đoạn code đúng để thay thế placeholder"],
   "inputDescription": "Mô tả input mẫu hoặc điều kiện đầu vào",
   "outputDescription": "Mô tả output mong đợi",
+  "hint": "Gợi ý ngắn",
+  "explanation": "Giải thích tại sao đáp án đúng"
+}
+
+- Nếu là "short_concept":
+{
+  "questionType": "short_concept",
+  "title": "Tiêu đề ngắn gọn",
+  "instruction": "Mô tả ngắn gọn cho biết đây là câu trả lời khái niệm ngắn, không cần đúng từng ký tự",
+  "question": "Câu hỏi đầy đủ",
+  "canonicalAnswer": "Đáp án mẫu ngắn gọn, tự nhiên",
+  "acceptedAnswers": ["một số cách trả lời ngắn hợp lệ, không cần exhaustive"],
+  "keywordGroups": [
+    ["cụm từ hoặc từ đồng nghĩa cho ý chính thứ nhất"],
+    ["cụm từ hoặc từ đồng nghĩa cho ý chính thứ hai"]
+  ],
   "hint": "Gợi ý ngắn",
   "explanation": "Giải thích tại sao đáp án đúng"
 }
@@ -64,12 +83,18 @@ Schema bắt buộc:
 
 Ràng buộc:
 - Trả về JSON object duy nhất, không markdown, không code block.
-- Dùng tiếng Việt cho toàn bộ nội dung hiển thị.
+- Toàn bộ nội dung hiển thị cho người học phải là tiếng Việt tự nhiên, có dấu đầy đủ.
+- Nghiêm cấm trả lời tiếng Việt không dấu như "cau hoi", "goi y", "giai thich", "muc tieu".
+- Các trường "title", "instruction", "question", "hint", "explanation", "canonicalAnswer", "inputDescription", "outputDescription" bắt buộc phải viết bằng tiếng Việt có dấu.
 - Nếu là "code_completion", "templateCode" phải chứa đúng placeholder "__AI_BLANK__".
-- "acceptedAnswers" phải ngắn gọn, chỉ chứa phần học sinh cần điền.
+- Nếu là "code_completion", "acceptedAnswers" chỉ chứa phần học sinh cần điền, ngắn gọn, không thêm giải thích.
+- Nếu là "short_concept", câu hỏi phải đánh giá ý hiểu, không đánh đố bằng khác biệt viết hoa, viết thường, dấu câu, khoảng trắng.
+- Nếu là "short_concept", "acceptedAnswers" là các ví dụ hợp lệ, không cần liệt kê mọi cách diễn đạt.
+- Nếu là "short_concept", "keywordGroups" phải gồm các ý bắt buộc để chấm bài mềm dẻo. Mỗi group là 1 ý, chỉ cần khớp 1 từ hoặc cụm từ trong group.
+- Nếu là "short_concept", chỉ tạo câu trả lời ngắn 1 đến 3 câu hoặc 1 cụm ngắn, không yêu cầu bài luận dài.
 - Không yêu cầu chạy code hay chấm theo test case.
 - Không nhắc đến những kiến thức không có trong section đã cung cấp.
-${isRetry ? '- Lần trả lời trước bị lỗi schema. Lần này bắt buộc bám sát schema tuyệt đối.' : ""}
+${isRetry ? "- Lần trả lời trước bị lỗi schema hoặc sai chuẩn tiếng Việt có dấu. Lần này bắt buộc bám sát schema tuyệt đối và dùng tiếng Việt có dấu ở mọi trường hiển thị." : ""}
 `.trim();
 }
 
@@ -78,6 +103,15 @@ function normalizeQuestion(question: LearnAiQuestion): LearnAiQuestion {
         return {
             ...question,
             acceptedAnswers: question.acceptedAnswers.map(sanitizeCodeAnswer).filter(Boolean),
+        };
+    }
+
+    if (question.questionType === "short_concept") {
+        return {
+            ...question,
+            canonicalAnswer: question.canonicalAnswer.trim(),
+            acceptedAnswers: question.acceptedAnswers.map((answer) => answer.trim()).filter(Boolean),
+            keywordGroups: sanitizeKeywordGroups(question.keywordGroups),
         };
     }
 

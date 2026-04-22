@@ -34,7 +34,22 @@ export interface LearnAiShortNumericQuestion {
     explanation: string;
 }
 
-export type LearnAiQuestion = LearnAiCodeCompletionQuestion | LearnAiShortNumericQuestion;
+export interface LearnAiShortConceptQuestion {
+    questionType: "short_concept";
+    title: string;
+    instruction: string;
+    question: string;
+    canonicalAnswer: string;
+    acceptedAnswers: string[];
+    keywordGroups: string[][];
+    hint: string;
+    explanation: string;
+}
+
+export type LearnAiQuestion =
+    | LearnAiCodeCompletionQuestion
+    | LearnAiShortNumericQuestion
+    | LearnAiShortConceptQuestion;
 
 export function sanitizeModelJson(text: string) {
     const trimmed = text.trim();
@@ -82,6 +97,38 @@ export function sanitizeNumericAnswer(value: string) {
     return parsed.toString();
 }
 
+export function sanitizeLooseTextAnswer(value: string) {
+    return value
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+}
+
+export function sanitizeKeywordGroups(values: string[][]) {
+    return values
+        .filter((group): group is string[] => Array.isArray(group))
+        .map((group) => sanitizeAcceptedAnswers(group.filter((item): item is string => typeof item === "string")))
+        .map((group) => group.map(sanitizeLooseTextAnswer).filter(Boolean))
+        .filter((group) => group.length > 0);
+}
+
+const VIETNAMESE_DIACRITIC_REGEX = /[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđÀÁẠẢÃÂẦẤẬẨẪĂẰẮẶẲẴÈÉẸẺẼÊỀẾỆỂỄÌÍỊỈĨÒÓỌỎÕÔỒỐỘỔỖƠỜỚỢỞỠÙÚỤỦŨƯỪỨỰỬỮỲÝỴỶỸĐ]/;
+
+export function hasVietnameseDiacritics(value: string) {
+    return VIETNAMESE_DIACRITIC_REGEX.test(value);
+}
+
+function assertVietnameseDisplayText(value: string, fieldName: string) {
+    if (!hasVietnameseDiacritics(value)) {
+        throw new Error(`"${fieldName}" phải là tiếng Việt có dấu`);
+    }
+
+    return value;
+}
+
 function getStringField(value: unknown, fieldName: string) {
     if (typeof value !== "string" || !value.trim()) {
         throw new Error(`Missing or invalid "${fieldName}"`);
@@ -98,6 +145,20 @@ function getStringArrayField(value: unknown, fieldName: string) {
     const sanitized = sanitizeAcceptedAnswers(
         value.filter((item): item is string => typeof item === "string")
     );
+
+    if (sanitized.length === 0) {
+        throw new Error(`Missing or invalid "${fieldName}"`);
+    }
+
+    return sanitized;
+}
+
+function getStringMatrixField(value: unknown, fieldName: string) {
+    if (!Array.isArray(value)) {
+        throw new Error(`Missing or invalid "${fieldName}"`);
+    }
+
+    const sanitized = sanitizeKeywordGroups(value);
 
     if (sanitized.length === 0) {
         throw new Error(`Missing or invalid "${fieldName}"`);
@@ -124,16 +185,16 @@ export function validateLearnAiQuestion(payload: unknown): LearnAiQuestion {
 
         return {
             questionType,
-            title: getStringField((payload as { title?: unknown }).title, "title"),
-            instruction: getStringField((payload as { instruction?: unknown }).instruction, "instruction"),
+            title: assertVietnameseDisplayText(getStringField((payload as { title?: unknown }).title, "title"), "title"),
+            instruction: assertVietnameseDisplayText(getStringField((payload as { instruction?: unknown }).instruction, "instruction"), "instruction"),
             language: getStringField((payload as { language?: unknown }).language, "language"),
             templateCode,
             blankPlaceholder,
             acceptedAnswers,
-            inputDescription: getStringField((payload as { inputDescription?: unknown }).inputDescription, "inputDescription"),
-            outputDescription: getStringField((payload as { outputDescription?: unknown }).outputDescription, "outputDescription"),
-            hint: getStringField((payload as { hint?: unknown }).hint, "hint"),
-            explanation: getStringField((payload as { explanation?: unknown }).explanation, "explanation"),
+            inputDescription: assertVietnameseDisplayText(getStringField((payload as { inputDescription?: unknown }).inputDescription, "inputDescription"), "inputDescription"),
+            outputDescription: assertVietnameseDisplayText(getStringField((payload as { outputDescription?: unknown }).outputDescription, "outputDescription"), "outputDescription"),
+            hint: assertVietnameseDisplayText(getStringField((payload as { hint?: unknown }).hint, "hint"), "hint"),
+            explanation: assertVietnameseDisplayText(getStringField((payload as { explanation?: unknown }).explanation, "explanation"), "explanation"),
         };
     }
 
@@ -154,16 +215,71 @@ export function validateLearnAiQuestion(payload: unknown): LearnAiQuestion {
 
         return {
             questionType,
-            title: getStringField((payload as { title?: unknown }).title, "title"),
-            instruction: getStringField((payload as { instruction?: unknown }).instruction, "instruction"),
-            question: getStringField((payload as { question?: unknown }).question, "question"),
+            title: assertVietnameseDisplayText(getStringField((payload as { title?: unknown }).title, "title"), "title"),
+            instruction: assertVietnameseDisplayText(getStringField((payload as { instruction?: unknown }).instruction, "instruction"), "instruction"),
+            question: assertVietnameseDisplayText(getStringField((payload as { question?: unknown }).question, "question"), "question"),
             correctAnswer,
             acceptedAnswers,
             unit: typeof (payload as { unit?: unknown }).unit === "string" ? (payload as { unit?: string }).unit?.trim() || "" : "",
-            hint: getStringField((payload as { hint?: unknown }).hint, "hint"),
-            explanation: getStringField((payload as { explanation?: unknown }).explanation, "explanation"),
+            hint: assertVietnameseDisplayText(getStringField((payload as { hint?: unknown }).hint, "hint"), "hint"),
+            explanation: assertVietnameseDisplayText(getStringField((payload as { explanation?: unknown }).explanation, "explanation"), "explanation"),
+        };
+    }
+
+    if (questionType === "short_concept") {
+        const canonicalAnswer = getStringField((payload as { canonicalAnswer?: unknown }).canonicalAnswer, "canonicalAnswer");
+        const acceptedAnswers = sanitizeAcceptedAnswers([
+            ...getStringArrayField((payload as { acceptedAnswers?: unknown }).acceptedAnswers, "acceptedAnswers"),
+            canonicalAnswer,
+        ]);
+        const keywordGroups = getStringMatrixField((payload as { keywordGroups?: unknown }).keywordGroups, "keywordGroups");
+
+        return {
+            questionType,
+            title: assertVietnameseDisplayText(getStringField((payload as { title?: unknown }).title, "title"), "title"),
+            instruction: assertVietnameseDisplayText(getStringField((payload as { instruction?: unknown }).instruction, "instruction"), "instruction"),
+            question: assertVietnameseDisplayText(getStringField((payload as { question?: unknown }).question, "question"), "question"),
+            canonicalAnswer: assertVietnameseDisplayText(canonicalAnswer, "canonicalAnswer"),
+            acceptedAnswers,
+            keywordGroups,
+            hint: assertVietnameseDisplayText(getStringField((payload as { hint?: unknown }).hint, "hint"), "hint"),
+            explanation: assertVietnameseDisplayText(getStringField((payload as { explanation?: unknown }).explanation, "explanation"), "explanation"),
         };
     }
 
     throw new Error('Unsupported "questionType"');
+}
+
+export function evaluateLearnAiAnswer(question: LearnAiQuestion, userAnswer: string) {
+    if (question.questionType === "code_completion") {
+        const normalizedUserAnswer = sanitizeCodeAnswer(userAnswer);
+        return question.acceptedAnswers
+            .map(sanitizeCodeAnswer)
+            .includes(normalizedUserAnswer);
+    }
+
+    if (question.questionType === "short_numeric") {
+        const normalizedUserAnswer = sanitizeNumericAnswer(userAnswer);
+        return question.acceptedAnswers
+            .map(sanitizeNumericAnswer)
+            .includes(normalizedUserAnswer);
+    }
+
+    const normalizedUserAnswer = sanitizeLooseTextAnswer(userAnswer);
+
+    if (!normalizedUserAnswer) {
+        return false;
+    }
+
+    const matchesAcceptedAnswer = question.acceptedAnswers
+        .map(sanitizeLooseTextAnswer)
+        .includes(normalizedUserAnswer);
+
+    if (matchesAcceptedAnswer) {
+        return true;
+    }
+
+    return question.keywordGroups.every((group) =>
+        group.some((keyword) => normalizedUserAnswer.includes(keyword))
+    );
 }

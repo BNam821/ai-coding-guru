@@ -7,7 +7,7 @@ import { NeonButton } from "@/components/ui/neon-button";
 import { MarkdownRenderer } from "@/components/markdown/markdown-renderer";
 import type { LearnLessonSection } from "@/lib/learn-toc";
 import type { LearnAiQuestion } from "@/lib/learn-ai-question";
-import { sanitizeCodeAnswer, sanitizeNumericAnswer } from "@/lib/learn-ai-question";
+import { evaluateLearnAiAnswer } from "@/lib/learn-ai-question";
 import { cn } from "@/lib/utils";
 
 type QuestionStatus = "idle" | "prefetch-pending" | "loading" | "ready" | "error";
@@ -35,6 +35,22 @@ function getResultText(result: AnswerResult) {
     }
 
     return "";
+}
+
+function getQuestionBadge(question: LearnAiQuestion) {
+    if (question.questionType === "code_completion") {
+        return "Hoàn thiện code";
+    }
+
+    if (question.questionType === "short_concept") {
+        return "Trả lời khái niệm ngắn";
+    }
+
+    return "Trả lời số ngắn";
+}
+
+function getInstructionLabel(question: LearnAiQuestion) {
+    return question.questionType === "code_completion" ? "Yêu cầu" : "Mục tiêu";
 }
 
 export function LessonAiQuestionCard({
@@ -151,21 +167,7 @@ export function LessonAiQuestionCard({
             return;
         }
 
-        if (question.questionType === "code_completion") {
-            const normalizedUserAnswer = sanitizeCodeAnswer(userAnswer);
-            const isCorrect = question.acceptedAnswers
-                .map(sanitizeCodeAnswer)
-                .includes(normalizedUserAnswer);
-
-            setResult(isCorrect ? "correct" : "incorrect");
-            return;
-        }
-
-        const normalizedUserAnswer = sanitizeNumericAnswer(userAnswer);
-        const isCorrect = question.acceptedAnswers
-            .map(sanitizeNumericAnswer)
-            .includes(normalizedUserAnswer);
-
+        const isCorrect = evaluateLearnAiAnswer(question, userAnswer);
         setResult(isCorrect ? "correct" : "incorrect");
     };
 
@@ -183,6 +185,11 @@ export function LessonAiQuestionCard({
                         <div className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.22em] text-white/55">
                             Mục {section.index}
                         </div>
+                        {question && (
+                            <div className="rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.22em] text-cyan-200">
+                                {getQuestionBadge(question)}
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -206,7 +213,7 @@ export function LessonAiQuestionCard({
                             <Loader2 className="h-10 w-10 animate-spin text-yellow-300" />
                             <div className="space-y-2">
                                 <p className="text-lg font-semibold text-white">AI đang soạn câu hỏi cho mục này</p>
-                                <p className="text-sm text-white/60">Bạn vui lòng chờ một chút nhé!</p>
+                                <p className="text-sm text-white/60">Bạn vui lòng chờ một chút nhé.</p>
                             </div>
                         </div>
                     )}
@@ -227,8 +234,11 @@ export function LessonAiQuestionCard({
                         <div className="space-y-6">
                             {question.questionType === "code_completion" ? (
                                 <div className="space-y-5">
-                                    <div className="space-y-3">
-                                        <div className="text-xl font-bold text-white [&_.markdown-content>p]:mb-0 [&_.markdown-content]:leading-relaxed">
+                                    <div className="rounded-2xl border border-cyan-400/20 bg-gradient-to-br from-cyan-400/12 via-cyan-400/6 to-white/5 p-5 shadow-[0_18px_60px_-30px_rgba(34,211,238,0.55)]">
+                                        <p className="mb-2 text-xs font-bold uppercase tracking-[0.22em] text-cyan-200">
+                                            {getInstructionLabel(question)}
+                                        </p>
+                                        <div className="text-lg font-semibold text-white [&_.markdown-content>p]:mb-0 [&_.markdown-content]:leading-relaxed">
                                             <MarkdownRenderer content={question.instruction} mode="safe" />
                                         </div>
                                     </div>
@@ -266,30 +276,53 @@ export function LessonAiQuestionCard({
                                 </div>
                             ) : (
                                 <div className="space-y-5">
-                                    <div className="space-y-3">
+                                    <div className="space-y-4">
                                         <h3 className="text-2xl font-bold text-white">{question.title}</h3>
-                                        <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-                                            <MarkdownRenderer content={question.instruction} mode="safe" />
+                                        <div className="rounded-2xl border border-yellow-300/30 bg-gradient-to-br from-yellow-300/16 via-amber-300/10 to-white/5 p-5 shadow-[0_24px_70px_-34px_rgba(252,211,77,0.7)]">
+                                            <p className="mb-3 text-xs font-bold uppercase tracking-[0.24em] text-yellow-200">
+                                                Câu hỏi
+                                            </p>
+                                            <div className="text-lg font-semibold text-white [&_.markdown-content>p]:mb-0 [&_.markdown-content]:leading-relaxed">
+                                                <MarkdownRenderer content={question.question} mode="safe" />
+                                            </div>
+                                        </div>
+                                        <div className="rounded-2xl border border-cyan-400/20 bg-gradient-to-br from-cyan-400/14 via-cyan-400/7 to-white/5 p-5 shadow-[0_18px_60px_-30px_rgba(34,211,238,0.55)]">
+                                            <p className="mb-2 text-xs font-bold uppercase tracking-[0.24em] text-cyan-200">
+                                                {getInstructionLabel(question)}
+                                            </p>
+                                            <div className="[&_.markdown-content>p]:mb-0 [&_.markdown-content]:leading-relaxed">
+                                                <MarkdownRenderer content={question.instruction} mode="safe" />
+                                            </div>
                                         </div>
                                     </div>
 
-                                    <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-                                        <MarkdownRenderer content={question.question} mode="safe" />
-                                    </div>
-
-                                    <div className="space-y-3">
-                                        <label className="block text-xs font-bold uppercase tracking-[0.22em] text-white/55">
-                                            Câu trả lời dạng số {question.unit ? `(${question.unit})` : ""}
-                                        </label>
-                                        <input
-                                            type="text"
-                                            inputMode="decimal"
-                                            value={userAnswer}
-                                            onChange={(event) => setUserAnswer(event.target.value)}
-                                            placeholder="Ví dụ: 8"
-                                            className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none transition-colors focus:border-accent-secondary/50"
-                                        />
-                                    </div>
+                                    {question.questionType === "short_numeric" ? (
+                                        <div className="space-y-3">
+                                            <label className="block text-xs font-bold uppercase tracking-[0.22em] text-white/55">
+                                                Câu trả lời dạng số {question.unit ? `(${question.unit})` : ""}
+                                            </label>
+                                            <input
+                                                type="text"
+                                                inputMode="decimal"
+                                                value={userAnswer}
+                                                onChange={(event) => setUserAnswer(event.target.value)}
+                                                placeholder="Ví dụ: 8"
+                                                className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none transition-colors focus:border-accent-secondary/50"
+                                            />
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-3">
+                                            <label className="block text-xs font-bold uppercase tracking-[0.22em] text-white/55">
+                                                Câu trả lời ngắn
+                                            </label>
+                                            <textarea
+                                                value={userAnswer}
+                                                onChange={(event) => setUserAnswer(event.target.value)}
+                                                placeholder="Trả lời bằng ý chính, ngắn gọn và rõ ràng."
+                                                className="min-h-28 w-full rounded-2xl border border-white/10 bg-black/30 p-4 text-sm text-white outline-none transition-colors focus:border-accent-secondary/50"
+                                            />
+                                        </div>
+                                    )}
                                 </div>
                             )}
 
@@ -349,11 +382,13 @@ export function LessonAiQuestionCard({
                                                     content={buildMarkdownCodeBlock(question.language, question.acceptedAnswers[0] || "")}
                                                     mode="safe"
                                                 />
-                                            ) : (
+                                            ) : question.questionType === "short_numeric" ? (
                                                 <p className="text-lg font-semibold text-white">
                                                     {question.correctAnswer}
                                                     {question.unit ? ` ${question.unit}` : ""}
                                                 </p>
+                                            ) : (
+                                                <MarkdownRenderer content={question.canonicalAnswer} mode="safe" />
                                             )}
                                         </div>
                                     )}
