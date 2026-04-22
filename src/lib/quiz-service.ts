@@ -1,4 +1,5 @@
 import { getFullLearningTree, getLesson } from "@/lib/learn-db";
+import { buildQuizGenerationPrompt } from "@/lib/ai-prompts";
 import { sanitizeModelJson } from "@/lib/learn-ai-question";
 import { geminiModel } from "@/lib/gemini";
 import { supabaseAdmin } from "@/lib/supabase-admin";
@@ -78,20 +79,20 @@ function getLessonContentLimit(lessonCount: number) {
     return 5000;
 }
 
-function getCarefulnessInstruction(lessonCount: number) {
+function getCarefulnessInstructionText(lessonCount: number) {
     if (lessonCount > 10) {
-        return "Người dùng đã chọn rất nhiều bài học. Hãy đọc kỹ toàn bộ nguồn, đối chiếu giữa các bài, ưu tiên độ chính xác tuyệt đối và chấp nhận xử lý chậm hơn để tránh nhầm lẫn.";
+        return "\u004e\u0067\u01b0\u1eddi \u0064\u00f9\u006e\u0067 \u0111\u00e3 \u0063\u0068\u1ecd\u006e \u0072\u1ea5\u0074 \u006e\u0068\u0069\u1ec1\u0075 \u0062\u00e0\u0069 \u0068\u1ecd\u0063. \u0048\u00e3\u0079 \u0111\u1ecd\u0063 \u006b\u1ef9 \u0074\u006f\u00e0\u006e \u0062\u1ed9 \u006e\u0067\u0075\u1ed3\u006e, \u0111\u1ed1\u0069 \u0063\u0068\u0069\u1ebf\u0075 \u0067\u0069\u1eef\u0061 \u0063\u00e1\u0063 \u0062\u00e0\u0069, \u01b0\u0075 \u0074\u0069\u00ea\u006e \u0111\u1ed9 \u0063\u0068\u00ed\u006e\u0068 \u0078\u00e1\u0063 \u0074\u0075\u0079\u1ec7\u0074 \u0111\u1ed1\u0069 \u0076\u00e0 \u0063\u0068\u1ea5\u0070 \u006e\u0068\u1ead\u006e \u0078\u1eed \u006c\u00fd \u0063\u0068\u1ead\u006d \u0068\u01a1\u006e \u0111\u1ec3 \u0074\u0072\u00e1\u006e\u0068 \u006e\u0068\u1ea7\u006d \u006c\u1eab\u006e.";
     }
 
     if (lessonCount >= 8) {
-        return "Người dùng đã chọn nhiều bài học. Hãy đọc kỹ từng bài, so sánh các khái niệm gần nhau trước khi tạo câu hỏi để tránh trùng lặp và sai lệch.";
+        return "\u004e\u0067\u01b0\u1eddi \u0064\u00f9\u006e\u0067 \u0111\u00e3 \u0063\u0068\u1ecd\u006e \u006e\u0068\u0069\u1ec1\u0075 \u0062\u00e0\u0069 \u0068\u1ecd\u0063. \u0048\u00e3\u0079 \u0111\u1ecd\u0063 \u006b\u1ef9 \u0074\u1eeb\u006e\u0067 \u0062\u00e0\u0069, \u0073\u006f \u0073\u00e1\u006e\u0068 \u0063\u00e1\u0063 \u006b\u0068\u00e1\u0069 \u006e\u0069\u1ec7\u006d \u0067\u1ea7\u006e \u006e\u0068\u0061\u0075 \u0074\u0072\u01b0\u1edb\u0063 \u006b\u0068\u0069 \u0074\u1ea1\u006f \u0063\u00e2\u0075 \u0068\u1ecf\u0069 \u0111\u1ec3 \u0074\u0072\u00e1\u006e\u0068 \u0074\u0072\u00f9\u006e\u0067 \u006c\u1eb7\u0070 \u0076\u00e0 \u0073\u0061\u0069 \u006c\u1ec7\u0063\u0068.";
     }
 
     if (lessonCount >= 5) {
-        return "Người dùng đã chọn một phạm vi khá rộng. Hãy bao quát toàn bộ bài đã chọn và phân bổ câu hỏi đều, chính xác.";
+        return "\u004e\u0067\u01b0\u1eddi \u0064\u00f9\u006e\u0067 \u0111\u00e3 \u0063\u0068\u1ecd\u006e \u006d\u1ed9\u0074 \u0070\u0068\u1ea1\u006d \u0076\u0069 \u006b\u0068\u00e1 \u0072\u1ed9\u006e\u0067. \u0048\u00e3\u0079 \u0062\u0061\u006f \u0071\u0075\u00e1\u0074 \u0074\u006f\u00e0\u006e \u0062\u1ed9 \u0062\u00e0\u0069 \u0111\u00e3 \u0063\u0068\u1ecd\u006e \u0076\u00e0 \u0070\u0068\u00e2\u006e \u0062\u1ed5 \u0063\u00e2\u0075 \u0068\u1ecf\u0069 \u0111\u1ec1\u0075, \u0063\u0068\u00ed\u006e\u0068 \u0078\u00e1\u0063.";
     }
 
-    return "Hãy tập trung bám sát các bài đã chọn và tạo câu hỏi rõ ràng, cân bằng.";
+    return "\u0048\u00e3\u0079 \u0074\u1ead\u0070 \u0074\u0072\u0075\u006e\u0067 \u0062\u00e1\u006d \u0073\u00e1\u0074 \u0063\u00e1\u0063 \u0062\u00e0\u0069 \u0111\u00e3 \u0063\u0068\u1ecd\u006e \u0076\u00e0 \u0074\u1ea1\u006f \u0063\u00e2\u0075 \u0068\u1ecf\u0069 \u0072\u00f5 \u0072\u00e0\u006e\u0067, \u0063\u00e2\u006e \u0062\u1eb1\u006e\u0067.";
 }
 
 function validateQuizQuestions(
@@ -306,10 +307,16 @@ export async function generateQuizForUser(username: string, options: QuizGenerat
     const questionCount = sourceBundle.questionCount;
 
     if (questionCount === 0) {
-        throw new Error("Chưa đủ số lượng bài học để tạo bài kiểm tra.");
+        throw new Error("\u0043\u0068\u01b0\u0061 \u0111\u1ee7 \u0073\u1ed1 \u006c\u01b0\u1ee3\u006e\u0067 \u0062\u00e0\u0069 \u0068\u1ecd\u0063 \u0111\u1ec3 \u0074\u1ea1\u006f \u0062\u00e0\u0069 \u006b\u0069\u1ec3\u006d \u0074\u0072\u0061.");
     }
 
-    let fullContent = "";
+    const lessonSources: Array<{
+        courseSlug: string;
+        lessonSlug: string;
+        lessonTitle: string;
+        sourceKey: string;
+        content: string;
+    }> = [];
     const lessonContentLimit = getLessonContentLimit(lessonCount);
     const allowedSources = new Map<string, QuizQuestionSource>();
 
@@ -328,12 +335,17 @@ export async function generateQuizForUser(username: string, options: QuizGenerat
             courseSlug: item.course_slug,
         });
 
-        const truncatedContent = lesson.content.substring(0, lessonContentLimit);
-        fullContent += `\n\n--- Bài học: ${item.lesson_title} ---\nsourceLessonKey: ${sourceKey}\ncourseSlug: ${item.course_slug}\nlessonSlug: ${item.lesson_slug}\n${truncatedContent}`;
+        lessonSources.push({
+            courseSlug: item.course_slug,
+            lessonSlug: item.lesson_slug,
+            lessonTitle: item.lesson_title,
+            sourceKey,
+            content: lesson.content.substring(0, lessonContentLimit),
+        });
     }
 
-    if (!fullContent) {
-        throw new Error("Không tìm thấy nội dung bài học.");
+    if (lessonSources.length === 0) {
+        throw new Error("\u004b\u0068\u00f4\u006e\u0067 \u0074\u00ec\u006d \u0074\u0068\u1ea5\u0079 \u006e\u1ed9\u0069 \u0064\u0075\u006e\u0067 \u0062\u00e0\u0069 \u0068\u1ecd\u0063.");
     }
 
     const sourceCatalog = Array.from(allowedSources.values())
@@ -341,52 +353,19 @@ export async function generateQuizForUser(username: string, options: QuizGenerat
         .join("\n");
 
     let lastError: Error | null = null;
-    const carefulnessInstruction = getCarefulnessInstruction(lessonCount);
+    const carefulnessInstruction = getCarefulnessInstructionText(lessonCount);
 
     for (let attempt = 0; attempt < 2; attempt += 1) {
-        const prompt = `
-        Bạn là một trợ lý AI giáo dục (AI Tutor). Dựa trên nội dung các bài học dưới đây mà người dùng ${sourceBundle.isCustomSelection ? "đã tự chọn từ lịch sử học tập" : "vừa học"}, hãy tạo ra đúng ${questionCount} câu hỏi trắc nghiệm bằng Tiếng Việt để kiểm tra độ hiểu bài.
-
-        Yêu cầu:
-        1. Câu hỏi phải liên quan trực tiếp đến nội dung cung cấp.
-        2. Chỉ sử dụng thông tin có trong dữ liệu đầu vào. Không tự thêm kiến thức ngoài bài học, không suy diễn lan man, không đặt câu hỏi lạc đề.
-        3. Câu hỏi phải chặt chẽ, rõ ràng, không mơ hồ, không đánh đố bằng cách diễn đạt rối.
-        4. Độ khó: Trung bình đến khó.
-        5. Mỗi câu có đúng 4 đáp án lựa chọn và chỉ 1 đáp án đúng.
-        6. Các đáp án nhiễu phải hợp lý, bám sát ngữ cảnh bài học, nhưng không được gây hiểu sai do diễn đạt cẩu thả.
-        7. "correctAnswer" phải là số nguyên 0, 1, 2 hoặc 3.
-        8. "options" phải là mảng đúng 4 chuỗi.
-        9. "question" và "explanation" được phép dùng Markdown.
-        10. Nếu dữ liệu bài học có mã nguồn, cú pháp, hoặc đoạn chương trình, hãy ưu tiên tạo câu hỏi có snippet code để kiểm tra hiểu biết; dùng fenced code block chuẩn với ngôn ngữ phù hợp, ví dụ \`\`\`cpp ... \`\`\`.
-        11. "explanation" phải ngắn gọn nhưng chính xác, đi thẳng vào lý do đáp án đúng, tối đa ${EXPLANATION_MAX_LENGTH} ký tự.
-        12. Trong "explanation", ưu tiên dùng Markdown ngắn để làm rõ ý như **nhấn mạnh**, \`inline code\`, hoặc gạch đầu dòng rất ngắn nếu thực sự cần.
-        13. Không viết explanation lan man, không lặp lại nguyên đề bài, không thêm chi tiết ngoài dữ liệu nguồn.
-        14. Toàn bộ phản hồi phải là JSON array thuần túy hợp lệ. Không bọc toàn bộ output trong markdown hay code block. Không thêm bất kỳ lời dẫn hay ghi chú nào ngoài JSON.
-        15. ${carefulnessInstruction}
-        16. Hãy phân bổ câu hỏi đủ rộng trên toàn bộ các bài đã chọn, tránh dồn quá nhiều câu vào một bài duy nhất nếu không thật sự cần thiết.
-        17. Mỗi câu hỏi bắt buộc phải có trường "sourceLessonKey" để chỉ ra câu đó lấy trực tiếp từ bài học nào.
-        18. "sourceLessonKey" phải khớp chính xác một giá trị trong danh sách nguồn hợp lệ bên dưới. Không được tự tạo key mới, không được để trống.
-        19. Chỉ gán một nguồn cho mỗi câu hỏi, và nguồn đó phải là bài học chính được dùng để tạo câu hỏi.
-        ${attempt > 0 ? `20. Lần trả lời trước không đúng schema. Lần này bắt buộc bám sát schema tuyệt đối và trả về đúng ${questionCount} câu hỏi.` : ""}
-
-        Dữ liệu bài học:
-        Danh sách nguồn hợp lệ:
-        ${sourceCatalog}
-
-        ${fullContent}
-
-        Output format hợp lệ:
-        [
-          {
-            "id": 1,
-            "question": "Nội dung câu hỏi bằng Markdown nếu cần.",
-            "options": ["Đáp án A", "Đáp án B", "Đáp án C", "Đáp án D"],
-            "correctAnswer": 0,
-            "explanation": "**Đúng** vì \`x\` tăng sau vòng lặp; bám sát ví dụ trong bài.",
-            "sourceLessonKey": "lesson-id-hoac-course::lesson"
-          }
-        ]
-        `;
+        const prompt = buildQuizGenerationPrompt({
+            questionCount,
+            lessonCount,
+            isCustomSelection: sourceBundle.isCustomSelection,
+            explanationMaxLength: EXPLANATION_MAX_LENGTH,
+            carefulnessInstruction,
+            sourceCatalog,
+            lessonSources,
+            isRetry: attempt > 0,
+        });
 
         try {
             const result = await geminiModel.generateContent(prompt);
@@ -405,5 +384,5 @@ export async function generateQuizForUser(username: string, options: QuizGenerat
         }
     }
 
-    throw new Error(lastError?.message || "Lỗi khi xử lý dữ liệu từ AI.");
+    throw new Error(lastError?.message || "\u004c\u1ed7\u0069 \u006b\u0068\u0069 \u0078\u1eed \u006c\u00fd \u0064\u1eef \u006c\u0069\u1ec7\u0075 \u0074\u1eeb AI.");
 }

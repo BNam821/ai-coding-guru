@@ -33,7 +33,7 @@ export function getCodeExerciseMeta(exerciseType: CodeExerciseType) {
     return {
         label: "Hoàn thiện code",
         description:
-            "Bạn nhận skeleton code và cần hoàn thiện phần còn thiếu để giải đúng đề bài.",
+            "Yêu cầu: Bạn nhận một đoạn code khung và cần hoàn thiện phần còn thiếu để giải đúng đề bài.",
     };
 }
 

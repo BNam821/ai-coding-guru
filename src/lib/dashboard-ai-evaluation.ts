@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { getFullLearningTree } from "@/lib/learn-db";
+import { buildDashboardAiEvaluationPrompt } from "@/lib/ai-prompts";
 import { sanitizeModelJson } from "@/lib/learn-ai-question";
 import { geminiModel } from "@/lib/gemini";
 import { supabaseAdmin } from "@/lib/supabase-admin";
@@ -587,77 +588,21 @@ async function generateAiEvaluation(input: {
         estimatedCorrectQuestions: number;
         estimatedWrongQuestions: number;
         averageScore: number;
+        chapterTitle: string;
     }>;
     recommendationCandidates: LessonSignal[];
     fallbackChartData: DashboardAiRawChartData;
 }) {
-    const prompt = `
-Bạn là AI phân tích học tập cho dashboard.
-
-Mục tiêu:
-- Phân tích theo hướng LIỆT KÊ và DỰA TRÊN SỐ LIỆU THỰC TẾ từ lịch sử đúng/sai.
-- Ưu tiên khai thác dữ liệu từ correct_answers, total_questions, question_sources và question_payload.
-- Nếu phải suy ra theo bài học từ question_sources hoặc question_payload, hãy coi đó là "ước tính theo phân bố câu hỏi", không được coi là dữ liệu chấm điểm tuyệt đối từng câu.
-
-Yêu cầu:
-1. Trả về đúng JSON object thuần túy, không markdown, không giải thích ngoài JSON.
-2. "bullets" phải có đúng 3 chuỗi tiếng Việt, thiên về liệt kê số liệu ngắn gọn.
-3. Mỗi bullet phải nêu được ít nhất một dữ kiện định lượng cụ thể như số lượt, điểm trung bình, số câu đúng/sai, hay số câu sai ước tính theo bài học.
-4. Bullet 1: tổng quan hiệu suất.
-5. Bullet 2: điểm mạnh dựa trên lessonSignals.
-6. Bullet 3: điểm yếu và phần cần ôn lại dựa trên lessonSignals.
-7. "recommendedLessonKeys" chỉ được chọn từ recommendationCandidates.
-8. "rawChartData" là dữ liệu thô để hệ thống dùng cho Google Charts qua API, nên phải sạch, ngắn gọn, chỉ gồm nhãn và giá trị số.
-9. Với các dữ liệu lessonSignals, hãy hiểu đây là số liệu tổng hợp/ước tính từ question_sources và question_payload kết hợp với tổng số câu đúng sai của từng lượt quiz.
-10. Không bịa số liệu ngoài input.
-
-Input:
-${JSON.stringify({
-        aggregate: {
-            attemptCount: input.attemptCount,
-            averageScore: input.averageScore,
-            totalCorrectAnswers: input.totalCorrectAnswers,
-            totalQuestions: input.totalQuestions,
-            totalWrongAnswers: Math.max(0, input.totalQuestions - input.totalCorrectAnswers),
-        },
+    const prompt = buildDashboardAiEvaluationPrompt({
+        attemptCount: input.attemptCount,
+        averageScore: input.averageScore,
+        totalCorrectAnswers: input.totalCorrectAnswers,
+        totalQuestions: input.totalQuestions,
         attemptBreakdown: input.attemptBreakdown,
-        lessonSignals: input.lessonSignals.slice(0, 12),
-        recommendationCandidates: input.recommendationCandidates.slice(0, 6).map((lesson) => ({
-            sourceKey: lesson.sourceKey,
-            lessonTitle: lesson.lessonTitle,
-            courseSlug: lesson.courseSlug,
-            lessonSlug: lesson.lessonSlug,
-        })),
+        lessonSignals: input.lessonSignals,
+        recommendationCandidates: input.recommendationCandidates,
         fallbackChartData: input.fallbackChartData,
-    })}
-
-Schema:
-{
-  "bullets": [
-    "Ý 1 có số liệu",
-    "Ý 2 có số liệu",
-    "Ý 3 có số liệu"
-  ],
-  "recommendedLessonKeys": ["source-1", "source-2"],
-  "rawChartData": {
-    "summary": {
-      "attempts": 0,
-      "averageScore": 0,
-      "totalQuestions": 0,
-      "totalCorrectAnswers": 0,
-      "totalWrongAnswers": 0,
-      "accuracyRate": 0
-    },
-    "scoreTrend": [{ "label": "Lần 1", "value": 75 }],
-    "weakLessons": [{ "label": "Bài A", "value": 4 }],
-    "strongLessons": [{ "label": "Bài B", "value": 6 }],
-    "lessonCoverage": [{ "label": "Bài C", "value": 8 }],
-    "lessonPerformance": [{ "label": "Bài D", "correctValue": 6, "wrongValue": 3 }],
-    "wrongByLesson": [{ "label": "Bài E", "value": 4 }],
-    "wrongByChapter": [{ "label": "Chương 1", "value": 7 }]
-  }
-}
-`;
+    });
 
     const result = await geminiModel.generateContent(prompt);
     const response = await result.response;
@@ -860,7 +805,7 @@ export async function getDashboardAiEvaluation(username: string): Promise<Dashbo
                     estimatedCorrectQuestions: 0,
                     estimatedWrongQuestions: 0,
                     averageScore: 0,
-                    chapterTitle: lessonChapterMap.get(source.lessonId || source.sourceKey) || "ChÆ°a rÃµ chÆ°Æ¡ng",
+                    chapterTitle: lessonChapterMap.get(source.lessonId || source.sourceKey) || "Chưa rõ chương",
                 };
 
                 if (!seenSourcesThisAttempt.has(source.sourceKey)) {

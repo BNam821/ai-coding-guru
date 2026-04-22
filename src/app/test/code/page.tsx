@@ -392,7 +392,7 @@ export default function CodeGradingPage() {
                                         Dạng bài: {problem.exerciseLabel}
                                     </span>
                                     <span className="text-xs text-white/50">
-                                        Đề bài gốc được giữ nguyên, chỉ thay đổi cách bắt đầu.
+                                        
                                     </span>
                                 </div>
                                 <p className="mt-3 text-sm leading-6 text-gray-200/85">

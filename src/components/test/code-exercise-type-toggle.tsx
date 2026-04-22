@@ -37,7 +37,7 @@ export function CodeExerciseTypeToggle({ value, onChange, className }: CodeExerc
                             )}
                         </div>
                         <p className="mt-1 text-sm text-cyan-100/75">
-                            Bắt đầu từ skeleton code và tự hoàn thiện lời giải theo đề bài gốc.
+                            Bắt đầu từ code khung và tự hoàn thiện lời giải theo đề bài gốc.
                         </p>
                     </div>
                 </div>
