@@ -1,14 +1,9 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
+import { generateCodeFeedback, buildFirstFailSummary } from "@/lib/code-problem-ai";
+import { listOfficialCodingProblemTestCases } from "@/lib/coding-problem-tests";
 import { recordProblemScore } from "@/lib/coding-problems-service";
-import { AI_PROMPT_IDS, buildCodeEvaluationPrompt } from "@/lib/ai-prompts";
-import { LoggedAiTaskError, runLoggedAiTask } from "@/lib/ai-logging";
-import {
-    GEMINI_MODEL_NAME,
-    GEMINI_MODEL_PROVIDER,
-    generateGeminiResponseText,
-} from "@/lib/gemini";
-import { sanitizeModelJson } from "@/lib/learn-ai-question";
+import { executeJudge0Submission, resolveJudge0LanguageId } from "@/lib/judge0";
 
 function normalizeCode(value: string) {
     return value
@@ -27,12 +22,72 @@ function parseZeroScoreStreak(value: unknown) {
     return Math.floor(parsedValue);
 }
 
+function getExerciseLabel(exerciseType?: string) {
+    return exerciseType === "fix_bug" ? "Sửa lỗi code" : "Hoàn thiện code";
+}
+
+function calculateRuleBasedScore(input: {
+    totalTests: number;
+    passedTests: number;
+    judgeStatus: string;
+    submittedUnchangedStarterCode: boolean;
+}) {
+    if (input.submittedUnchangedStarterCode || input.totalTests <= 0) {
+        return 0;
+    }
+
+    if (input.passedTests >= input.totalTests) {
+        return 100;
+    }
+
+    if (input.passedTests <= 0) {
+        return 0;
+    }
+
+    let score = Math.round((input.passedTests / input.totalTests) * 100);
+
+    if (input.judgeStatus === "runtime_error" || input.judgeStatus === "time_limit_exceeded") {
+        score -= 10;
+    }
+
+    return Math.max(0, Math.min(99, score));
+}
+
+function getAggregateJudgeStatus(statuses: string[]) {
+    if (statuses.length === 0) {
+        return "not_ready";
+    }
+
+    if (statuses.every((status) => status === "accepted")) {
+        return "accepted";
+    }
+
+    if (statuses.includes("compilation_error")) {
+        return "compilation_error";
+    }
+
+    if (statuses.includes("internal_error")) {
+        return "internal_error";
+    }
+
+    if (statuses.includes("time_limit_exceeded")) {
+        return "time_limit_exceeded";
+    }
+
+    if (statuses.includes("runtime_error")) {
+        return "runtime_error";
+    }
+
+    return "wrong_answer";
+}
+
 export async function POST(req: Request) {
     try {
         const session = await getSession();
         const body = await req.json();
         const {
             userCode,
+            problemId,
             problemObj,
             exerciseType,
             starterCode,
@@ -44,86 +99,183 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Missing parameters" }, { status: 400 });
         }
 
+        const effectiveProblemId = typeof problemObj.id === "string" ? problemObj.id : problemId;
         const isFixBugExercise = exerciseType === "fix_bug";
         const previousZeroScoreStreak = parseZeroScoreStreak(zeroScoreStreakBeforeSubmission);
         const submittedUnchangedStarterCode = isFixBugExercise
             && typeof starterCode === "string"
             && normalizeCode(userCode) === normalizeCode(starterCode);
 
-        const prompt = buildCodeEvaluationPrompt({
-            userCode,
-            problemObj,
-            exerciseType,
-            starterCode,
-            bugChangeSummary,
-            previousZeroScoreStreak,
+        if (!effectiveProblemId) {
+            return NextResponse.json({ error: "Missing problem ID" }, { status: 400 });
+        }
+
+        const officialTests = await listOfficialCodingProblemTestCases(effectiveProblemId);
+
+        if (officialTests.length === 0) {
+            return NextResponse.json({
+                actualOutput: "",
+                passedTests: 0,
+                totalTests: 0,
+                firstFailedTest: null,
+                judgeStatus: "not_ready",
+                score: 0,
+                feedback: "Bài tập này chưa sẵn sàng để chấm bằng Judge0 vì chưa có bộ test chính thức.",
+                suggestion: "Vui lòng quay lại sau khi quản trị viên duyệt test case cho bài tập này.",
+                interactionId: null,
+            });
+        }
+
+        const executions: Array<{
+            id: string;
+            position: number;
+            rationale: string | null;
+            normalizedStatus: string;
+            statusDescription: string;
+            actualOutput: string;
+            stdout: string;
+            stderr: string;
+            compileOutput: string;
+        }> = [];
+
+        for (const testCase of officialTests) {
+            const execution = await executeJudge0Submission({
+                username: session?.username ?? null,
+                endpoint: "/api/code-evaluate",
+                sourceCode: userCode,
+                language: typeof problemObj.language === "string" ? problemObj.language : "cpp",
+                languageId: resolveJudge0LanguageId(
+                    typeof problemObj.language === "string" ? problemObj.language : "cpp",
+                    typeof problemObj.judge0_language_id === "number" ? problemObj.judge0_language_id : null,
+                ),
+                stdin: testCase.inputText,
+                expectedOutput: testCase.expectedOutput,
+                timeLimitMs: typeof problemObj.judge0_time_limit_ms === "number" ? problemObj.judge0_time_limit_ms : 2000,
+                memoryLimitKb: typeof problemObj.judge0_memory_limit_kb === "number" ? problemObj.judge0_memory_limit_kb : 128000,
+                requestPayload: {
+                    problemId: effectiveProblemId,
+                    testCaseId: testCase.id,
+                    testPosition: testCase.position,
+                },
+                metadata: {
+                    kind: "official",
+                    isHidden: testCase.isHidden,
+                },
+            });
+
+            executions.push({
+                id: testCase.id,
+                position: testCase.position,
+                rationale: testCase.rationale,
+                normalizedStatus: execution.normalizedStatus,
+                statusDescription: execution.statusDescription,
+                actualOutput: execution.actualOutput,
+                stdout: execution.stdout,
+                stderr: execution.stderr,
+                compileOutput: execution.compileOutput,
+            });
+
+            if (execution.normalizedStatus === "compilation_error" || execution.normalizedStatus === "internal_error") {
+                break;
+            }
+        }
+
+        const passedTests = executions.filter((execution) => execution.normalizedStatus === "accepted").length;
+        const firstFailedTest = executions.find((execution) => execution.normalizedStatus !== "accepted") || null;
+        const judgeStatus = getAggregateJudgeStatus(executions.map((execution) => execution.normalizedStatus));
+        const score = calculateRuleBasedScore({
+            totalTests: officialTests.length,
+            passedTests,
+            judgeStatus,
             submittedUnchangedStarterCode,
         });
+        const actualOutput = firstFailedTest?.actualOutput || executions.at(-1)?.actualOutput || "";
 
-        const finalData = await runLoggedAiTask({
-            username: session?.username ?? null,
-            taskType: "code-evaluation",
-            promptId: AI_PROMPT_IDS.CODE_EVALUATION,
-            endpoint: "/api/code-evaluate",
-            modelProvider: GEMINI_MODEL_PROVIDER,
-            modelName: GEMINI_MODEL_NAME,
-            promptText: prompt,
-            requestPayload: {
-                problemId: problemObj.id ?? null,
-                problemTitle: typeof problemObj.title === "string" ? problemObj.title : null,
-                exerciseType: exerciseType ?? "solve",
+        let feedback = "";
+        let suggestion = "";
+        let interactionId: string | null = null;
+
+        try {
+            const feedbackResult = await generateCodeFeedback({
+                username: session?.username ?? null,
+                endpoint: "/api/code-evaluate",
+                problem: {
+                    ...problemObj,
+                    id: effectiveProblemId,
+                },
+                exerciseLabel: getExerciseLabel(exerciseType),
+                exerciseType: typeof exerciseType === "string" ? exerciseType : "solve",
                 submittedUnchangedStarterCode,
                 previousZeroScoreStreak,
-                userCodeLength: typeof userCode === "string" ? userCode.length : 0,
-                starterCodeLength: typeof starterCode === "string" ? starterCode.length : 0,
-                bugChangeSummaryLength: typeof bugChangeSummary === "string" ? bugChangeSummary.length : 0,
-            },
-            metadata: {
-                hasExpectedInput: typeof problemObj.expected_input === "string" && problemObj.expected_input.trim().length > 0,
-            },
-            generateResponseText: generateGeminiResponseText,
-            parseResponse: (textArea) => {
-                let parsedData: Record<string, unknown>;
+                totalTests: officialTests.length,
+                passedTests,
+                score,
+                judgeStatus,
+                firstFailSummary: firstFailedTest
+                    ? buildFirstFailSummary({
+                        position: firstFailedTest.position,
+                        status: firstFailedTest.statusDescription,
+                        rationale: firstFailedTest.rationale,
+                        actualOutput: firstFailedTest.actualOutput,
+                    })
+                    : "Không có",
+                compileOutput: firstFailedTest?.compileOutput || "",
+                stderr: firstFailedTest?.stderr || "",
+                actualOutput,
+                userCode,
+                bugChangeSummary,
+            });
 
-                try {
-                    parsedData = JSON.parse(sanitizeModelJson(textArea)) as Record<string, unknown>;
-                } catch (error) {
-                    throw new LoggedAiTaskError("Failed to parse code evaluation JSON", { responseText: textArea }, error);
-                }
+            feedback = feedbackResult.feedback;
+            suggestion = feedbackResult.suggestion;
+            interactionId = feedbackResult.interactionId;
+        } catch (feedbackError) {
+            console.error("Lỗi khi sinh nhận xét AI từ kết quả Judge0:", feedbackError);
+            feedback = score === 100
+                ? "Bạn đã đạt điểm tuyệt đối! Tôi không có gì cần góp ý cho đoạn code này cả."
+                : "Hệ thống đã chấm được bài bằng Judge0 nhưng AI chưa tạo được nhận xét lúc này.";
+            suggestion = score === 100
+                ? ""
+                : "Hãy xem output thực tế, trạng thái test và tiếp tục kiểm tra lại logic xử lý của chương trình.";
+        }
 
-                const result: Record<string, unknown> & { score: number; feedback?: string } = {
-                    ...parsedData,
-                    score: submittedUnchangedStarterCode ? 0 : Number(parsedData.score || 0),
-                };
-
-                if (submittedUnchangedStarterCode && !result.feedback) {
-                    result.feedback = "\u0042\u1ea1\u006e \u0111\u0061\u006e\u0067 \u006e\u1ed9\u0070 \u006c\u1ea1\u0069 \u006e\u0067\u0075\u0079\u00ea\u006e \u0074\u0072\u1ea1\u006e\u0067 \u0111\u006f\u1ea1\u006e \u0063\u006f\u0064\u0065 \u006c\u1ed7\u0069 \u0062\u0061\u006e \u0111\u1ea7\u0075, \u006e\u00ea\u006e \u0062\u00e0\u0069 \u006e\u00e0\u0079 \u0111\u01b0\u1ee3\u0063 \u0063\u0068\u1ea5\u006d 0 \u0111\u0069\u1ec3\u006d.";
-                }
-
-                return {
-                    value: result,
-                    responsePayload: parsedData,
-                };
-            },
-        });
-
-        if (session && session.username && problemObj.id) {
-            await recordProblemScore(session.username, problemObj.id, finalData.value.score || 0);
+        if (session?.username) {
+            await recordProblemScore(session.username, effectiveProblemId, score);
         }
 
         return NextResponse.json({
-            ...finalData.value,
-            interactionId: finalData.interactionId,
+            actualOutput,
+            passedTests,
+            totalTests: officialTests.length,
+            firstFailedTest: firstFailedTest
+                ? {
+                    position: firstFailedTest.position,
+                    status: firstFailedTest.statusDescription,
+                    rationale: firstFailedTest.rationale,
+                    actualOutput: firstFailedTest.actualOutput,
+                }
+                : null,
+            judgeStatus,
+            score,
+            feedback,
+            suggestion,
+            interactionId,
         });
     } catch (error) {
-        console.error("\u004c\u1ed7\u0069 \u006b\u0068\u0069 \u0063\u0068\u1ea5\u006d \u0062\u00e0\u0069 \u0063\u006f\u0064\u0065:", error);
+        console.error("Lỗi khi chấm bài code bằng Judge0:", error);
         return NextResponse.json(
             {
-                actualOutput: "\u004c\u1ed7\u0069 \u0068\u1ec7 \u0074\u0068\u1ed1\u006e\u0067 \u0068\u006f\u1eb7\u0063 \u006c\u1ed7\u0069 \u0074\u0068\u1ef1\u0063 \u0074\u0068\u0069 AI.",
+                actualOutput: "Không thể chấm bài bằng Judge0 lúc này.",
+                passedTests: 0,
+                totalTests: 0,
+                firstFailedTest: null,
+                judgeStatus: "internal_error",
                 score: 0,
-                feedback: "\u0048\u1ec7 \u0074\u0068\u1ed1\u006e\u0067 AI \u006b\u0068\u00f4\u006e\u0067 \u0070\u0068\u1ea3\u006e \u0068\u1ed3\u0069 JSON \u0074\u0069\u00ea\u0075 \u0063\u0068\u0075\u1ea9\u006e \u0068\u006f\u1eb7\u0063 \u006d\u00e1\u0079 \u0063\u0068\u1ee7 \u0067\u1eb7\u0070 \u0076\u1ea5\u006e \u0111\u1ec1.",
+                feedback: "Hệ thống Judge0 hoặc lớp nhận xét AI đang gặp sự cố.",
+                suggestion: "Vui lòng thử lại sau ít phút. Nếu lỗi lặp lại, hãy báo cho quản trị viên kiểm tra cấu hình Judge0.",
+                interactionId: null,
             },
-            { status: 500 }
+            { status: 500 },
         );
     }
 }

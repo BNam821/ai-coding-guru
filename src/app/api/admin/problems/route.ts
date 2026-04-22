@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { getSession } from "@/lib/auth";
+import { syncCodingProblemSampleTestCase } from "@/lib/coding-problem-tests";
+import { resolveJudge0LanguageId } from "@/lib/judge0";
 
 // Middleware-like check for Admin
 async function checkAdmin() {
@@ -32,13 +34,29 @@ export async function POST(req: Request) {
 
     try {
         const body = await req.json();
-        const { tags, ...rest } = body;
+        const { tags, judge0_language_id, judge0_time_limit_ms, judge0_memory_limit_kb, ...rest } = body;
+        const payload = {
+            ...rest,
+            tags: tags || [],
+            judge0_language_id: resolveJudge0LanguageId(rest.language, Number(judge0_language_id || 0) || null),
+            judge0_time_limit_ms: Number(judge0_time_limit_ms || 0) > 0 ? Number(judge0_time_limit_ms) : 2000,
+            judge0_memory_limit_kb: Number(judge0_memory_limit_kb || 0) > 0 ? Number(judge0_memory_limit_kb) : 128000,
+        };
         const { data, error } = await supabaseAdmin
             .from("coding_problems")
-            .insert([{ ...rest, tags: tags || [] }])
+            .insert([payload])
             .select();
 
         if (error) throw error;
+
+        if (data[0]?.id) {
+            await syncCodingProblemSampleTestCase(
+                data[0].id,
+                typeof data[0].expected_input === "string" ? data[0].expected_input : "",
+                typeof data[0].expected_output === "string" ? data[0].expected_output : "",
+            );
+        }
+
         return NextResponse.json(data[0]);
     } catch (error: any) {
         return NextResponse.json({ error: error.message }, { status: 500 });
@@ -52,17 +70,41 @@ export async function PUT(req: Request) {
 
     try {
         const body = await req.json();
-        const { id, tags, ...updateData } = body;
+        const {
+            id,
+            tags,
+            judge0_language_id,
+            judge0_time_limit_ms,
+            judge0_memory_limit_kb,
+            ...updateData
+        } = body;
         
         if (!id) return NextResponse.json({ error: "Missing ID" }, { status: 400 });
 
+        const payload = {
+            ...updateData,
+            tags: tags || [],
+            judge0_language_id: resolveJudge0LanguageId(updateData.language, Number(judge0_language_id || 0) || null),
+            judge0_time_limit_ms: Number(judge0_time_limit_ms || 0) > 0 ? Number(judge0_time_limit_ms) : 2000,
+            judge0_memory_limit_kb: Number(judge0_memory_limit_kb || 0) > 0 ? Number(judge0_memory_limit_kb) : 128000,
+        };
+
         const { data, error } = await supabaseAdmin
             .from("coding_problems")
-            .update({ ...updateData, tags: tags || [] })
+            .update(payload)
             .eq("id", id)
             .select();
 
         if (error) throw error;
+
+        if (data[0]?.id) {
+            await syncCodingProblemSampleTestCase(
+                data[0].id,
+                typeof data[0].expected_input === "string" ? data[0].expected_input : "",
+                typeof data[0].expected_output === "string" ? data[0].expected_output : "",
+            );
+        }
+
         return NextResponse.json(data[0]);
     } catch (error: any) {
         return NextResponse.json({ error: error.message }, { status: 500 });

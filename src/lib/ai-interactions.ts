@@ -5,6 +5,9 @@ export const AI_TASK_TYPES = [
     "quiz-generation",
     "dashboard-ai-evaluation",
     "code-evaluation",
+    "code-test-generation",
+    "code-feedback",
+    "judge0-execution",
 ] as const;
 
 export const AI_INTERACTION_STATUSES = ["success", "error"] as const;
@@ -158,6 +161,9 @@ const AI_TASK_LABELS: Record<AiTaskType, string> = {
     "quiz-generation": "Tao quiz",
     "dashboard-ai-evaluation": "Phan tich dashboard",
     "code-evaluation": "Cham code",
+    "code-test-generation": "Sinh test code",
+    "code-feedback": "Nhan xet code",
+    "judge0-execution": "Judge0 execution",
 };
 
 const AI_STATUS_LABELS: Record<AiInteractionStatus, string> = {

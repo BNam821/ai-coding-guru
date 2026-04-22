@@ -31,6 +31,9 @@ export default function CodeGradingPage() {
     const [isEvaluating, setIsEvaluating] = useState(false);
     const [actualOutput, setActualOutput] = useState("");
     const [score, setScore] = useState<number | null>(null);
+    const [passedTests, setPassedTests] = useState<number | null>(null);
+    const [totalTests, setTotalTests] = useState<number | null>(null);
+    const [judgeStatus, setJudgeStatus] = useState<string | null>(null);
     const [feedback, setFeedback] = useState("");
     const [suggestion, setSuggestion] = useState("");
     const [interactionId, setInteractionId] = useState<string | null>(null);
@@ -96,6 +99,9 @@ export default function CodeGradingPage() {
         setProblem(preparedProblem);
         setUserCode(preparedProblem.starterCode);
         setScore(null);
+        setPassedTests(null);
+        setTotalTests(null);
+        setJudgeStatus(null);
         setActualOutput("");
         setFeedback("");
         setSuggestion("");
@@ -197,6 +203,9 @@ export default function CodeGradingPage() {
         setIsEvaluating(true);
         setActualOutput("");
         setScore(null);
+        setPassedTests(null);
+        setTotalTests(null);
+        setJudgeStatus(null);
         setFeedback("");
         setSuggestion("");
         setInteractionId(null);
@@ -232,6 +241,9 @@ export default function CodeGradingPage() {
 
             setActualOutput(data.actualOutput || "");
             setScore(nextScore);
+            setPassedTests(typeof data.passedTests === "number" ? data.passedTests : null);
+            setTotalTests(typeof data.totalTests === "number" ? data.totalTests : null);
+            setJudgeStatus(typeof data.judgeStatus === "string" ? data.judgeStatus : null);
             setFeedback(data.feedback || "Không có phản hồi");
             setSuggestion(data.suggestion || "");
             setInteractionId(typeof data.interactionId === "string" ? data.interactionId : null);
@@ -244,6 +256,9 @@ export default function CodeGradingPage() {
 
     const handleNewProblem = async () => {
         setScore(null);
+        setPassedTests(null);
+        setTotalTests(null);
+        setJudgeStatus(null);
         setActualOutput("");
         setFeedback("");
         setSuggestion("");
@@ -516,6 +531,18 @@ export default function CodeGradingPage() {
                                         <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-2">
                                             Output thực tế
                                         </h3>
+                                        {passedTests !== null && totalTests !== null ? (
+                                            <div className="mb-3 flex flex-wrap gap-2 text-[10px] uppercase tracking-[0.2em]">
+                                                <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-white/60">
+                                                    Test Ä‘áº¡t: {passedTests}/{totalTests}
+                                                </span>
+                                                {judgeStatus ? (
+                                                    <span className="rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-cyan-200">
+                                                        Judge0: {judgeStatus}
+                                                    </span>
+                                                ) : null}
+                                            </div>
+                                        ) : null}
                                         <pre className="flex-1 font-mono text-sm text-gray-300 overflow-auto whitespace-pre-wrap relative bg-black/20 p-3 rounded-lg border border-white/5">
                                             {isEvaluating ? (
                                                 <span className="text-yellow-400/50 italic animate-pulse">Running...</span>

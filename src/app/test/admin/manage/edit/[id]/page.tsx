@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ProblemForm } from "@/components/admin/problem-form";
+import { ProblemTestManager } from "@/components/admin/problem-test-manager";
 import { CodingProblem } from "@/lib/coding-problems-service";
 import { Loader2, AlertCircle } from "lucide-react";
 
@@ -83,6 +84,7 @@ export default function AdminEditProblemPage() {
                 </div>
 
                 <ProblemForm initialData={problem} isEdit={true} />
+                <ProblemTestManager problemId={problem.id} />
             </div>
         </main>
     );

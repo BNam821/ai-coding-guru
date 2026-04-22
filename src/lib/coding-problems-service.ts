@@ -11,7 +11,15 @@ export interface CodingProblem {
     expected_output: string;
     language: string;
     tags?: string[];
+    test_volume_class?: "few" | "many" | null;
+    test_generation_status?: "idle" | "generating" | "ready" | "failed" | null;
+    test_generation_error?: string | null;
+    judge0_language_id?: number | null;
+    judge0_time_limit_ms?: number | null;
+    judge0_memory_limit_kb?: number | null;
 }
+
+export type CodingProblemTestGenerationStatus = NonNullable<CodingProblem["test_generation_status"]>;
 
 const mockProblems: CodingProblem[] = [
     {
