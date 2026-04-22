@@ -1,10 +1,37 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowLeft, BookOpenCheck, ChevronRight, Code2 } from "lucide-react";
+import { ArrowLeft, BookOpenCheck, Bug, ChevronRight, Code2, Wrench } from "lucide-react";
 import { getSession } from "@/lib/auth";
 import { getAllCodingProblems } from "@/lib/coding-problems-service";
+import {
+    CodeExerciseType,
+    DEFAULT_CODE_EXERCISE_TYPE,
+    parseCodeExerciseType,
+} from "@/lib/code-exercise";
 
-export default async function CodeProblemListPage() {
+interface CodeProblemListPageProps {
+    searchParams?: Promise<{
+        exerciseType?: string | string[];
+    }>;
+}
+
+function buildProblemHref(problemId: string, exerciseType: CodeExerciseType) {
+    if (exerciseType === DEFAULT_CODE_EXERCISE_TYPE) {
+        return `/test/code?id=${problemId}`;
+    }
+
+    return `/test/code?id=${problemId}&exerciseType=${exerciseType}`;
+}
+
+function buildListHref(exerciseType: CodeExerciseType) {
+    if (exerciseType === DEFAULT_CODE_EXERCISE_TYPE) {
+        return "/test/code/list";
+    }
+
+    return `/test/code/list?exerciseType=${exerciseType}`;
+}
+
+export default async function CodeProblemListPage({ searchParams }: CodeProblemListPageProps) {
     const session = await getSession();
 
     if (!session?.username) {
@@ -15,6 +42,11 @@ export default async function CodeProblemListPage() {
         redirect("/test/admin/manage");
     }
 
+    const resolvedSearchParams = await searchParams;
+    const exerciseTypeValue = Array.isArray(resolvedSearchParams?.exerciseType)
+        ? resolvedSearchParams?.exerciseType[0]
+        : resolvedSearchParams?.exerciseType;
+    const exerciseType = parseCodeExerciseType(exerciseTypeValue);
     const problems = await getAllCodingProblems();
 
     return (
@@ -42,6 +74,34 @@ export default async function CodeProblemListPage() {
                             <Code2 className="text-cyan-300" size={34} />
                             Danh sách bài tập theo dõi
                         </h1>
+                        <div className="mt-5 flex flex-wrap gap-3">
+                            <Link
+                                href={buildListHref("solve")}
+                                className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-bold transition-colors ${
+                                    exerciseType === "solve"
+                                        ? "border-cyan-300/40 bg-cyan-300/15 text-cyan-100"
+                                        : "border-white/10 bg-white/5 text-gray-300 hover:border-cyan-400/30 hover:text-white"
+                                }`}
+                            >
+                                <Wrench size={16} />
+                                Hoàn thiện code
+                            </Link>
+                            <Link
+                                href={buildListHref("fix_bug")}
+                                className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-bold transition-colors ${
+                                    exerciseType === "fix_bug"
+                                        ? "border-rose-300/40 bg-rose-300/15 text-rose-100"
+                                        : "border-white/10 bg-white/5 text-gray-300 hover:border-rose-400/30 hover:text-white"
+                                }`}
+                            >
+                                <Bug size={16} />
+                                Sửa lỗi code
+                            </Link>
+                        </div>
+                        <p className="mt-4 max-w-3xl text-sm leading-6 text-gray-400">
+                            Bạn đang chọn dạng bài <span className="font-semibold text-white">{exerciseType === "fix_bug" ? "Sửa lỗi code" : "Hoàn thiện code"}</span>.
+                            Các đề vẫn giữ nguyên nội dung, nhưng cách khởi đầu trong editor sẽ thay đổi để phù hợp với mục tiêu luyện tập.
+                        </p>
                     </div>
                 </div>
 
@@ -49,7 +109,7 @@ export default async function CodeProblemListPage() {
                     {problems.map((problem, index) => (
                         <Link
                             key={problem.id}
-                            href={`/test/code?id=${problem.id}`}
+                            href={buildProblemHref(problem.id, exerciseType)}
                             className="group rounded-[1.75rem] border border-white/10 bg-black/35 p-6 backdrop-blur-md transition-all duration-300 hover:border-cyan-400/40 hover:bg-cyan-400/10"
                         >
                             <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
@@ -60,6 +120,13 @@ export default async function CodeProblemListPage() {
                                         </span>
                                         <span className="rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-[11px] font-black uppercase tracking-[0.18em] text-cyan-200">
                                             {problem.language === "cpp" ? "C++" : problem.language.toUpperCase()}
+                                        </span>
+                                        <span className={`rounded-full border px-3 py-1 text-[11px] font-black uppercase tracking-[0.18em] ${
+                                            exerciseType === "fix_bug"
+                                                ? "border-rose-400/20 bg-rose-400/10 text-rose-100"
+                                                : "border-cyan-400/20 bg-cyan-400/10 text-cyan-100"
+                                        }`}>
+                                            {exerciseType === "fix_bug" ? "Sửa lỗi code" : "Hoàn thiện code"}
                                         </span>
                                         {problem.tags && problem.tags.length > 0 && (
                                             <span className="rounded-full border border-yellow-400/20 bg-yellow-400/10 px-3 py-1 text-[11px] font-bold text-yellow-100">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { QuizGame, type QuizGameGenerationConfig } from "@/components/quiz/quiz-game";
 import { CustomQuizBuilder, type CustomQuizStartPayload } from "@/components/test/custom-quiz-builder";
 import { TestMode, TestModeToggle } from "@/components/test/test-mode-toggle";
@@ -25,14 +25,9 @@ export function ExamQuizExperience({
     guideStep = null,
 }: ExamQuizExperienceProps) {
     const [mode, setMode] = useState<TestMode>(initialMode);
-    const [quizConfig, setQuizConfig] = useState<QuizGameGenerationConfig | null>(null);
-
-    useEffect(() => {
-        if (initialMode === "auto") {
-            setMode("auto");
-            setQuizConfig({ mode: "auto" });
-        }
-    }, [initialMode]);
+    const [quizConfig, setQuizConfig] = useState<QuizGameGenerationConfig | null>(
+        initialMode === "auto" ? { mode: "auto" } : null
+    );
 
     const handleModeSelect = (nextMode: Exclude<TestMode, null>) => {
         if (nextMode === "auto") {

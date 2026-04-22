@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -6,16 +6,28 @@ import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { Editor } from "@monaco-editor/react";
 import { MarkdownRenderer } from "@/components/markdown/markdown-renderer";
 import { TestMode, TestModeToggle } from "@/components/test/test-mode-toggle";
-import { Play, CheckCircle2, XCircle, AlertCircle, Loader2, Lightbulb, ChevronRight, X } from "lucide-react";
+import { CodeExerciseTypeToggle } from "@/components/test/code-exercise-type-toggle";
+import { Play, CheckCircle2, AlertCircle, Loader2, Lightbulb, ChevronRight, X } from "lucide-react";
 import { getCodingProblemById, CodingProblem } from "@/lib/coding-problems-service";
+import {
+    CodeExerciseType,
+    DEFAULT_CODE_EXERCISE_TYPE,
+    PreparedCodingProblem,
+    parseCodeExerciseType,
+    prepareCodingProblem,
+} from "@/lib/code-exercise";
 
 export default function CodeGradingPage() {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const specificId = searchParams.get("id");
+    const queryExerciseType = parseCodeExerciseType(searchParams.get("exerciseType"));
+
     const [mode, setMode] = useState<TestMode>(null);
-    const [problem, setProblem] = useState<CodingProblem | null>(null);
+    const [exerciseType, setExerciseType] = useState<CodeExerciseType>(queryExerciseType);
+    const [problem, setProblem] = useState<PreparedCodingProblem | null>(null);
     const [userCode, setUserCode] = useState("");
     const [isEvaluating, setIsEvaluating] = useState(false);
-    
     const [actualOutput, setActualOutput] = useState("");
     const [score, setScore] = useState<number | null>(null);
     const [feedback, setFeedback] = useState("");
@@ -24,45 +36,100 @@ export default function CodeGradingPage() {
     const [exhaustedMessage, setExhaustedMessage] = useState("");
     const [isLoadingNextProblem, setIsLoadingNextProblem] = useState(false);
     const [showSuggestions, setShowSuggestions] = useState(false);
-    
+
     const editorRef = useRef<any>(null);
     const decorationsRef = useRef<string[]>([]);
-    const searchParams = useSearchParams();
-    const specificId = searchParams.get("id");
+
+    const getZeroScoreStreakStorageKey = useCallback((problemId: string, currentExerciseType: CodeExerciseType) => {
+        return `code-zero-score-streak:${problemId}:${currentExerciseType}`;
+    }, []);
+
+    const readZeroScoreStreak = useCallback((problemId: string, currentExerciseType: CodeExerciseType) => {
+        if (typeof window === "undefined") {
+            return 0;
+        }
+
+        const rawValue = window.localStorage.getItem(
+            getZeroScoreStreakStorageKey(problemId, currentExerciseType)
+        );
+        const parsedValue = Number(rawValue);
+        return Number.isFinite(parsedValue) && parsedValue > 0 ? parsedValue : 0;
+    }, [getZeroScoreStreakStorageKey]);
+
+    const writeZeroScoreStreak = useCallback((problemId: string, currentExerciseType: CodeExerciseType, nextValue: number) => {
+        if (typeof window === "undefined") {
+            return;
+        }
+
+        const storageKey = getZeroScoreStreakStorageKey(problemId, currentExerciseType);
+        if (nextValue <= 0) {
+            window.localStorage.removeItem(storageKey);
+            return;
+        }
+
+        window.localStorage.setItem(storageKey, String(nextValue));
+    }, [getZeroScoreStreakStorageKey]);
+
+    useEffect(() => {
+        setExerciseType(queryExerciseType);
+    }, [queryExerciseType]);
+
+    const buildCodePageHref = useCallback((nextExerciseType: CodeExerciseType, nextProblemId?: string | null) => {
+        const params = new URLSearchParams();
+
+        if (nextProblemId) {
+            params.set("id", nextProblemId);
+        }
+
+        if (nextExerciseType !== DEFAULT_CODE_EXERCISE_TYPE) {
+            params.set("exerciseType", nextExerciseType);
+        }
+
+        const query = params.toString();
+        return query ? `/test/code?${query}` : "/test/code";
+    }, []);
+
+    const applyPreparedProblem = useCallback((baseProblem: CodingProblem, nextExerciseType: CodeExerciseType) => {
+        const preparedProblem = prepareCodingProblem(baseProblem, nextExerciseType);
+        setProblem(preparedProblem);
+        setUserCode(preparedProblem.starterCode);
+        setScore(null);
+        setActualOutput("");
+        setFeedback("");
+        setSuggestion("");
+        setShowSuggestions(false);
+        setIsExhausted(false);
+    }, []);
 
     const loadProblem = useCallback(async (options?: { excludeProblemId?: string }) => {
-        let p: CodingProblem | null = null;
-        
+        let selectedProblem: CodingProblem | null = null;
+
         if (specificId) {
-            p = await getCodingProblemById(specificId);
-            if (p) {
-                setProblem(p);
-                setUserCode(p.skeleton_code);
-                setIsExhausted(false);
+            selectedProblem = await getCodingProblemById(specificId);
+            if (selectedProblem) {
+                applyPreparedProblem(selectedProblem, exerciseType);
                 return;
             }
         }
-        
+
         try {
             const smartProblemUrl = options?.excludeProblemId
                 ? `/api/test/smart-problem?excludeProblemId=${encodeURIComponent(options.excludeProblemId)}`
                 : "/api/test/smart-problem";
             const res = await fetch(smartProblemUrl, { cache: "no-store" });
             const data = await res.json();
-            
-            if (data.status === 'exhausted') {
+
+            if (data.status === "exhausted") {
                 setIsExhausted(true);
                 setExhaustedMessage(data.message);
                 setProblem(null);
             } else if (data.problem) {
-                setProblem(data.problem);
-                setUserCode(data.problem.skeleton_code);
-                setIsExhausted(false);
+                applyPreparedProblem(data.problem, exerciseType);
             }
         } catch (err) {
             console.error("Error smart fetching:", err);
         }
-    }, [specificId]);
+    }, [applyPreparedProblem, exerciseType, specificId]);
 
     useEffect(() => {
         if (specificId && mode === null) {
@@ -72,9 +139,15 @@ export default function CodeGradingPage() {
 
     useEffect(() => {
         if (mode === "custom") {
-            router.push("/test/code/list");
+            const params = new URLSearchParams();
+            if (exerciseType !== DEFAULT_CODE_EXERCISE_TYPE) {
+                params.set("exerciseType", exerciseType);
+            }
+
+            const query = params.toString();
+            router.push(query ? `/test/code/list?${query}` : "/test/code/list");
         }
-    }, [mode, router]);
+    }, [exerciseType, mode, router]);
 
     useEffect(() => {
         if (mode !== "auto") {
@@ -82,13 +155,106 @@ export default function CodeGradingPage() {
         }
 
         loadProblem();
-    }, [loadProblem, mode]);
+    }, [exerciseType, loadProblem, mode]);
+
+    const updatePlaceholders = useCallback((editor: any) => {
+        const model = editor.getModel();
+        if (!model) return;
+
+        if (exerciseType !== "solve") {
+            decorationsRef.current = editor.deltaDecorations(decorationsRef.current, []);
+            return;
+        }
+
+        const matches = model.findMatches("...", true, false, true, null, true);
+        const newDecorations = matches.map((match: any) => ({
+            range: match.range,
+            options: {
+                inlineClassName: "skeleton-placeholder-highlight",
+                hoverMessage: { value: "Thay thế bằng code của bạn" },
+            },
+        }));
+
+        decorationsRef.current = editor.deltaDecorations(decorationsRef.current, newDecorations);
+    }, [exerciseType]);
 
     useEffect(() => {
         if (editorRef.current) {
             updatePlaceholders(editorRef.current);
         }
-    }, [userCode]);
+    }, [exerciseType, updatePlaceholders, userCode]);
+
+    const handleExerciseTypeChange = useCallback((nextExerciseType: CodeExerciseType) => {
+        setExerciseType(nextExerciseType);
+        router.replace(buildCodePageHref(nextExerciseType, specificId));
+    }, [buildCodePageHref, router, specificId]);
+
+    const handleEvaluate = async () => {
+        if (!problem) return;
+        setIsEvaluating(true);
+        setActualOutput("");
+        setScore(null);
+        setFeedback("");
+        setSuggestion("");
+        setShowSuggestions(false);
+
+        const zeroScoreStreakBeforeSubmission = problem.exerciseType === "fix_bug"
+            ? readZeroScoreStreak(problem.id, problem.exerciseType)
+            : 0;
+
+        try {
+            const res = await fetch("/api/code-evaluate", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    userCode,
+                    problemId: problem.id,
+                    problemObj: problem,
+                    exerciseType: problem.exerciseType,
+                    starterCode: problem.starterCode,
+                    bugChangeSummary: problem.bugChangeSummary,
+                    zeroScoreStreakBeforeSubmission,
+                }),
+            });
+            const data = await res.json();
+            const nextScore = data.score ?? 0;
+
+            if (problem.exerciseType === "fix_bug") {
+                const nextZeroScoreStreak = nextScore === 0
+                    ? zeroScoreStreakBeforeSubmission + 1
+                    : 0;
+                writeZeroScoreStreak(problem.id, problem.exerciseType, nextZeroScoreStreak);
+            }
+
+            setActualOutput(data.actualOutput || "");
+            setScore(nextScore);
+            setFeedback(data.feedback || "Không có phản hồi");
+            setSuggestion(data.suggestion || "");
+        } catch (_error) {
+            setFeedback("Có lỗi xảy ra khi chấm bài.");
+        } finally {
+            setIsEvaluating(false);
+        }
+    };
+
+    const handleNewProblem = async () => {
+        setScore(null);
+        setActualOutput("");
+        setFeedback("");
+        setSuggestion("");
+        setShowSuggestions(false);
+        setIsLoadingNextProblem(true);
+
+        try {
+            if (searchParams.get("id")) {
+                router.push(buildCodePageHref(exerciseType));
+            } else {
+                await loadProblem({ excludeProblemId: problem?.id });
+            }
+        } finally {
+            setIsLoadingNextProblem(false);
+        }
+    };
 
     if (mode !== "auto") {
         return (
@@ -110,6 +276,16 @@ export default function CodeGradingPage() {
 
                         <TestModeToggle mode={mode} onSelect={setMode} className="mt-8" />
 
+                        <div className="mt-6 space-y-3">
+                            <div className="text-center">
+                                <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/50">Dạng bài</p>
+                                <p className="mt-2 text-sm text-gray-400">
+                                    Quy định rõ dạng bài để editor mở đúng trạng thái và AI nhận xét đúng ngữ cảnh.
+                                </p>
+                            </div>
+                            <CodeExerciseTypeToggle value={exerciseType} onChange={handleExerciseTypeChange} />
+                        </div>
+
                         {mode === "custom" ? (
                             <div className="rounded-2xl border border-gray-500/20 bg-gray-500/10 p-5 text-center">
                                 <h2 className="text-lg font-bold text-white">Đang chuyển sang danh sách bài tập</h2>
@@ -121,6 +297,7 @@ export default function CodeGradingPage() {
                             <div className="rounded-2xl border border-dashed border-white/10 bg-white/[0.03] p-5 text-center text-sm text-gray-400">
                                 Chọn một chế độ để tiếp tục. <span className="font-semibold text-gray-200">Kiểm tra tự chọn</span> sẽ mở danh sách bài tập,
                                 còn <span className="font-semibold text-yellow-200">Kiểm tra tự động</span> sẽ để AI tự tìm bài phù hợp cho bạn.
+                                Dạng bài hiện tại là <span className="font-semibold text-white">{exerciseType === "fix_bug" ? "Sửa lỗi code" : "Hoàn thiện code"}</span>.
                             </div>
                         )}
                     </div>
@@ -128,72 +305,6 @@ export default function CodeGradingPage() {
             </main>
         );
     }
-
-    const handleEvaluate = async () => {
-        if (!problem) return;
-        setIsEvaluating(true);
-        setActualOutput("");
-        setScore(null);
-        setFeedback("");
-        setSuggestion("");
-        setShowSuggestions(false);
-
-        try {
-            const res = await fetch("/api/code-evaluate", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    userCode,
-                    problemId: problem.id,
-                    problemObj: problem
-                }),
-            });
-            const data = await res.json();
-            setActualOutput(data.actualOutput || "");
-            setScore(data.score ?? 0);
-            setFeedback(data.feedback || "Không có phản hồi");
-            setSuggestion(data.suggestion || "");
-        } catch (error) {
-            setFeedback("Có lỗi xảy ra khi chấm bài.");
-        } finally {
-            setIsEvaluating(false);
-        }
-    };
-
-    const updatePlaceholders = (editor: any) => {
-        const model = editor.getModel();
-        if (!model) return;
-
-        const matches = model.findMatches("...", true, false, true, null, true);
-        const newDecorations = matches.map((match: any) => ({
-            range: match.range,
-            options: { 
-                inlineClassName: 'skeleton-placeholder-highlight',
-                hoverMessage: { value: "Thay thế bằng code của bạn" }
-            }
-        }));
-
-        decorationsRef.current = editor.deltaDecorations(decorationsRef.current, newDecorations);
-    };
-
-    const handleNewProblem = async () => {
-        setScore(null);
-        setActualOutput("");
-        setFeedback("");
-        setSuggestion("");
-        setShowSuggestions(false);
-        setIsLoadingNextProblem(true);
-        
-        try {
-            if (searchParams.get("id")) {
-                router.push("/test/code");
-            } else {
-                await loadProblem({ excludeProblemId: problem?.id });
-            }
-        } finally {
-            setIsLoadingNextProblem(false);
-        }
-    };
 
     if (isExhausted) {
         return (
@@ -204,7 +315,7 @@ export default function CodeGradingPage() {
                     <p className="text-xl text-white/70 leading-relaxed mb-8">
                         {exhaustedMessage}
                     </p>
-                    <button 
+                    <button
                         onClick={handleNewProblem}
                         className="px-10 py-4 bg-yellow-400 hover:bg-yellow-300 text-black font-black rounded-2xl transition-all shadow-xl hover:scale-105"
                     >
@@ -225,18 +336,24 @@ export default function CodeGradingPage() {
 
     return (
         <main className="h-screen flex flex-col bg-transparent text-white overflow-hidden pt-24 relative z-10">
-            {/* Header / Toolbar */}
             <header className="h-16 border-b border-white/10 flex items-center justify-between px-6 bg-black/40 backdrop-blur-md shrink-0">
                 <div className="flex items-center gap-4">
                     <div className="px-3 py-1 bg-yellow-400/20 text-yellow-300 text-xs font-black tracking-widest uppercase rounded ring-1 ring-yellow-400/50">
                         {problem.language === "cpp" ? "C++" : problem.language.toUpperCase()}
                     </div>
+                    <div className={`px-3 py-1 text-xs font-black tracking-widest uppercase rounded ring-1 ${
+                        problem.exerciseType === "fix_bug"
+                            ? "bg-rose-400/15 text-rose-200 ring-rose-300/40"
+                            : "bg-cyan-400/15 text-cyan-100 ring-cyan-300/40"
+                    }`}>
+                        {problem.exerciseLabel}
+                    </div>
                     <h1 className="font-bold text-white tracking-wide text-lg drop-shadow-md">{problem.title}</h1>
                 </div>
-                
+
                 <div className="flex items-center gap-3">
                     {score === 100 && (
-                        <button 
+                        <button
                             onClick={handleNewProblem}
                             disabled={isLoadingNextProblem}
                             className="flex items-center gap-2 px-6 py-2.5 bg-green-500 hover:bg-green-400 disabled:opacity-70 disabled:cursor-not-allowed text-white font-extrabold rounded-xl transition-all shadow-[0_0_20px_rgba(34,197,94,0.3)] animate-bounce-slow"
@@ -246,7 +363,7 @@ export default function CodeGradingPage() {
                         </button>
                     )}
 
-                    <button 
+                    <button
                         onClick={handleEvaluate}
                         disabled={isEvaluating || score === 100 || isLoadingNextProblem}
                         className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-br from-yellow-400 to-orange-500 hover:from-yellow-300 hover:to-orange-400 text-black font-extrabold rounded-xl transition-all shadow-[0_0_20px_rgba(250,204,21,0.3)] hover:shadow-[0_0_30px_rgba(250,204,21,0.5)] border border-yellow-300/50 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
@@ -257,12 +374,32 @@ export default function CodeGradingPage() {
                 </div>
             </header>
 
-            {/* Workspace Area */}
             <div className="flex-1 min-h-0">
                 <PanelGroup direction="horizontal">
-                    {/* Left Panel: Description */}
                     <Panel defaultSize={35} minSize={20}>
                         <div className="h-full overflow-y-auto p-6 custom-scrollbar bg-black/40 backdrop-blur-sm border-r border-white/10">
+                            <div className={`mb-6 rounded-2xl border p-4 ${
+                                problem.exerciseType === "fix_bug"
+                                    ? "border-rose-400/20 bg-rose-400/10"
+                                    : "border-cyan-400/20 bg-cyan-400/10"
+                            }`}>
+                                <div className="flex flex-wrap items-center gap-3">
+                                    <span className={`rounded-full px-3 py-1 text-[11px] font-black uppercase tracking-[0.18em] ${
+                                        problem.exerciseType === "fix_bug"
+                                            ? "bg-rose-300/15 text-rose-100"
+                                            : "bg-cyan-300/15 text-cyan-100"
+                                    }`}>
+                                        Dạng bài: {problem.exerciseLabel}
+                                    </span>
+                                    <span className="text-xs text-white/50">
+                                        Đề bài gốc được giữ nguyên, chỉ thay đổi cách bắt đầu.
+                                    </span>
+                                </div>
+                                <p className="mt-3 text-sm leading-6 text-gray-200/85">
+                                    {problem.exerciseDescription}
+                                </p>
+                            </div>
+
                             <div className="prose prose-invert prose-yellow max-w-none">
                                 <MarkdownRenderer content={problem.description} mode="safe" />
                             </div>
@@ -299,7 +436,6 @@ export default function CodeGradingPage() {
                         <div className="h-8 w-1 bg-white/20 rounded-full" />
                     </PanelResizeHandle>
 
-                    {/* Right Panel: Editor & I/O */}
                     <Panel defaultSize={65} minSize={30}>
                         <PanelGroup direction="vertical">
                             <Panel defaultSize={60} minSize={20}>
@@ -339,7 +475,7 @@ export default function CodeGradingPage() {
                                                             <Lightbulb size={14} />
                                                             Gợi ý sửa lỗi
                                                         </div>
-                                                        <button 
+                                                        <button
                                                             onClick={() => setShowSuggestions(false)}
                                                             className="p-1 hover:bg-white/10 rounded-md transition-colors text-gray-500 hover:text-white"
                                                         >
@@ -370,8 +506,6 @@ export default function CodeGradingPage() {
 
                             <Panel defaultSize={40} minSize={20}>
                                 <div className="h-full grid grid-cols-[3fr_7fr] gap-4 p-4 bg-black/40 backdrop-blur-sm overflow-y-auto">
-                                    
-                                    {/* Actual Output */}
                                     <div className="bg-white/5 border border-white/10 rounded-xl p-4 flex flex-col h-full">
                                         <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-2">
                                             Output thực tế
@@ -385,7 +519,6 @@ export default function CodeGradingPage() {
                                         </pre>
                                     </div>
 
-                                    {/* AI Review Column (Expanded) */}
                                     <div className="bg-white/5 border border-white/10 rounded-xl p-4 flex flex-col h-full overflow-hidden">
                                         <h3 className="text-xs font-bold text-gray-400 cursor-default uppercase tracking-wider mb-3 flex flex-wrap justify-between items-center gap-2 shrink-0">
                                             <div className="flex items-center gap-4">
@@ -393,30 +526,29 @@ export default function CodeGradingPage() {
                                                     <AlertCircle size={14} className="text-yellow-400" />
                                                     AI nhận xét
                                                 </span>
-                                                
-                                                {/* Nút xem gợi ý - Chỉ hiển thị khi score < 100 */}
+
                                                 {score !== null && score < 100 && (
-                                                    <button 
+                                                    <button
                                                         onClick={() => setShowSuggestions(!showSuggestions)}
                                                         className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] uppercase font-black transition-all ring-1 animate-pulse
-                                                            ${showSuggestions 
-                                                                ? 'bg-blue-500 text-white ring-blue-400 shadow-[0_0_10px_rgba(59,130,246,0.5)]' 
-                                                                : 'bg-blue-500/10 text-blue-400 ring-blue-500/30 hover:bg-blue-500/20'}`}
+                                                            ${showSuggestions
+                                                                ? "bg-blue-500 text-white ring-blue-400 shadow-[0_0_10px_rgba(59,130,246,0.5)]"
+                                                                : "bg-blue-500/10 text-blue-400 ring-blue-500/30 hover:bg-blue-500/20"}`}
                                                     >
                                                         <Lightbulb size={12} fill={showSuggestions ? "currentColor" : "none"} />
                                                         {showSuggestions ? "Đang hiện gợi ý" : "Xem gợi ý từ AI"}
-                                                        <ChevronRight size={10} className={`transition-transform ${showSuggestions ? 'rotate-90' : ''}`} />
+                                                        <ChevronRight size={10} className={`transition-transform ${showSuggestions ? "rotate-90" : ""}`} />
                                                     </button>
                                                 )}
                                             </div>
 
                                             {score !== null && (
-                                                <span className={`px-2 py-0.5 rounded text-[10px] font-black tracking-tighter ${score >= 80 ? 'bg-green-500/20 text-green-400' : score >= 50 ? 'bg-yellow-500/20 text-yellow-400' : 'bg-red-500/20 text-red-400'}`}>
+                                                <span className={`px-2 py-0.5 rounded text-[10px] font-black tracking-tighter ${score >= 80 ? "bg-green-500/20 text-green-400" : score >= 50 ? "bg-yellow-500/20 text-yellow-400" : "bg-red-500/20 text-red-400"}`}>
                                                     ĐIỂM: {score}/100
                                                 </span>
                                             )}
                                         </h3>
-                                        
+
                                         <div className="flex-1 overflow-auto bg-black/20 rounded-lg border border-white/5 custom-scrollbar">
                                             {isEvaluating ? (
                                                 <div className="h-full flex items-center gap-2 text-yellow-400/50 justify-center animate-pulse py-4">
@@ -428,7 +560,7 @@ export default function CodeGradingPage() {
                                                 </div>
                                             ) : (
                                                 <div className="h-full flex items-center justify-center text-gray-600 italic text-xs py-4">
-                                                    Nộp bài để nhận nhận xét từ AI
+                                                    {problem.exerciseType === "fix_bug" ? "Sửa lỗi rồi nộp bài để nhận nhận xét từ AI" : "Nộp bài để nhận nhận xét từ AI"}
                                                 </div>
                                             )}
                                         </div>
@@ -448,7 +580,7 @@ export default function CodeGradingPage() {
                     </div>
                 </div>
             )}
-            
+
             <style jsx global>{`
                 .custom-scrollbar::-webkit-scrollbar {
                     width: 8px;
@@ -485,7 +617,6 @@ export default function CodeGradingPage() {
                 .feedback-markdown p:last-child {
                     margin-bottom: 0 !important;
                 }
-                /* Đảm bảo baseline của chữ không bị cắt */
                 .feedback-markdown {
                     line-height: 1.6;
                 }
