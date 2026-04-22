@@ -185,7 +185,7 @@ export function QuizGame({ debugPreset, generationConfig }: QuizGameProps) {
                 resetGameState(data.questions);
             } catch (err: any) {
                 console.error("Quiz Fetch Error:", err);
-                setError(err.message || "Co loi khi tao bai kiem tra. Vui long thu lai.");
+                setError(err.message || "Có lỗi khi tạo bài kiểm tra. Vui lòng thử lại.");
             } finally {
                 setLoading(false);
             }
@@ -283,18 +283,18 @@ export function QuizGame({ debugPreset, generationConfig }: QuizGameProps) {
                 </div>
                 <div className="space-y-4">
                     <h2 className="text-2xl font-bold text-white animate-pulse italic">
-                        {isCustomQuiz ? "AI dang doc ky cac bai hoc ban da chon..." : "AI dang phan tich lich su hoc tap..."}
+                        {isCustomQuiz ? "AI đang đọc kỹ các bài học bạn đã chọn..." : "AI đang phân tích lịch sử học tập..."}
                     </h2>
                     <div className="space-y-2">
                         <p className="text-gray-400">
                             {isCustomQuiz
-                                ? `Dang tong hop ${generationConfig?.selectedLessonCount || 0} bai hoc de tao ${generationConfig?.questionCount || "--"} cau hoi phu hop nhat cho ban`
-                                : "Dang soan cau hoi phu hop nhat cho ban"}
+                                ? `Đang tổng hợp ${generationConfig?.selectedLessonCount || 0} bài học để tạo ${generationConfig?.questionCount || "--"} câu hỏi phù hợp nhất cho bạn`
+                                : "Đang soạn câu hỏi phù hợp nhất cho bạn"}
                         </p>
                         <p className="text-yellow-400/60 text-sm font-mono tracking-widest bg-yellow-400/5 py-1 px-3 rounded-full border border-yellow-400/10 inline-block">
                             {estimatedSeconds > 0
-                                ? `Du kien: ~${estimatedSeconds} giay nua`
-                                : "Sap xong roi, hay kien nhan mot chut..."}
+                                ? `Dự kiến: ~${estimatedSeconds} giây nữa`
+                                : "Sắp xong rồi, hãy kiên nhẫn một chút..."}
                         </p>
                     </div>
 
@@ -314,10 +314,10 @@ export function QuizGame({ debugPreset, generationConfig }: QuizGameProps) {
             <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-6">
                 <div className="bg-red-500/10 p-6 rounded-2xl border border-red-500/20 max-w-md mx-auto">
                     <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
-                    <h3 className="text-xl font-bold text-white mb-2">Khong the tao bai kiem tra</h3>
+                    <h3 className="text-xl font-bold text-white mb-2">Không thể tạo bài kiểm tra</h3>
                     <p className="text-red-300">{error}</p>
                 </div>
-                <NeonButton onClick={fetchQuiz}>Thu lai</NeonButton>
+                <NeonButton onClick={fetchQuiz}>Thử lại</NeonButton>
             </div>
         );
     }
@@ -327,12 +327,12 @@ export function QuizGame({ debugPreset, generationConfig }: QuizGameProps) {
             <div className="max-w-xl mx-auto text-center space-y-8 animate-fade-in-up">
                 <GlassCard className="p-8 border-yellow-400/20">
                     <Award className="w-24 h-24 text-yellow-400 mx-auto mb-6" />
-                    <h2 className="text-3xl font-bold text-white mb-2">Hoan thanh!</h2>
+                    <h2 className="text-3xl font-bold text-white mb-2">Hoàn thành!</h2>
                     <div className="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-br from-yellow-300 to-yellow-600 mb-4">
                         {Math.round((score / questions.length) * 100)}/100
                     </div>
                     <p className="text-gray-400 text-lg">
-                        Ban da tra loi dung <span className="text-white font-bold">{score}/{questions.length}</span> cau hoi.
+                        Bạn đã trả lời đúng <span className="text-white font-bold">{score}/{questions.length}</span> câu hỏi.
                     </p>
                     {questions.length === 10 ? (
                         <p className="mt-5 rounded-2xl border border-yellow-300/20 bg-yellow-400/10 px-5 py-4 text-base font-medium leading-7 text-yellow-50">
@@ -340,19 +340,19 @@ export function QuizGame({ debugPreset, generationConfig }: QuizGameProps) {
                         </p>
                     ) : null}
                     <p className="mt-4 text-sm text-gray-400">
-                        {isDebugMode && "Dang o debug mode, ket qua khong duoc luu."}
-                        {syncState === "saving" && "Dang dong bo ket qua vao dashboard..."}
-                        {syncState === "saved" && "Ket qua da duoc luu vao dashboard."}
-                        {syncState === "error" && "Chua luu duoc ket qua. Hay thu lam lai hoac kiem tra ket noi."}
+                        {isDebugMode && "Đang ở debug mode, kết quả không được lưu."}
+                        {syncState === "saving" && "Đang đồng bộ kết quả vào dashboard..."}
+                        {syncState === "saved" && "Kết quả đã được lưu vào dashboard."}
+                        {syncState === "error" && "Chưa lưu được kết quả. Hãy thử làm lại hoặc kiểm tra kết nối."}
                     </p>
                 </GlassCard>
 
                 <div className="flex gap-4 justify-center">
                     <Link href="/test">
-                        <NeonButton variant="outline">Thoat</NeonButton>
+                        <NeonButton variant="outline">Thoát</NeonButton>
                     </Link>
                     <NeonButton onClick={() => window.location.reload()} icon={<RefreshCcw size={16} />}>
-                        Lam lai
+                        Làm lại
                     </NeonButton>
                 </div>
             </div>
@@ -365,8 +365,8 @@ export function QuizGame({ debugPreset, generationConfig }: QuizGameProps) {
         <div className="max-w-3xl mx-auto space-y-8">
             {isDebugMode && (
                 <div className="rounded-2xl border border-sky-400/20 bg-sky-400/10 px-4 py-3 text-sm text-sky-100">
-                    Debug mode dang bat voi preset <code className="rounded bg-black/20 px-1.5 py-0.5 text-sky-200">?debug={debugPreset}</code>.
-                    Cau hoi dang dung du lieu mau de kiem tra render Markdown va code block.
+                    Debug mode đang bật với preset <code className="rounded bg-black/20 px-1.5 py-0.5 text-sky-200">?debug={debugPreset}</code>.
+                    Câu hỏi đang dùng dữ liệu mẫu để kiểm tra render Markdown và code block.
                 </div>
             )}
 
@@ -374,7 +374,7 @@ export function QuizGame({ debugPreset, generationConfig }: QuizGameProps) {
                 <div className="flex items-center justify-between">
                     <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-yellow-400/10 border border-yellow-400/20 text-yellow-400 font-bold text-xs tracking-widest uppercase shadow-[0_0_15px_rgba(250,204,21,0.1)]">
                         <Sparkles size={14} className="animate-pulse" />
-                        Cau hoi {currentIndex + 1} / {questions.length}
+                        Câu hỏi {currentIndex + 1} / {questions.length}
                     </div>
 
                     <div className="px-4 py-1.5 rounded-lg bg-black/40 border-2 border-yellow-400/50 text-yellow-400 font-bold shadow-[0_0_20px_rgba(250,204,21,0.2)] flex items-center gap-2">
@@ -455,7 +455,7 @@ export function QuizGame({ debugPreset, generationConfig }: QuizGameProps) {
                 {showExplanation && (
                     <div ref={explanationRef} className="mt-6 p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl animate-fade-in-up">
                         <h4 className="font-bold text-blue-400 mb-1 flex items-center gap-2">
-                            <span className="text-lg">?</span> Giai thich
+                            <span className="text-lg">?</span> Giải thích
                         </h4>
                         <div className="prose prose-invert prose-sm max-w-none text-gray-300">
                             <MarkdownRenderer
@@ -473,7 +473,7 @@ export function QuizGame({ debugPreset, generationConfig }: QuizGameProps) {
                     onClick={() => setShowExitModal(true)}
                     className="px-6 py-2 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 hover:bg-red-500 hover:text-white transition-all duration-300 text-sm font-bold flex items-center gap-2 shadow-lg shadow-red-500/10"
                 >
-                    Thoat
+                    Thoát
                 </button>
 
                 <button
@@ -481,7 +481,7 @@ export function QuizGame({ debugPreset, generationConfig }: QuizGameProps) {
                     disabled={selectedAnswer === null}
                     className="px-8 py-3 bg-yellow-400 text-black font-bold rounded-xl hover:bg-yellow-300 disabled:opacity-0 disabled:translate-y-4 transition-all duration-300 flex items-center gap-2 shadow-lg shadow-yellow-400/20"
                 >
-                    {currentIndex === questions.length - 1 ? "Xem ket qua" : "Cau tiep theo"}
+                    {currentIndex === questions.length - 1 ? "Xem kết quả" : "Câu tiếp theo"}
                     <ChevronRight size={20} />
                 </button>
             </div>
@@ -497,9 +497,9 @@ export function QuizGame({ debugPreset, generationConfig }: QuizGameProps) {
                             <AlertCircle className="text-red-400 w-8 h-8" />
                         </div>
                         <div className="space-y-2">
-                            <h3 className="text-xl font-bold text-white">Ban co chac chan khong?</h3>
+                            <h3 className="text-xl font-bold text-white">Bạn có chắc chắn không?</h3>
                             <p className="text-gray-400 text-sm">
-                                Tien trinh lam bai cua ban se bi mat neu ban thoat ngay bay gio.
+                                Tiến trình làm bài của bạn sẽ bị mất nếu bạn thoát ngay bây giờ.
                             </p>
                         </div>
                         <div className="flex flex-col gap-3">
@@ -507,11 +507,11 @@ export function QuizGame({ debugPreset, generationConfig }: QuizGameProps) {
                                 onClick={() => setShowExitModal(false)}
                                 className="w-full py-3 bg-white/5 hover:bg-white/10 text-white font-medium rounded-xl transition-colors border border-white/10"
                             >
-                                Tiep tuc lam bai
+                                Tiếp tục làm bài
                             </button>
                             <Link href="/test" className="w-full">
                                 <button className="w-full py-3 bg-red-500/20 hover:bg-red-500/30 text-red-400 font-bold rounded-xl transition-colors border border-red-500/20">
-                                    Thoat
+                                    Thoát
                                 </button>
                             </Link>
                         </div>

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, BookOpen, CheckSquare2, FolderTree, Loader2, Sparkles } from "lucide-react";

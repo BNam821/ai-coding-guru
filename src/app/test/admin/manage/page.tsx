@@ -3,17 +3,16 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { 
-    Plus, 
-    Edit2, 
-    Trash2, 
-    ArrowLeft, 
-    Loader2, 
-    Code2, 
+import {
+    Plus,
+    Edit2,
+    Trash2,
+    ArrowLeft,
+    Loader2,
+    Code2,
     Search,
     AlertCircle
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { CodingProblem } from "@/lib/coding-problems-service";
 
 export default function AdminManageProblemsPage() {
@@ -61,23 +60,21 @@ export default function AdminManageProblemsPage() {
         }
     };
 
-    const filteredProblems = problems.filter(p => 
+    const filteredProblems = problems.filter(p =>
         p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         p.language.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     return (
         <main className="min-h-screen pt-32 pb-20 px-4 relative z-10">
-            {/* Background Decor */}
             <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-[120px] -z-10" />
             <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-purple-500/5 rounded-full blur-[120px] -z-10" />
 
             <div className="max-w-6xl mx-auto space-y-8">
-                {/* Header Actions */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div className="space-y-2">
-                        <Link 
-                            href="/test" 
+                        <Link
+                            href="/test"
                             className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors mb-2"
                         >
                             <ArrowLeft size={16} />
@@ -85,12 +82,12 @@ export default function AdminManageProblemsPage() {
                         </Link>
                         <h1 className="text-4xl font-black text-white tracking-tight flex items-center gap-3">
                             <Code2 className="text-yellow-400" size={32} />
-                            Quản lý Bài tập Code
+                            Quản lý bài tập Code
                         </h1>
                         <p className="text-gray-400">Danh sách bài tập lập trình hiện có trên hệ thống.</p>
                     </div>
 
-                    <Link 
+                    <Link
                         href="/test/admin/manage/add"
                         className="inline-flex items-center gap-2 px-6 py-3 bg-yellow-400 hover:bg-yellow-300 text-black font-bold rounded-2xl transition-all shadow-[0_0_20px_rgba(250,204,21,0.2)] hover:scale-105 active:scale-95"
                     >
@@ -99,10 +96,9 @@ export default function AdminManageProblemsPage() {
                     </Link>
                 </div>
 
-                {/* Toolbar */}
                 <div className="relative group">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-yellow-400 transition-colors" size={20} />
-                    <input 
+                    <input
                         type="text"
                         placeholder="Tìm kiếm theo tên bài hoặc ngôn ngữ..."
                         value={searchTerm}
@@ -111,7 +107,6 @@ export default function AdminManageProblemsPage() {
                     />
                 </div>
 
-                {/* List Container */}
                 <div className="bg-black/20 border border-white/10 rounded-[2rem] overflow-hidden backdrop-blur-md shadow-2xl">
                     {isLoading ? (
                         <div className="py-20 flex flex-col items-center justify-center gap-4">
@@ -132,7 +127,7 @@ export default function AdminManageProblemsPage() {
                                     {filteredProblems.map((p) => (
                                         <tr key={p.id} className="hover:bg-white/[0.02] transition-colors group">
                                             <td className="px-8 py-6">
-                                                <Link 
+                                                <Link
                                                     href={`/test/code?id=${p.id}`}
                                                     className="font-bold text-white hover:text-yellow-400 transition-colors cursor-pointer group-hover:translate-x-1 inline-block"
                                                 >
@@ -147,14 +142,14 @@ export default function AdminManageProblemsPage() {
                                             </td>
                                             <td className="px-8 py-6 text-right">
                                                 <div className="flex items-center justify-end gap-2">
-                                                    <Link 
+                                                    <Link
                                                         href={`/test/admin/manage/edit/${p.id}`}
                                                         className="p-2.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 rounded-xl transition-all"
                                                         title="Sửa"
                                                     >
                                                         <Edit2 size={18} />
                                                     </Link>
-                                                    <button 
+                                                    <button
                                                         onClick={() => setDeleteId(p.id)}
                                                         className="p-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl transition-all"
                                                         title="Xóa"
@@ -180,7 +175,6 @@ export default function AdminManageProblemsPage() {
                 </div>
             </div>
 
-            {/* Delete Confirmation Modal */}
             {deleteId && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
                     <div className="bg-[#0f0f10] border border-white/10 rounded-[2.5rem] p-8 max-w-md w-full shadow-2xl animate-scale-in">
@@ -194,14 +188,14 @@ export default function AdminManageProblemsPage() {
                             Bạn có chắc chắn muốn xóa bài tập này? Hành động này <span className="text-white font-bold">không thể hoàn tác</span> và bài tập sẽ bị gỡ bỏ vĩnh viễn khỏi hệ thống.
                         </p>
                         <div className="flex gap-4">
-                            <button 
+                            <button
                                 onClick={handleDelete}
                                 disabled={isDeleting}
                                 className="flex-1 py-4 bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white font-bold rounded-2xl transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2"
                             >
                                 {isDeleting ? <Loader2 className="animate-spin" size={20} /> : "Xóa vĩnh viễn"}
                             </button>
-                            <button 
+                            <button
                                 onClick={() => setDeleteId(null)}
                                 disabled={isDeleting}
                                 className="flex-1 py-4 bg-white/5 hover:bg-white/10 text-white font-bold rounded-2xl transition-all border border-white/10 active:scale-95"

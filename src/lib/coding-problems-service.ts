@@ -82,6 +82,23 @@ export async function getRandomCodingProblem(): Promise<CodingProblem> {
     return mockProblems[0];
 }
 
+export async function getAllCodingProblems(): Promise<CodingProblem[]> {
+    try {
+        const { data, error } = await supabase
+            .from("coding_problems")
+            .select("*")
+            .order("created_at", { ascending: false });
+
+        if (!error && data && data.length > 0) {
+            return data as CodingProblem[];
+        }
+    } catch (err) {
+        console.error("Lỗi khi lấy danh sách bài tập:", err);
+    }
+
+    return mockProblems;
+}
+
 /**
  * Lấy chi tiết 1 bài tập theo ID.
  */

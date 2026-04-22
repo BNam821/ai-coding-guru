@@ -19,8 +19,6 @@ export default function AdminEditProblemPage() {
 
         const fetchProblem = async () => {
             try {
-                // Chúng ta có thể dùng API GET /admin/problems và filter hoặc tạo API chi tiết.
-                // Tạm thời fetch tất cả và tìm id để reuse API hiện có cho nhanh.
                 const res = await fetch("/api/admin/problems");
                 if (res.status === 401) {
                     router.push("/test");
@@ -28,13 +26,13 @@ export default function AdminEditProblemPage() {
                 }
                 const data: CodingProblem[] = await res.json();
                 const found = data.find(p => p.id === id);
-                
+
                 if (found) {
                     setProblem(found);
                 } else {
                     setError("Không tìm thấy bài tập này.");
                 }
-            } catch (err) {
+            } catch {
                 setError("Lỗi khi tải dữ liệu bài tập.");
             } finally {
                 setIsLoading(false);
@@ -60,7 +58,7 @@ export default function AdminEditProblemPage() {
                     <AlertCircle size={48} />
                 </div>
                 <h2 className="text-2xl font-bold text-white">{error || "Sự cố không xác định"}</h2>
-                <button 
+                <button
                     onClick={() => router.push("/test/admin/manage")}
                     className="px-6 py-3 bg-white/5 border border-white/10 rounded-xl text-white hover:bg-white/10 transition-all font-bold"
                 >
@@ -72,7 +70,6 @@ export default function AdminEditProblemPage() {
 
     return (
         <main className="min-h-screen pt-32 pb-20 px-4 relative z-10">
-            {/* Background Decor */}
             <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-blue-400/5 rounded-full blur-[150px] -z-10" />
 
             <div className="max-w-6xl mx-auto">

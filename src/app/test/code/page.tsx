@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -28,9 +28,9 @@ export default function CodeGradingPage() {
     const editorRef = useRef<any>(null);
     const decorationsRef = useRef<string[]>([]);
     const searchParams = useSearchParams();
+    const specificId = searchParams.get("id");
 
     const loadProblem = useCallback(async (options?: { excludeProblemId?: string }) => {
-        const specificId = searchParams.get("id");
         let p: CodingProblem | null = null;
         
         if (specificId) {
@@ -62,7 +62,19 @@ export default function CodeGradingPage() {
         } catch (err) {
             console.error("Error smart fetching:", err);
         }
-    }, [searchParams]);
+    }, [specificId]);
+
+    useEffect(() => {
+        if (specificId && mode === null) {
+            setMode("auto");
+        }
+    }, [specificId, mode]);
+
+    useEffect(() => {
+        if (mode === "custom") {
+            router.push("/test/code/list");
+        }
+    }, [mode, router]);
 
     useEffect(() => {
         if (mode !== "auto") {
@@ -100,16 +112,15 @@ export default function CodeGradingPage() {
 
                         {mode === "custom" ? (
                             <div className="rounded-2xl border border-gray-500/20 bg-gray-500/10 p-5 text-center">
-                                <h2 className="text-lg font-bold text-white">Kiểm tra tự chọn đang được hoàn thiện</h2>
+                                <h2 className="text-lg font-bold text-white">Đang chuyển sang danh sách bài tập</h2>
                                 <p className="mt-2 text-sm leading-6 text-gray-400">
-                                    Chế độ này sẽ cho phép bạn tự chọn dạng bài code trước khi hệ thống tải bài tập.
-                                    Hiện tại bạn có thể dùng <span className="font-semibold text-yellow-200">Kiểm tra tự động</span> để bắt đầu ngay.
+                                    Bạn sẽ được đưa tới trang <span className="font-semibold text-white">/test/code/list</span> để tự chọn bài tập muốn theo dõi hoặc luyện tập.
                                 </p>
                             </div>
                         ) : (
                             <div className="rounded-2xl border border-dashed border-white/10 bg-white/[0.03] p-5 text-center text-sm text-gray-400">
-                                Chọn một chế độ để tiếp tục. Khi bấm <span className="font-semibold text-yellow-200">Kiểm tra tự động</span>,
-                                hệ thống mới bắt đầu tìm bài tập phù hợp cho bạn.
+                                Chọn một chế độ để tiếp tục. <span className="font-semibold text-gray-200">Kiểm tra tự chọn</span> sẽ mở danh sách bài tập,
+                                còn <span className="font-semibold text-yellow-200">Kiểm tra tự động</span> sẽ để AI tự tìm bài phù hợp cho bạn.
                             </div>
                         )}
                     </div>
@@ -158,7 +169,7 @@ export default function CodeGradingPage() {
             range: match.range,
             options: { 
                 inlineClassName: 'skeleton-placeholder-highlight',
-                hoverMessage: { value: 'Thay thế bằng code của bạn' }
+                hoverMessage: { value: "Thay thế bằng code của bạn" }
             }
         }));
 
@@ -363,7 +374,7 @@ export default function CodeGradingPage() {
                                     {/* Actual Output */}
                                     <div className="bg-white/5 border border-white/10 rounded-xl p-4 flex flex-col h-full">
                                         <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-2">
-                                            Output Thực Tế
+                                            Output thực tế
                                         </h3>
                                         <pre className="flex-1 font-mono text-sm text-gray-300 overflow-auto whitespace-pre-wrap relative bg-black/20 p-3 rounded-lg border border-white/5">
                                             {isEvaluating ? (
@@ -380,10 +391,10 @@ export default function CodeGradingPage() {
                                             <div className="flex items-center gap-4">
                                                 <span className="flex items-center gap-2">
                                                     <AlertCircle size={14} className="text-yellow-400" />
-                                                    AI Nhận Xét
+                                                    AI nhận xét
                                                 </span>
                                                 
-                                                {/* Nút Xem gợi ý - Chỉ hiện khi score < 100 */}
+                                                {/* Nút xem gợi ý - Chỉ hiển thị khi score < 100 */}
                                                 {score !== null && score < 100 && (
                                                     <button 
                                                         onClick={() => setShowSuggestions(!showSuggestions)}

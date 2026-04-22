@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { ClipboardList, WandSparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -38,7 +38,7 @@ export function TestModeToggle({ mode, onSelect, className }: TestModeToggleProp
                             )}
                         </div>
                         <p className="mt-1 text-sm text-gray-400">
-                            Chọn thủ công kiểu kiểm tra hoặc mức độ phù hợp với mục tiêu của bạn.
+                            Mở danh sách bài tập để tự chọn đề bài phù hợp và theo dõi từng bài theo nhu cầu của bạn.
                         </p>
                     </div>
                 </div>
@@ -68,7 +68,7 @@ export function TestModeToggle({ mode, onSelect, className }: TestModeToggleProp
                             )}
                         </div>
                         <p className="mt-1 text-sm text-yellow-100/70">
-                            Hệ thống AI tự tạo và phân phối nội dung ngay sau khi bạn chọn chế độ này.
+                            Hệ thống AI tự chọn một bài tập phù hợp dựa trên lịch sử học và tiến độ làm bài của bạn.
                         </p>
                     </div>
                 </div>
