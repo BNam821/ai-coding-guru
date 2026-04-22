@@ -9,9 +9,17 @@ interface CourseEnrollButtonProps {
     courseId: string;
     isLoggedIn: boolean;
     initialRegistered: boolean;
+    isHighlighted?: boolean;
+    successHref?: string;
 }
 
-export function CourseEnrollButton({ courseId, isLoggedIn, initialRegistered }: CourseEnrollButtonProps) {
+export function CourseEnrollButton({
+    courseId,
+    isLoggedIn,
+    initialRegistered,
+    isHighlighted = false,
+    successHref,
+}: CourseEnrollButtonProps) {
     const router = useRouter();
     const [isRegistered, setIsRegistered] = useState(initialRegistered);
     const [isLoading, setIsLoading] = useState(false);
@@ -40,6 +48,10 @@ export function CourseEnrollButton({ courseId, isLoggedIn, initialRegistered }: 
             const data = await response.json();
             if (data.success) {
                 setIsRegistered(true);
+                if (successHref) {
+                    router.push(successHref);
+                    return;
+                }
                 router.refresh();
                 return;
             }
@@ -67,6 +79,7 @@ export function CourseEnrollButton({ courseId, isLoggedIn, initialRegistered }: 
                 isRegistered
                     ? 'cursor-default border-emerald-400/40 bg-emerald-500/15 text-emerald-300'
                     : 'border-blue-400/35 bg-blue-500/20 text-blue-200 hover:border-blue-300/60 hover:bg-blue-500/30',
+                isHighlighted && !isRegistered && 'border-amber-300/80 bg-amber-400/25 text-amber-50 shadow-[0_0_24px_rgba(251,191,36,0.38)] ring-2 ring-amber-300/60 animate-pulse',
                 isLoading && 'cursor-wait',
             )}
         >

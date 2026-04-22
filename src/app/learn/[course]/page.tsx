@@ -6,10 +6,17 @@ import { BookOpen, ChevronRight, Edit, ArrowLeft, Plus, Trash2 } from 'lucide-re
 import { notFound } from 'next/navigation';
 import { DeleteCourseButton } from '@/components/learn/course-actions';
 import { AddChapterButton } from '@/components/learn/add-chapter-button';
-import { toRoman } from '@/lib/utils';
+import { PRODUCT_TOUR_STEP_PARAM, getProductTourStep } from '@/lib/product-tour';
 
-export default async function CourseDetailPage({ params }: { params: { course: string } }) {
+export default async function CourseDetailPage({
+    params,
+    searchParams,
+}: {
+    params: { course: string };
+    searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
     const { course: courseSlug } = await params;
+    const resolvedSearchParams = searchParams ? await searchParams : undefined;
     const course = await getCourseBySlug(courseSlug);
 
     if (!course) {
@@ -19,6 +26,11 @@ export default async function CourseDetailPage({ params }: { params: { course: s
     const chapters = await getCourseSyllabus(course.id);
     const isAdmin = await isAdminAuthenticated();
     const totalLessons = chapters.reduce((acc, chap) => acc + (chap.lessons?.length || 0), 0);
+    const activeTourStepId = typeof resolvedSearchParams?.[PRODUCT_TOUR_STEP_PARAM] === 'string'
+        ? resolvedSearchParams[PRODUCT_TOUR_STEP_PARAM]
+        : null;
+    const activeTourStep = getProductTourStep(activeTourStepId);
+    const isFirstLessonTour = activeTourStep?.id === 'learn-first-lesson' && activeTourStep.kind === 'guided-content';
 
     return (
         <div className="space-y-8 relative z-10">
@@ -77,7 +89,16 @@ export default async function CourseDetailPage({ params }: { params: { course: s
             </div>
 
             {/* Chapters & Lessons */}
-            <CourseManager course={course} chapters={chapters as any} isAdmin={isAdmin} />
+            <CourseManager
+                course={course}
+                chapters={chapters as any}
+                isAdmin={isAdmin}
+                onboardingGuide={isFirstLessonTour ? {
+                    badge: activeTourStep.badge,
+                    title: activeTourStep.title,
+                    description: activeTourStep.description,
+                } : null}
+            />
 
             {/* Admin: Danger Zone */}
             {isAdmin && (

@@ -4,6 +4,15 @@ import { supabaseAdmin } from "./supabase-admin";
 
 const ADMIN_SECRET_KEY = process.env.ADMIN_SECRET_KEY;
 
+export async function createUserSession(username: string, role = "user") {
+    (await cookies()).set("session", JSON.stringify({ username, role }), {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 60 * 60 * 24,
+        path: "/",
+    });
+}
+
 export async function loginUser(username: string, pass: string, adminKey?: string) {
     try {
         const { data: user, error } = await supabaseAdmin
@@ -27,13 +36,7 @@ export async function loginUser(username: string, pass: string, adminKey?: strin
             role = "admin";
         }
 
-        // Set session cookie
-        (await cookies()).set("session", JSON.stringify({ username: user.username, role }), {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            maxAge: 60 * 60 * 24, // 1 day
-            path: "/",
-        });
+        await createUserSession(user.username, role);
 
         return { success: true, role };
     } catch (error) {

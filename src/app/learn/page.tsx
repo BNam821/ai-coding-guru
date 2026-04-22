@@ -1,14 +1,45 @@
-import Link from 'next/link';
-import { ArrowRight, BookOpen } from 'lucide-react';
-import { RecentLesson } from '@/components/history/recent-lesson';
-import { RecentLessonsList } from '@/components/history/recent-lessons-list';
-import { CourseEnrollButton } from '@/components/learn/course-enroll-button';
-import { getSession } from '@/lib/auth';
-import { getFullLearningTree, getUserRegisteredCourseIds } from '@/lib/learn-db';
+import Link from "next/link";
+import { ArrowRight, BookOpen } from "lucide-react";
+import { RecentLesson } from "@/components/history/recent-lesson";
+import { RecentLessonsList } from "@/components/history/recent-lessons-list";
+import { CourseEnrollButton } from "@/components/learn/course-enroll-button";
+import { getSession } from "@/lib/auth";
+import { getFullLearningTree, getUserRegisteredCourseIds } from "@/lib/learn-db";
+import { PRODUCT_TOUR_RECOMMENDED_COURSE_PARAM, PRODUCT_TOUR_STEP_PARAM, buildTourUrl } from "@/lib/product-tour";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
-export default async function LearnPage() {
+type LearnPageProps = {
+    searchParams?: Promise<Record<string, string | string[] | undefined>>;
+};
+
+function normalizeCourseText(value: string) {
+    return value
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/đ/g, "d")
+        .toLowerCase()
+        .replace(/\s+/g, " ")
+        .trim();
+}
+
+function isMatchingRecommendedCourse(title: string, recommendedCourse: string | null) {
+    const normalizedTitle = normalizeCourseText(title);
+
+    if (recommendedCourse === "cpp-basic") {
+        return normalizedTitle.includes("c++") && normalizedTitle.includes("co ban");
+    }
+
+    if (recommendedCourse === "cpp-advanced") {
+        return normalizedTitle.includes("c++") && normalizedTitle.includes("nang cao");
+    }
+
+    return false;
+}
+
+export default async function LearnPage({ searchParams }: LearnPageProps) {
+    const resolvedSearchParams = searchParams ? await searchParams : undefined;
+
     const [courses, session] = await Promise.all([
         getFullLearningTree(),
         getSession(),
@@ -20,6 +51,15 @@ export default async function LearnPage() {
         ? await getUserRegisteredCourseIds(session.username)
         : [];
     const registeredCourseIdSet = new Set(registeredCourseIds);
+    const recommendedCourse =
+        typeof resolvedSearchParams?.[PRODUCT_TOUR_RECOMMENDED_COURSE_PARAM] === "string"
+            ? resolvedSearchParams[PRODUCT_TOUR_RECOMMENDED_COURSE_PARAM]
+            : null;
+    const activeTourStep =
+        typeof resolvedSearchParams?.[PRODUCT_TOUR_STEP_PARAM] === "string"
+            ? resolvedSearchParams[PRODUCT_TOUR_STEP_PARAM]
+            : null;
+    const isCourseRecommendationTour = activeTourStep === "signup-step-3" && Boolean(recommendedCourse);
 
     return (
         <div className="relative z-10 space-y-8 pb-20">
@@ -49,49 +89,86 @@ export default async function LearnPage() {
                     </div>
                 ) : (
                     <div className="flex flex-nowrap gap-6 overflow-x-auto pb-2">
-                        {featuredCourses.map((course) => (
-                            <div
-                                key={course.id}
-                                className="group relative min-w-[280px] flex-1 rounded-xl border border-white/10 bg-white/5 p-6 pb-16 transition-all hover:border-blue-500/50 hover:bg-white/10"
-                            >
-                                <Link
-                                    href={`/learn/${course.slug}`}
-                                    className="absolute inset-0 z-10 rounded-xl"
-                                    aria-label={`Mở khoá học ${course.title}`}
-                                />
+                        {featuredCourses.map((course) => {
+                            const isHighlighted = isCourseRecommendationTour && isMatchingRecommendedCourse(course.title, recommendedCourse);
+                            const courseHref = isHighlighted
+                                ? buildTourUrl(`/learn/${course.slug}`, {
+                                    [PRODUCT_TOUR_STEP_PARAM]: "learn-first-lesson",
+                                    [PRODUCT_TOUR_RECOMMENDED_COURSE_PARAM]: recommendedCourse || "",
+                                })
+                                : `/learn/${course.slug}`;
 
-                                <div className="pointer-events-none absolute right-6 top-6 z-[11] text-gray-500 transition-colors group-hover:text-blue-400">
-                                    <ArrowRight className="h-6 w-6 transform transition-transform group-hover:translate-x-1" />
-                                </div>
+                            return (
+                                <div
+                                    key={course.id}
+                                    data-course-highlight={isHighlighted ? "true" : "false"}
+                                    className={`group relative min-w-[280px] flex-1 rounded-xl border bg-white/5 p-6 pb-16 transition-all hover:bg-white/10 ${
+                                        isHighlighted
+                                            ? "border-amber-300/70 shadow-[0_0_40px_rgba(251,191,36,0.16)]"
+                                            : isCourseRecommendationTour
+                                                ? "pointer-events-none border-white/10 opacity-15 blur-[1px]"
+                                                : "border-white/10 hover:border-blue-500/50"
+                                    }`}
+                                >
+                                    {isHighlighted ? (
+                                        <div className="pointer-events-none absolute inset-0 rounded-xl border-2 border-amber-300/80 shadow-[0_0_40px_rgba(251,191,36,0.22)]" />
+                                    ) : null}
 
-                                <div className="mb-4 flex items-center space-x-4">
-                                    <div className="rounded-lg bg-blue-500/10 p-3 text-blue-400">
-                                        <BookOpen className="h-6 w-6" />
+                                    {(!isCourseRecommendationTour || isHighlighted) ? (
+                                        <Link
+                                            href={courseHref}
+                                            className="absolute inset-0 z-10 rounded-xl"
+                                            aria-label={`Mở khoá học ${course.title}`}
+                                        />
+                                    ) : null}
+
+                                    <div
+                                        className={`pointer-events-none absolute right-6 top-6 z-[11] transition-colors ${
+                                            isHighlighted ? "text-amber-300" : "text-gray-500 group-hover:text-blue-400"
+                                        }`}
+                                    >
+                                        <ArrowRight className="h-6 w-6 transform transition-transform group-hover:translate-x-1" />
                                     </div>
-                                    <h3 className="text-xl font-bold text-gray-100 transition-colors group-hover:text-blue-400">
-                                        {course.title}
-                                    </h3>
-                                </div>
 
-                                <p className="mb-4 line-clamp-2 h-12 text-gray-400">{course.description || 'Chưa có mô tả.'}</p>
+                                    <div className="mb-4 flex items-center space-x-4">
+                                        <div
+                                            className={`rounded-lg p-3 ${
+                                                isHighlighted ? "bg-amber-400/15 text-amber-300" : "bg-blue-500/10 text-blue-400"
+                                            }`}
+                                        >
+                                            <BookOpen className="h-6 w-6" />
+                                        </div>
+                                        <h3
+                                            className={`text-xl font-bold transition-colors ${
+                                                isHighlighted ? "text-amber-100" : "text-gray-100 group-hover:text-blue-400"
+                                            }`}
+                                        >
+                                            {course.title}
+                                        </h3>
+                                    </div>
 
-                                <div className="flex items-center pr-32 text-sm text-gray-500">
-                                    <span>{course.chapters?.length || 0} chương</span>
-                                    <span className="mx-2">•</span>
-                                    <span>
-                                        {course.chapters?.reduce((acc, chap) => acc + (chap.lessons?.length || 0), 0)} bài học
-                                    </span>
-                                </div>
+                                    <p className="mb-4 line-clamp-2 h-12 text-gray-400">{course.description || "Chưa có mô tả."}</p>
 
-                                <div className="absolute bottom-5 right-5 z-[12]">
-                                    <CourseEnrollButton
-                                        courseId={course.id}
-                                        isLoggedIn={isLoggedIn}
-                                        initialRegistered={registeredCourseIdSet.has(course.id)}
-                                    />
+                                    <div className="flex items-center pr-32 text-sm text-gray-500">
+                                        <span>{course.chapters?.length || 0} chương</span>
+                                        <span className="mx-2">•</span>
+                                        <span>
+                                            {course.chapters?.reduce((acc, chap) => acc + (chap.lessons?.length || 0), 0)} bài học
+                                        </span>
+                                    </div>
+
+                                    <div className="absolute bottom-5 right-5 z-[12]">
+                                        <CourseEnrollButton
+                                            courseId={course.id}
+                                            isLoggedIn={isLoggedIn}
+                                            initialRegistered={registeredCourseIdSet.has(course.id)}
+                                            isHighlighted={isHighlighted}
+                                            successHref={isHighlighted ? courseHref : undefined}
+                                        />
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 )}
             </section>

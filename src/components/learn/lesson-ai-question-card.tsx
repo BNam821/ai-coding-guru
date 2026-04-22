@@ -19,6 +19,8 @@ interface LessonAiQuestionCardProps {
     lessonTitle: string;
     section: LearnLessonSection;
     autoGenerate: boolean;
+    isHighlighted?: boolean;
+    guideText?: string;
 }
 
 function buildMarkdownCodeBlock(language: string, code: string) {
@@ -59,6 +61,8 @@ export function LessonAiQuestionCard({
     lessonTitle,
     section,
     autoGenerate,
+    isHighlighted = false,
+    guideText,
 }: LessonAiQuestionCardProps) {
     const cardRef = useRef<HTMLDivElement | null>(null);
     const hasRequestedRef = useRef(false);
@@ -175,7 +179,13 @@ export function LessonAiQuestionCard({
 
     return (
         <div ref={cardRef}>
-            <GlassCard className="border-yellow-400/15 bg-gradient-to-br from-yellow-400/10 via-white/5 to-cyan-400/5 p-0" hoverEffect={false}>
+            <GlassCard
+                className={cn(
+                    "border-yellow-400/15 bg-gradient-to-br from-yellow-400/10 via-white/5 to-cyan-400/5 p-0",
+                    isHighlighted && "border-amber-300/45 shadow-[0_0_36px_rgba(251,191,36,0.16)] ring-1 ring-amber-300/35"
+                )}
+                hoverEffect={false}
+            >
                 <div className="border-b border-white/10 px-6 py-4">
                     <div className="flex flex-wrap items-center gap-3">
                         <div className="inline-flex items-center gap-1.5 rounded-full border border-yellow-400/25 bg-yellow-400/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.16em] text-yellow-300">
@@ -191,6 +201,11 @@ export function LessonAiQuestionCard({
                             </div>
                         )}
                     </div>
+                    {isHighlighted && guideText ? (
+                        <p className="mt-3 text-sm font-medium leading-7 text-amber-100">
+                            {guideText}
+                        </p>
+                    ) : null}
                 </div>
 
                 <div className="space-y-5 px-6 py-6">

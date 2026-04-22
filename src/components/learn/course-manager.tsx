@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { LessonReorderView } from "./lesson-reorder-view";
 import { toRoman } from "@/lib/utils";
+import { PRODUCT_TOUR_STEP_PARAM, buildTourUrl } from "@/lib/product-tour";
 
 interface Lesson {
     id: string;
@@ -28,6 +29,11 @@ interface CourseManagerProps {
     };
     chapters: Chapter[];
     isAdmin: boolean;
+    onboardingGuide?: {
+        badge: string;
+        title: string;
+        description: string;
+    } | null;
 }
 
 function buildQuizHref(params: { lessonIds: string[]; sourceLabel: string }) {
@@ -63,8 +69,11 @@ function QuizShortcutButton({
     );
 }
 
-export function CourseManager({ course, chapters, isAdmin }: CourseManagerProps) {
+export function CourseManager({ course, chapters, isAdmin, onboardingGuide = null }: CourseManagerProps) {
     const [isReordering, setIsReordering] = useState(false);
+    const isFirstLessonGuide = Boolean(onboardingGuide);
+    const firstChapterId = chapters[0]?.id ?? null;
+    const firstLessonId = chapters[0]?.lessons?.[0]?.id ?? null;
 
     if (isReordering) {
         return <LessonReorderView chapters={chapters} onClose={() => setIsReordering(false)} />;
@@ -74,7 +83,7 @@ export function CourseManager({ course, chapters, isAdmin }: CourseManagerProps)
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold text-white">Nội dung khóa học</h2>
-                {isAdmin && chapters.length > 0 && (
+                {isAdmin && chapters.length > 0 ? (
                     <button
                         onClick={() => setIsReordering(true)}
                         className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm font-bold text-gray-300 transition-all hover:border-blue-500/30 hover:bg-blue-500/20 hover:text-blue-400"
@@ -82,10 +91,20 @@ export function CourseManager({ course, chapters, isAdmin }: CourseManagerProps)
                         <MoveVertical className="h-4 w-4" />
                         Sắp xếp bài học
                     </button>
-                )}
+                ) : null}
             </div>
 
             <div className="space-y-4">
+                {onboardingGuide ? (
+                    <div className="rounded-2xl border border-amber-300/35 bg-amber-400/10 p-5 shadow-[0_0_30px_rgba(251,191,36,0.12)]">
+                        <div className="mb-2 inline-flex items-center rounded-full border border-amber-300/35 bg-black/20 px-3 py-1 text-xs font-semibold uppercase tracking-[0.28em] text-amber-300">
+                            {onboardingGuide.badge}
+                        </div>
+                        <h3 className="text-xl font-bold text-white">{onboardingGuide.title}</h3>
+                        <p className="mt-2 text-sm leading-7 text-white/75">{onboardingGuide.description}</p>
+                    </div>
+                ) : null}
+
                 {chapters.map((chapter, chapterIndex) => (
                     <ChapterCard
                         key={chapter.id}
@@ -94,6 +113,9 @@ export function CourseManager({ course, chapters, isAdmin }: CourseManagerProps)
                         courseId={course.id}
                         courseSlug={course.slug}
                         isAdmin={isAdmin}
+                        isGuideActive={isFirstLessonGuide}
+                        isTargetChapter={chapter.id === firstChapterId}
+                        targetLessonId={chapter.id === firstChapterId ? firstLessonId : null}
                     />
                 ))}
             </div>
@@ -107,12 +129,18 @@ function ChapterCard({
     courseId,
     courseSlug,
     isAdmin,
+    isGuideActive,
+    isTargetChapter,
+    targetLessonId,
 }: {
     chapter: Chapter;
     chapterIndex: number;
     courseId: string;
     courseSlug: string;
     isAdmin: boolean;
+    isGuideActive: boolean;
+    isTargetChapter: boolean;
+    targetLessonId: string | null;
 }) {
     const router = useRouter();
     const [isEditing, setIsEditing] = useState(false);
@@ -125,6 +153,7 @@ function ChapterCard({
         lessonIds: chapterLessonIds,
         sourceLabel: `Chương ${toRoman(chapterIndex + 1)}: ${chapter.title}`,
     });
+    const shouldMuteChapter = isGuideActive && !isTargetChapter;
 
     useEffect(() => {
         if (isEditing && inputRef.current) {
@@ -169,7 +198,7 @@ function ChapterCard({
     };
 
     const handleDelete = async () => {
-        if (!confirm(`Bạn có chắc chắn muốn xoá chương "${chapter.title}"?`)) {
+        if (!confirm(`Bạn có chắc chắn muốn xóa chương "${chapter.title}"?`)) {
             return;
         }
 
@@ -186,7 +215,7 @@ function ChapterCard({
                 router.refresh();
                 window.dispatchEvent(new CustomEvent("learn-structure-changed"));
             } else {
-                alert(data.error || "Lỗi khi xoá chương");
+                alert(data.error || "Lỗi khi xóa chương");
             }
         } catch {
             alert("Đã có lỗi xảy ra");
@@ -196,10 +225,22 @@ function ChapterCard({
     };
 
     return (
-        <div className="overflow-hidden rounded-xl border border-white/10 bg-white/5">
+        <div
+            className={`overflow-hidden rounded-xl border bg-white/5 ${
+                isTargetChapter
+                    ? "border-amber-300/40 shadow-[0_0_30px_rgba(251,191,36,0.1)]"
+                    : "border-white/10"
+            } ${shouldMuteChapter ? "pointer-events-none opacity-20 blur-[1px]" : ""}`}
+        >
             <div className="group/chap flex items-center justify-between gap-4 border-b border-white/10 bg-gradient-to-r from-white/[0.03] to-transparent px-6 py-5">
                 <div className="flex min-w-0 items-center gap-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-blue-500/20 bg-blue-500/10 text-blue-400">
+                    <div
+                        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border ${
+                            isTargetChapter
+                                ? "border-amber-300/35 bg-amber-400/10 text-amber-300"
+                                : "border-blue-500/20 bg-blue-500/10 text-blue-400"
+                        }`}
+                    >
                         <span className="text-sm font-bold">{toRoman(chapterIndex + 1)}</span>
                     </div>
                     {isEditing ? (
@@ -239,7 +280,7 @@ function ChapterCard({
                                             handleCancelEdit();
                                         }}
                                         className="rounded-md p-1 text-red-400 hover:bg-red-500/10 hover:text-red-300"
-                                        title="Huỷ chỉnh sửa"
+                                        title="Hủy chỉnh sửa"
                                     >
                                         <X className="h-4 w-4" />
                                     </button>
@@ -248,10 +289,12 @@ function ChapterCard({
                         </div>
                     ) : (
                         <div className="flex min-w-0 items-center gap-2">
-                            <h3 className="truncate text-lg font-bold text-white transition-colors group-hover/chap:text-blue-400">
+                            <h3 className={`truncate text-lg font-bold transition-colors ${
+                                isTargetChapter ? "text-amber-100" : "text-white group-hover/chap:text-blue-400"
+                            }`}>
                                 {chapter.title}
                             </h3>
-                            {isAdmin && (
+                            {isAdmin ? (
                                 <div className="flex items-center gap-1">
                                     <button
                                         type="button"
@@ -266,24 +309,24 @@ function ChapterCard({
                                         onClick={handleDelete}
                                         disabled={isDeleting}
                                         className="rounded-md p-1 text-gray-400 transition-colors hover:bg-red-500/10 hover:text-red-400 disabled:cursor-not-allowed disabled:opacity-60"
-                                        title="Xoá chương"
+                                        title="Xóa chương"
                                     >
                                         {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
                                     </button>
                                 </div>
-                            )}
+                            ) : null}
                         </div>
                     )}
                 </div>
-                {!isEditing && (
+                {!isEditing ? (
                     <div className="flex shrink-0 items-center gap-2">
-                        {chapterLessonIds.length > 0 && (
+                        {chapterLessonIds.length > 0 && !isGuideActive ? (
                             <QuizShortcutButton
                                 href={chapterQuizHref}
                                 title={`Tạo bài kiểm tra từ ${chapter.title}`}
                             />
-                        )}
-                        {isAdmin && (
+                        ) : null}
+                        {isAdmin ? (
                             <Link
                                 href={`/learn/create?courseId=${courseId}&chapterId=${chapter.id}`}
                                 className="flex items-center gap-1.5 rounded-lg border border-blue-500/20 bg-blue-500/10 px-3 py-1 text-xs font-bold text-blue-400 transition-all hover:bg-blue-500/20"
@@ -291,9 +334,9 @@ function ChapterCard({
                                 <Plus className="h-3.5 w-3.5" />
                                 Thêm bài học
                             </Link>
-                        )}
+                        ) : null}
                     </div>
-                )}
+                ) : null}
             </div>
 
             <div className="divide-y divide-white/5">
@@ -302,32 +345,56 @@ function ChapterCard({
                         lessonIds: [lesson.id],
                         sourceLabel: `Bài ${lesson.order}: ${lesson.title}`,
                     });
+                    const isTargetLesson = Boolean(isGuideActive && isTargetChapter && targetLessonId === lesson.id);
+                    const shouldMuteLesson = Boolean(isGuideActive && !isTargetLesson);
+                    const lessonHref = isTargetLesson
+                        ? buildTourUrl(`/learn/${courseSlug}/${lesson.slug}`, {
+                            [PRODUCT_TOUR_STEP_PARAM]: "lesson-ai-guide",
+                        })
+                        : `/learn/${courseSlug}/${lesson.slug}`;
 
                     return (
                         <div
                             key={lesson.id}
-                            className="group flex items-center justify-between gap-4 px-6 py-4 transition-colors hover:bg-white/5"
+                            className={`group flex items-center justify-between gap-4 px-6 py-4 transition-colors ${
+                                isTargetLesson
+                                    ? "bg-amber-400/8 shadow-[inset_0_0_0_1px_rgba(251,191,36,0.22)]"
+                                    : "hover:bg-white/5"
+                            } ${shouldMuteLesson ? "pointer-events-none opacity-20 blur-[1px]" : ""}`}
                         >
-                            <Link
-                                href={`/learn/${courseSlug}/${lesson.slug}`}
-                                className="flex min-w-0 flex-1 items-center gap-3"
-                            >
-                                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500/10 text-sm font-medium text-blue-400">
+                            <Link href={lessonHref} className="flex min-w-0 flex-1 items-center gap-3">
+                                <div
+                                    className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium ${
+                                        isTargetLesson
+                                            ? "bg-amber-400/15 text-amber-300"
+                                            : "bg-blue-500/10 text-blue-400"
+                                    }`}
+                                >
                                     {lessonIndex + 1}
                                 </div>
-                                <span className="truncate text-gray-300 transition-colors group-hover:text-white">
+                                <span
+                                    className={`truncate transition-colors ${
+                                        isTargetLesson
+                                            ? "font-semibold text-amber-100 group-hover:text-amber-50"
+                                            : "text-gray-300 group-hover:text-white"
+                                    }`}
+                                >
                                     Bài {lesson.order}: {lesson.title}
                                 </span>
                             </Link>
 
                             <div className="flex shrink-0 items-center gap-2">
-                                <QuizShortcutButton
-                                    href={lessonQuizHref}
-                                    title={`Tạo bài kiểm tra từ bài ${lesson.title}`}
-                                />
+                                {!isGuideActive ? (
+                                    <QuizShortcutButton
+                                        href={lessonQuizHref}
+                                        title={`Tạo bài kiểm tra từ bài ${lesson.title}`}
+                                    />
+                                ) : null}
                                 <Link
-                                    href={`/learn/${courseSlug}/${lesson.slug}`}
-                                    className="rounded-full p-1 text-gray-500 transition-all hover:text-blue-400"
+                                    href={lessonHref}
+                                    className={`rounded-full p-1 transition-all ${
+                                        isTargetLesson ? "text-amber-300 hover:text-amber-200" : "text-gray-500 hover:text-blue-400"
+                                    }`}
                                     aria-label={`Mở bài ${lesson.title}`}
                                 >
                                     <ArrowRight className="h-4 w-4 transition-all group-hover:translate-x-1" />
@@ -337,11 +404,11 @@ function ChapterCard({
                     );
                 })}
 
-                {(!chapter.lessons || chapter.lessons.length === 0) && (
+                {(!chapter.lessons || chapter.lessons.length === 0) ? (
                     <div className="px-6 py-4 text-sm text-gray-500">
                         Chương này chưa có bài học.
                     </div>
-                )}
+                ) : null}
             </div>
         </div>
     );
