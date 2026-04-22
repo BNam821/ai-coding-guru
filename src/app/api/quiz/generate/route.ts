@@ -4,14 +4,24 @@ import { generateQuizForUser } from "@/lib/quiz-service";
 
 export async function POST(req: Request) {
     try {
-        // 1. Auth Check
         const session = await getSession();
         if (!session) {
             return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
         }
 
-        // 2. Generate Quiz
-        const questions = await generateQuizForUser(session.username);
+        let body: { mode?: "auto" | "custom"; selectedLessonIds?: string[] } = {};
+        try {
+            body = await req.json();
+        } catch {
+            body = {};
+        }
+
+        const questions = await generateQuizForUser(session.username, {
+            mode: body.mode === "custom" ? "custom" : "auto",
+            selectedLessonIds: Array.isArray(body.selectedLessonIds)
+                ? body.selectedLessonIds.filter((item): item is string => typeof item === "string")
+                : [],
+        });
 
         return NextResponse.json({ success: true, questions });
     } catch (error: any) {

@@ -18,8 +18,16 @@ interface Question {
     explanation: string;
 }
 
+export interface QuizGameGenerationConfig {
+    mode: "auto" | "custom";
+    selectedLessonIds?: string[];
+    selectedLessonCount?: number;
+    questionCount?: number;
+}
+
 interface QuizGameProps {
     debugPreset?: "codeblock";
+    generationConfig?: QuizGameGenerationConfig;
 }
 
 const DEBUG_QUESTIONS: Record<NonNullable<QuizGameProps["debugPreset"]>, Question[]> = {
@@ -27,7 +35,7 @@ const DEBUG_QUESTIONS: Record<NonNullable<QuizGameProps["debugPreset"]>, Questio
         {
             id: 1,
             question: [
-                "Quan sát đoạn mã sau:",
+                "Quan sat doan ma sau:",
                 "",
                 "```cpp",
                 "#include <iostream>",
@@ -40,16 +48,16 @@ const DEBUG_QUESTIONS: Record<NonNullable<QuizGameProps["debugPreset"]>, Questio
                 "}",
                 "```",
                 "",
-                "Chương trình sẽ in ra kết quả nào?",
+                "Chuong trinh se in ra ket qua nao?",
             ].join("\n"),
-            options: ["`5`", "`6`", "`23`", "Lỗi biên dịch"],
+            options: ["`5`", "`6`", "`23`", "Loi bien dich"],
             correctAnswer: 1,
-            explanation: "- **Đúng**: `2 * 3 = 6`.",
+            explanation: "- **Dung**: `2 * 3 = 6`.",
         },
         {
             id: 2,
             question: [
-                "Khối code này dùng kiểu dữ liệu nào cho biến `name`?",
+                "Khoi code nay dung kieu du lieu nao cho bien `name`?",
                 "",
                 "```cpp",
                 "#include <string>",
@@ -58,37 +66,50 @@ const DEBUG_QUESTIONS: Record<NonNullable<QuizGameProps["debugPreset"]>, Questio
             ].join("\n"),
             options: ["`char`", "`string`", "`bool`", "`double`"],
             correctAnswer: 1,
-            explanation: "- `name` được khai báo là **`string`**.",
+            explanation: "- `name` duoc khai bao la **`string`**.",
         },
     ],
 };
 
-export function QuizGame({ debugPreset }: QuizGameProps) {
+function getInitialEstimatedSeconds(config?: QuizGameGenerationConfig) {
+    if (config?.mode === "custom") {
+        const lessonCount = config.selectedLessonCount || 0;
+
+        if (lessonCount > 10) return 30;
+        if (lessonCount >= 8) return 24;
+        if (lessonCount >= 5) return 18;
+        if (lessonCount >= 3) return 12;
+    }
+
+    return 10;
+}
+
+export function QuizGame({ debugPreset, generationConfig }: QuizGameProps) {
     const [questions, setQuestions] = useState<Question[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [refreshKey, setRefreshKey] = useState(0);
 
-    // Game State
     const [currentIndex, setCurrentIndex] = useState(0);
     const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
     const [showExplanation, setShowExplanation] = useState(false);
     const [score, setScore] = useState(0);
     const [isFinished, setIsFinished] = useState(false);
     const [showExitModal, setShowExitModal] = useState(false);
-    const [estimatedSeconds, setEstimatedSeconds] = useState(10);
+    const [estimatedSeconds, setEstimatedSeconds] = useState(getInitialEstimatedSeconds(generationConfig));
     const [syncState, setSyncState] = useState<"idle" | "saving" | "saved" | "error">("idle");
     const correctAnswersRef = useRef(0);
     const questionCardRef = useRef<HTMLDivElement>(null);
     const explanationRef = useRef<HTMLDivElement>(null);
     const isDebugMode = Boolean(debugPreset);
+    const estimatedInitialSeconds = getInitialEstimatedSeconds(generationConfig);
+    const isCustomQuiz = generationConfig?.mode === "custom";
 
-    // Countdown logic for loading estimation
     useEffect(() => {
         let interval: NodeJS.Timeout;
         if (loading && estimatedSeconds > 0) {
             interval = setInterval(() => {
-                setEstimatedSeconds(prev => prev - 1);
+                setEstimatedSeconds((prev) => prev - 1);
             }, 1000);
         }
         return () => clearInterval(interval);
@@ -109,7 +130,7 @@ export function QuizGame({ debugPreset }: QuizGameProps) {
         const loadQuiz = async () => {
             setLoading(true);
             setError("");
-            setEstimatedSeconds(10); // Khởi tạo 10 giây dự kiến
+            setEstimatedSeconds(estimatedInitialSeconds);
 
             if (debugPreset) {
                 resetGameState(DEBUG_QUESTIONS[debugPreset]);
@@ -118,7 +139,13 @@ export function QuizGame({ debugPreset }: QuizGameProps) {
             }
 
             try {
-                const res = await fetch("/api/quiz/generate", { method: "POST" });
+                const res = await fetch("/api/quiz/generate", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(generationConfig || { mode: "auto" }),
+                });
                 const data = await res.json();
 
                 if (!res.ok) throw new Error(data.error || "Failed to generate quiz");
@@ -127,30 +154,29 @@ export function QuizGame({ debugPreset }: QuizGameProps) {
                 resetGameState(data.questions);
             } catch (err: any) {
                 console.error("Quiz Fetch Error:", err);
-                setError(err.message || "Có lỗi khi tạo bài kiểm tra. Vui lòng thử lại.");
+                setError(err.message || "Co loi khi tao bai kiem tra. Vui long thu lai.");
             } finally {
                 setLoading(false);
             }
         };
 
         void loadQuiz();
-    }, [debugPreset, refreshKey]);
+    }, [debugPreset, estimatedInitialSeconds, generationConfig, refreshKey]);
 
     const fetchQuiz = () => {
         setRefreshKey((prev) => prev + 1);
     };
 
     const handleAnswer = (index: number) => {
-        if (selectedAnswer !== null) return; // Prevent changing answer
+        if (selectedAnswer !== null) return;
         setSelectedAnswer(index);
         setShowExplanation(true);
 
         if (index === questions[currentIndex].correctAnswer) {
             correctAnswersRef.current += 1;
-            setScore(prev => prev + 1);
+            setScore((prev) => prev + 1);
         }
 
-        // Auto-scroll to explanation after a short delay
         setTimeout(() => {
             explanationRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
         }, 100);
@@ -191,11 +217,10 @@ export function QuizGame({ debugPreset }: QuizGameProps) {
 
     const nextQuestion = () => {
         if (currentIndex < questions.length - 1) {
-            setCurrentIndex(prev => prev + 1);
+            setCurrentIndex((prev) => prev + 1);
             setSelectedAnswer(null);
             setShowExplanation(false);
 
-            // Auto-scroll to top of question card
             setTimeout(() => {
                 questionCardRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
             }, 100);
@@ -205,34 +230,36 @@ export function QuizGame({ debugPreset }: QuizGameProps) {
         }
     };
 
-    // --- RENDER STATES ---
-
     if (loading) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-6 text-center">
                 <div className="relative">
                     <div className="w-24 h-24 border-4 border-yellow-400/20 border-t-yellow-400 rounded-full animate-spin" />
                     <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-2xl">🧑‍💻</span>
+                        <span className="text-2xl">AI</span>
                     </div>
                 </div>
                 <div className="space-y-4">
-                    <h2 className="text-2xl font-bold text-white animate-pulse italic">AI đang phân tích lịch sử học tập...</h2>
+                    <h2 className="text-2xl font-bold text-white animate-pulse italic">
+                        {isCustomQuiz ? "AI dang doc ky cac bai hoc ban da chon..." : "AI dang phan tich lich su hoc tap..."}
+                    </h2>
                     <div className="space-y-2">
-                        <p className="text-gray-400">Đang soạn câu hỏi phù hợp nhất cho bạn</p>
+                        <p className="text-gray-400">
+                            {isCustomQuiz
+                                ? `Dang tong hop ${generationConfig?.selectedLessonCount || 0} bai hoc de tao ${generationConfig?.questionCount || "--"} cau hoi phu hop nhat cho ban`
+                                : "Dang soan cau hoi phu hop nhat cho ban"}
+                        </p>
                         <p className="text-yellow-400/60 text-sm font-mono tracking-widest bg-yellow-400/5 py-1 px-3 rounded-full border border-yellow-400/10 inline-block">
                             {estimatedSeconds > 0
-                                ? `Dự kiến: ~${estimatedSeconds} giây nữa`
-                                : "Sắp xong rồi, hãy kiên nhẫn một chút..."
-                            }
+                                ? `Du kien: ~${estimatedSeconds} giay nua`
+                                : "Sap xong roi, hay kien nhan mot chut..."}
                         </p>
                     </div>
 
-                    {/* Mini loading progress bar */}
                     <div className="w-48 h-1 bg-white/5 rounded-full mx-auto overflow-hidden">
                         <div
                             className="h-full bg-gradient-to-r from-yellow-600/40 to-yellow-400 transition-all duration-1000 ease-linear"
-                            style={{ width: `${Math.min(100, ((10 - estimatedSeconds) / 10) * 100)}%` }}
+                            style={{ width: `${Math.min(100, ((estimatedInitialSeconds - estimatedSeconds) / estimatedInitialSeconds) * 100)}%` }}
                         />
                     </div>
                 </div>
@@ -245,41 +272,40 @@ export function QuizGame({ debugPreset }: QuizGameProps) {
             <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-6">
                 <div className="bg-red-500/10 p-6 rounded-2xl border border-red-500/20 max-w-md mx-auto">
                     <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
-                    <h3 className="text-xl font-bold text-white mb-2">Không thể tạo bài kiểm tra</h3>
+                    <h3 className="text-xl font-bold text-white mb-2">Khong the tao bai kiem tra</h3>
                     <p className="text-red-300">{error}</p>
                 </div>
-                <NeonButton onClick={fetchQuiz}>Thử lại</NeonButton>
+                <NeonButton onClick={fetchQuiz}>Thu lai</NeonButton>
             </div>
         );
     }
 
     if (isFinished) {
-        const percentage = Math.round((score / questions.length) * 100);
         return (
             <div className="max-w-xl mx-auto text-center space-y-8 animate-fade-in-up">
                 <GlassCard className="p-8 border-yellow-400/20">
                     <Award className="w-24 h-24 text-yellow-400 mx-auto mb-6" />
-                    <h2 className="text-3xl font-bold text-white mb-2">Hoàn thành!</h2>
+                    <h2 className="text-3xl font-bold text-white mb-2">Hoan thanh!</h2>
                     <div className="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-br from-yellow-300 to-yellow-600 mb-4">
                         {Math.round((score / questions.length) * 100)}/100
                     </div>
                     <p className="text-gray-400 text-lg">
-                        Bạn đã trả lời đúng <span className="text-white font-bold">{score}/{questions.length}</span> câu hỏi.
+                        Ban da tra loi dung <span className="text-white font-bold">{score}/{questions.length}</span> cau hoi.
                     </p>
                     <p className="mt-4 text-sm text-gray-400">
-                        {isDebugMode && "Đang ở debug mode, kết quả không được lưu."}
-                        {syncState === "saving" && "Đang đồng bộ kết quả vào dashboard..."}
-                        {syncState === "saved" && "Kết quả đã được lưu vào dashboard."}
-                        {syncState === "error" && "Chưa lưu được kết quả. Hãy thử làm lại hoặc kiểm tra kết nối."}
+                        {isDebugMode && "Dang o debug mode, ket qua khong duoc luu."}
+                        {syncState === "saving" && "Dang dong bo ket qua vao dashboard..."}
+                        {syncState === "saved" && "Ket qua da duoc luu vao dashboard."}
+                        {syncState === "error" && "Chua luu duoc ket qua. Hay thu lam lai hoac kiem tra ket noi."}
                     </p>
                 </GlassCard>
 
                 <div className="flex gap-4 justify-center">
                     <Link href="/test">
-                        <NeonButton variant="outline">Thoát</NeonButton>
+                        <NeonButton variant="outline">Thoat</NeonButton>
                     </Link>
                     <NeonButton onClick={() => window.location.reload()} icon={<RefreshCcw size={16} />}>
-                        Làm lại
+                        Lam lai
                     </NeonButton>
                 </div>
             </div>
@@ -292,17 +318,16 @@ export function QuizGame({ debugPreset }: QuizGameProps) {
         <div className="max-w-3xl mx-auto space-y-8">
             {isDebugMode && (
                 <div className="rounded-2xl border border-sky-400/20 bg-sky-400/10 px-4 py-3 text-sm text-sky-100">
-                    Debug mode đang bật với preset <code className="rounded bg-black/20 px-1.5 py-0.5 text-sky-200">?debug={debugPreset}</code>.
-                    Câu hỏi đang dùng dữ liệu mẫu để kiểm tra render Markdown và code block.
+                    Debug mode dang bat voi preset <code className="rounded bg-black/20 px-1.5 py-0.5 text-sky-200">?debug={debugPreset}</code>.
+                    Cau hoi dang dung du lieu mau de kiem tra render Markdown va code block.
                 </div>
             )}
 
-            {/* Progress Bar & Header Info */}
             <div className="space-y-4">
                 <div className="flex items-center justify-between">
                     <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-yellow-400/10 border border-yellow-400/20 text-yellow-400 font-bold text-xs tracking-widest uppercase shadow-[0_0_15px_rgba(250,204,21,0.1)]">
                         <Sparkles size={14} className="animate-pulse" />
-                        Câu hỏi {currentIndex + 1} / {questions.length}
+                        Cau hoi {currentIndex + 1} / {questions.length}
                     </div>
 
                     <div className="px-4 py-1.5 rounded-lg bg-black/40 border-2 border-yellow-400/50 text-yellow-400 font-bold shadow-[0_0_20px_rgba(250,204,21,0.2)] flex items-center gap-2">
@@ -316,13 +341,11 @@ export function QuizGame({ debugPreset }: QuizGameProps) {
                         className="h-full bg-gradient-to-r from-yellow-600 via-yellow-400 to-yellow-500 rounded-full transition-all duration-700 ease-out relative shadow-[0_0_15px_rgba(250,204,21,0.4)]"
                         style={{ width: `${((currentIndex + 1) / questions.length) * 100}%` }}
                     >
-                        {/* Shimmer Effect */}
                         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent w-1/2 -skew-x-[30deg] animate-shimmer" />
                     </div>
                 </div>
             </div>
 
-            {/* Question Card */}
             <GlassCard ref={questionCardRef} className="p-8 md:p-10 space-y-8 animate-fade-in-right">
                 <div className="p-6 md:p-8 rounded-2xl bg-yellow-400/5 border border-yellow-400/20 shadow-[0_0_30px_rgba(250,204,21,0.05)] mb-8">
                     <div className="prose prose-invert prose-lg md:prose-xl max-w-none font-bold text-white tracking-tight leading-relaxed [&_pre]:font-normal [&_pre]:text-sm [&_code]:font-mono">
@@ -340,7 +363,7 @@ export function QuizGame({ debugPreset }: QuizGameProps) {
                         if (showResult) {
                             if (isCorrect) styleClass = "bg-green-500/20 border-green-500 text-green-200";
                             else if (isSelected) styleClass = "bg-red-500/20 border-red-500 text-red-200";
-                            else styleClass = "border-white/5 opacity-50"; // Dim other options
+                            else styleClass = "border-white/5 opacity-50";
                         } else if (isSelected) {
                             styleClass = "bg-yellow-400/20 border-yellow-400";
                         }
@@ -366,10 +389,10 @@ export function QuizGame({ debugPreset }: QuizGameProps) {
                                                     "border-blue-500/30 text-blue-400 bg-blue-500/5 group-hover:border-blue-400 group-hover:bg-blue-500/10",
                                                     "border-emerald-500/30 text-emerald-400 bg-emerald-500/5 group-hover:border-emerald-400 group-hover:bg-emerald-500/10",
                                                     "border-amber-500/30 text-amber-400 bg-amber-500/5 group-hover:border-amber-400 group-hover:bg-amber-500/10",
-                                                    "border-purple-500/30 text-purple-400 bg-purple-500/5 group-hover:border-purple-400 group-hover:bg-purple-500/10"
+                                                    "border-purple-500/30 text-purple-400 bg-purple-500/5 group-hover:border-purple-400 group-hover:bg-purple-500/10",
                                                 ][idx]
                                     )}>
-                                        {['A', 'B', 'C', 'D'][idx]}
+                                        {["A", "B", "C", "D"][idx]}
                                     </span>
                                     <div className="prose prose-invert prose-sm max-w-none font-bold text-white group-hover:text-blue-50 transition-colors">
                                         <MarkdownRenderer content={option} mode="lite" />
@@ -382,11 +405,10 @@ export function QuizGame({ debugPreset }: QuizGameProps) {
                     })}
                 </div>
 
-                {/* Explanation */}
                 {showExplanation && (
                     <div ref={explanationRef} className="mt-6 p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl animate-fade-in-up">
                         <h4 className="font-bold text-blue-400 mb-1 flex items-center gap-2">
-                            <span className="text-lg">💡</span> Giải thích
+                            <span className="text-lg">?</span> Giai thich
                         </h4>
                         <div className="prose prose-invert prose-sm max-w-none text-gray-300">
                             <MarkdownRenderer
@@ -399,13 +421,12 @@ export function QuizGame({ debugPreset }: QuizGameProps) {
                 )}
             </GlassCard>
 
-            {/* Action Buttons */}
             <div className="flex justify-between items-center pt-4">
                 <button
                     onClick={() => setShowExitModal(true)}
                     className="px-6 py-2 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 hover:bg-red-500 hover:text-white transition-all duration-300 text-sm font-bold flex items-center gap-2 shadow-lg shadow-red-500/10"
                 >
-                    Thoát
+                    Thoat
                 </button>
 
                 <button
@@ -413,12 +434,11 @@ export function QuizGame({ debugPreset }: QuizGameProps) {
                     disabled={selectedAnswer === null}
                     className="px-8 py-3 bg-yellow-400 text-black font-bold rounded-xl hover:bg-yellow-300 disabled:opacity-0 disabled:translate-y-4 transition-all duration-300 flex items-center gap-2 shadow-lg shadow-yellow-400/20"
                 >
-                    {currentIndex === questions.length - 1 ? "Xem kết quả" : "Câu tiếp theo"}
+                    {currentIndex === questions.length - 1 ? "Xem ket qua" : "Cau tiep theo"}
                     <ChevronRight size={20} />
                 </button>
             </div>
 
-            {/* Exit Confirmation Modal */}
             {showExitModal && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-fade-in">
                     <div
@@ -430,9 +450,9 @@ export function QuizGame({ debugPreset }: QuizGameProps) {
                             <AlertCircle className="text-red-400 w-8 h-8" />
                         </div>
                         <div className="space-y-2">
-                            <h3 className="text-xl font-bold text-white">Bạn có chắc chắn không?</h3>
+                            <h3 className="text-xl font-bold text-white">Ban co chac chan khong?</h3>
                             <p className="text-gray-400 text-sm">
-                                Tiến trình làm bài của bạn sẽ bị mất nếu bạn thoát ngay bây giờ.
+                                Tien trinh lam bai cua ban se bi mat neu ban thoat ngay bay gio.
                             </p>
                         </div>
                         <div className="flex flex-col gap-3">
@@ -440,11 +460,11 @@ export function QuizGame({ debugPreset }: QuizGameProps) {
                                 onClick={() => setShowExitModal(false)}
                                 className="w-full py-3 bg-white/5 hover:bg-white/10 text-white font-medium rounded-xl transition-colors border border-white/10"
                             >
-                                Tiếp tục làm bài
+                                Tiep tuc lam bai
                             </button>
                             <Link href="/test" className="w-full">
                                 <button className="w-full py-3 bg-red-500/20 hover:bg-red-500/30 text-red-400 font-bold rounded-xl transition-colors border border-red-500/20">
-                                    Thoát
+                                    Thoat
                                 </button>
                             </Link>
                         </div>

@@ -5,11 +5,13 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { Editor } from "@monaco-editor/react";
 import { MarkdownRenderer } from "@/components/markdown/markdown-renderer";
+import { TestMode, TestModeToggle } from "@/components/test/test-mode-toggle";
 import { Play, CheckCircle2, XCircle, AlertCircle, Loader2, Lightbulb, ChevronRight, X } from "lucide-react";
 import { getCodingProblemById, CodingProblem } from "@/lib/coding-problems-service";
 
 export default function CodeGradingPage() {
     const router = useRouter();
+    const [mode, setMode] = useState<TestMode>(null);
     const [problem, setProblem] = useState<CodingProblem | null>(null);
     const [userCode, setUserCode] = useState("");
     const [isEvaluating, setIsEvaluating] = useState(false);
@@ -63,8 +65,52 @@ export default function CodeGradingPage() {
     };
 
     useEffect(() => {
+        if (mode !== "auto") {
+            return;
+        }
+
         loadProblem();
-    }, [searchParams]);
+    }, [searchParams, mode]);
+
+    if (mode !== "auto") {
+        return (
+            <main className="min-h-screen px-4 pb-20 pt-28 relative z-10 text-white">
+                <div className="absolute inset-0 bg-deep-space -z-20" />
+                <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-cyan-500/5 rounded-full blur-[160px] -z-10" />
+
+                <div className="mx-auto flex min-h-[60vh] max-w-3xl items-center justify-center">
+                    <div className="w-full rounded-[28px] border border-white/10 bg-black/40 p-6 text-white shadow-2xl backdrop-blur-xl md:p-8">
+                        <div className="space-y-3 text-center">
+                            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-white/60">
+                                Chọn chế độ trước
+                            </div>
+                            <h1 className="text-3xl font-black tracking-tight md:text-4xl">Chọn chế độ chấm code</h1>
+                            <p className="mx-auto max-w-2xl text-sm leading-6 text-gray-400 md:text-base">
+                                Trước khi hệ thống tìm bài tập phù hợp, hãy chọn cách bạn muốn bắt đầu buổi luyện code.
+                            </p>
+                        </div>
+
+                        <TestModeToggle mode={mode} onSelect={setMode} className="mt-8" />
+
+                        {mode === "custom" ? (
+                            <div className="rounded-2xl border border-gray-500/20 bg-gray-500/10 p-5 text-center">
+                                <h2 className="text-lg font-bold text-white">Kiểm tra tự chọn đang được hoàn thiện</h2>
+                                <p className="mt-2 text-sm leading-6 text-gray-400">
+                                    Chế độ này sẽ cho phép bạn tự chọn dạng bài code trước khi hệ thống tải bài tập.
+                                    Hiện tại bạn có thể dùng <span className="font-semibold text-yellow-200">Kiểm tra tự động</span> để bắt đầu ngay.
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="rounded-2xl border border-dashed border-white/10 bg-white/[0.03] p-5 text-center text-sm text-gray-400">
+                                Chọn một chế độ để tiếp tục. Khi bấm <span className="font-semibold text-yellow-200">Kiểm tra tự động</span>,
+                                hệ thống mới bắt đầu tìm bài tập phù hợp cho bạn.
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </main>
+        );
+    }
 
     const handleEvaluate = async () => {
         if (!problem) return;

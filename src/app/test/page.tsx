@@ -1,7 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { BrainCircuit, Sparkles, Database, Code2, Settings } from "lucide-react";
+import {
+    BrainCircuit,
+    Sparkles,
+    Database,
+    Code2,
+    Settings,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 
 export default function TestLandingPage() {
@@ -85,6 +91,7 @@ export default function TestLandingPage() {
                                 </div>
                             </div>
                         </Link>
+
                     </div>
                 )}
 
