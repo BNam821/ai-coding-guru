@@ -1,7 +1,12 @@
 import { getFullLearningTree, getLesson } from "@/lib/learn-db";
-import { buildQuizGenerationPrompt } from "@/lib/ai-prompts";
+import { AI_PROMPT_IDS, buildQuizGenerationPrompt } from "@/lib/ai-prompts";
 import { sanitizeModelJson } from "@/lib/learn-ai-question";
-import { geminiModel } from "@/lib/gemini";
+import { LoggedAiTaskError, runLoggedAiTask } from "@/lib/ai-logging";
+import {
+    GEMINI_MODEL_NAME,
+    GEMINI_MODEL_PROVIDER,
+    generateGeminiResponseText,
+} from "@/lib/gemini";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 
 export interface QuizQuestion {
@@ -354,6 +359,9 @@ export async function generateQuizForUser(username: string, options: QuizGenerat
 
     let lastError: Error | null = null;
     const carefulnessInstruction = getCarefulnessInstructionText(lessonCount);
+    const selectedLessonIds = sourceBundle.history
+        .map((item) => item.lesson_id)
+        .filter((lessonId): lessonId is string => Boolean(lessonId));
 
     for (let attempt = 0; attempt < 2; attempt += 1) {
         const prompt = buildQuizGenerationPrompt({
@@ -368,16 +376,56 @@ export async function generateQuizForUser(username: string, options: QuizGenerat
         });
 
         try {
-            const result = await geminiModel.generateContent(prompt);
-            const response = await result.response;
-            const text = response.text();
-            const questions = validateQuizQuestions(
-                JSON.parse(sanitizeModelJson(text)),
-                questionCount,
-                allowedSources,
-            );
+            return await runLoggedAiTask({
+                username,
+                taskType: "quiz-generation",
+                promptId: AI_PROMPT_IDS.QUIZ_GENERATION,
+                endpoint: "/api/quiz/generate",
+                modelProvider: GEMINI_MODEL_PROVIDER,
+                modelName: GEMINI_MODEL_NAME,
+                promptText: prompt,
+                requestPayload: {
+                    mode: sourceBundle.isCustomSelection ? "custom" : "auto",
+                    selectedLessonIds,
+                    selectedLessonCount: selectedLessonIds.length,
+                },
+                metadata: {
+                    attempt: attempt + 1,
+                    isRetry: attempt > 0,
+                    lessonCount,
+                    questionCount,
+                },
+                generateResponseText: generateGeminiResponseText,
+                parseResponse: (text) => {
+                    let payload: unknown;
 
-            return questions;
+                    try {
+                        payload = JSON.parse(sanitizeModelJson(text));
+                    } catch (error) {
+                        throw new LoggedAiTaskError("Failed to parse quiz generation JSON", { responseText: text }, error);
+                    }
+
+                    try {
+                        return {
+                            value: validateQuizQuestions(
+                                payload,
+                                questionCount,
+                                allowedSources,
+                            ),
+                            responsePayload: payload,
+                        };
+                    } catch (error) {
+                        throw new LoggedAiTaskError(
+                            error instanceof Error ? error.message : "Invalid quiz generation payload",
+                            {
+                                responseText: text,
+                                responsePayload: payload,
+                            },
+                            error,
+                        );
+                    }
+                },
+            });
         } catch (error) {
             lastError = error instanceof Error ? error : new Error("Unknown Gemini error");
             console.error(`Quiz generation attempt ${attempt + 1} failed:`, lastError);

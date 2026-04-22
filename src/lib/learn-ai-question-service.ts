@@ -1,5 +1,10 @@
-import { geminiModel } from "@/lib/gemini";
-import { buildLearnAiQuestionPrompt } from "@/lib/ai-prompts";
+import {
+    GEMINI_MODEL_NAME,
+    GEMINI_MODEL_PROVIDER,
+    generateGeminiResponseText,
+} from "@/lib/gemini";
+import { AI_PROMPT_IDS, buildLearnAiQuestionPrompt } from "@/lib/ai-prompts";
+import { LoggedAiTaskError, runLoggedAiTask } from "@/lib/ai-logging";
 import {
     type LearnAiQuestion,
     type LearnAiQuestionRequest,
@@ -34,23 +39,61 @@ function normalizeQuestion(question: LearnAiQuestion): LearnAiQuestion {
     };
 }
 
-async function generateWithGemini(prompt: string) {
-    const result = await geminiModel.generateContent(prompt);
-    const response = await result.response;
-    return response.text();
-}
-
 async function generateQuestion(request: LearnAiQuestionRequest) {
     let lastError: Error | null = null;
 
     for (let attempt = 0; attempt < 2; attempt += 1) {
         try {
             const prompt = buildLearnAiQuestionPrompt(request, attempt > 0);
-            const text = await generateWithGemini(prompt);
-            const payload = JSON.parse(sanitizeModelJson(text));
-            const validatedQuestion = validateLearnAiQuestion(payload);
+            return await runLoggedAiTask({
+                taskType: "learn-ai-question",
+                promptId: AI_PROMPT_IDS.LEARN_AI_QUESTION,
+                endpoint: "/api/learn/ai-question",
+                modelProvider: GEMINI_MODEL_PROVIDER,
+                modelName: GEMINI_MODEL_NAME,
+                promptText: prompt,
+                requestPayload: {
+                    courseSlug: request.courseSlug,
+                    lessonSlug: request.lessonSlug,
+                    lessonTitle: request.lessonTitle,
+                    sectionId: request.sectionId,
+                    sectionHeading: request.sectionHeading,
+                    sectionIndex: request.sectionIndex,
+                    sectionContentLength: request.sectionContent.trim().length,
+                },
+                metadata: {
+                    attempt: attempt + 1,
+                    isRetry: attempt > 0,
+                },
+                generateResponseText: generateGeminiResponseText,
+                parseResponse: (text) => {
+                    let payload: unknown;
 
-            return normalizeQuestion(validatedQuestion);
+                    try {
+                        payload = JSON.parse(sanitizeModelJson(text));
+                    } catch (error) {
+                        throw new LoggedAiTaskError("Failed to parse learn AI question JSON", { responseText: text }, error);
+                    }
+
+                    try {
+                        const validatedQuestion = validateLearnAiQuestion(payload);
+
+                        return {
+                            value: normalizeQuestion(validatedQuestion),
+                            responsePayload: payload,
+                        };
+                    } catch (error) {
+                        throw new LoggedAiTaskError(
+                            error instanceof Error ? error.message : "Invalid learn AI question payload",
+                            {
+                                responseText: text,
+                                responsePayload: payload,
+                            },
+                            error,
+                        );
+                    }
+                },
+            });
         } catch (error) {
             lastError = error instanceof Error ? error : new Error("Unknown Gemini error");
         }

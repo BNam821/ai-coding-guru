@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, Suspense, useState, useEffectEvent } from "react";
+import { useEffect, Suspense, useState, useEffectEvent, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { GlassCard } from "@/components/ui/glass-card";
 import { NeonButton } from "@/components/ui/neon-button";
@@ -26,6 +26,7 @@ function CreateLessonForm() {
     const [isLoading, setIsLoading] = useState(false);
     const [isFetchingStructure, setIsFetchingStructure] = useState(true);
     const [error, setError] = useState("");
+    const submitLockRef = useRef(false);
 
     // Fetch Course Structure
     const fetchStructure = useEffectEvent(async () => {
@@ -110,6 +111,10 @@ function CreateLessonForm() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (submitLockRef.current || isLoading) {
+            return;
+        }
+
         setIsLoading(true);
         setError("");
 
@@ -118,6 +123,8 @@ function CreateLessonForm() {
             setIsLoading(false);
             return;
         }
+
+        submitLockRef.current = true;
 
         try {
             const res = await fetch("/api/learn/lesson", {
@@ -143,6 +150,7 @@ function CreateLessonForm() {
         } catch (err) {
             setError("Đã có lỗi xảy ra khi kết nối server.");
         } finally {
+            submitLockRef.current = false;
             setIsLoading(false);
         }
     };

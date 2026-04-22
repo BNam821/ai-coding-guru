@@ -1,8 +1,13 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { recordProblemScore } from "@/lib/coding-problems-service";
-import { buildCodeEvaluationPrompt } from "@/lib/ai-prompts";
-import { geminiModel } from "@/lib/gemini";
+import { AI_PROMPT_IDS, buildCodeEvaluationPrompt } from "@/lib/ai-prompts";
+import { LoggedAiTaskError, runLoggedAiTask } from "@/lib/ai-logging";
+import {
+    GEMINI_MODEL_NAME,
+    GEMINI_MODEL_PROVIDER,
+    generateGeminiResponseText,
+} from "@/lib/gemini";
 import { sanitizeModelJson } from "@/lib/learn-ai-question";
 
 function normalizeCode(value: string) {
@@ -24,6 +29,7 @@ function parseZeroScoreStreak(value: unknown) {
 
 export async function POST(req: Request) {
     try {
+        const session = await getSession();
         const body = await req.json();
         const {
             userCode,
@@ -54,19 +60,53 @@ export async function POST(req: Request) {
             submittedUnchangedStarterCode,
         });
 
-        const result = await geminiModel.generateContent(prompt);
-        const textArea = result.response.text();
-        const parsedData = JSON.parse(sanitizeModelJson(textArea));
-        const finalData = {
-            ...parsedData,
-            score: submittedUnchangedStarterCode ? 0 : (parsedData.score || 0),
-        };
+        const finalData = await runLoggedAiTask({
+            username: session?.username ?? null,
+            taskType: "code-evaluation",
+            promptId: AI_PROMPT_IDS.CODE_EVALUATION,
+            endpoint: "/api/code-evaluate",
+            modelProvider: GEMINI_MODEL_PROVIDER,
+            modelName: GEMINI_MODEL_NAME,
+            promptText: prompt,
+            requestPayload: {
+                problemId: problemObj.id ?? null,
+                problemTitle: typeof problemObj.title === "string" ? problemObj.title : null,
+                exerciseType: exerciseType ?? "solve",
+                submittedUnchangedStarterCode,
+                previousZeroScoreStreak,
+                userCodeLength: typeof userCode === "string" ? userCode.length : 0,
+                starterCodeLength: typeof starterCode === "string" ? starterCode.length : 0,
+                bugChangeSummaryLength: typeof bugChangeSummary === "string" ? bugChangeSummary.length : 0,
+            },
+            metadata: {
+                hasExpectedInput: typeof problemObj.expected_input === "string" && problemObj.expected_input.trim().length > 0,
+            },
+            generateResponseText: generateGeminiResponseText,
+            parseResponse: (textArea) => {
+                let parsedData: Record<string, unknown>;
 
-        if (submittedUnchangedStarterCode && !finalData.feedback) {
-            finalData.feedback = "\u0042\u1ea1\u006e \u0111\u0061\u006e\u0067 \u006e\u1ed9\u0070 \u006c\u1ea1\u0069 \u006e\u0067\u0075\u0079\u00ea\u006e \u0074\u0072\u1ea1\u006e\u0067 \u0111\u006f\u1ea1\u006e \u0063\u006f\u0064\u0065 \u006c\u1ed7\u0069 \u0062\u0061\u006e \u0111\u1ea7\u0075, \u006e\u00ea\u006e \u0062\u00e0\u0069 \u006e\u00e0\u0079 \u0111\u01b0\u1ee3\u0063 \u0063\u0068\u1ea5\u006d 0 \u0111\u0069\u1ec3\u006d.";
-        }
+                try {
+                    parsedData = JSON.parse(sanitizeModelJson(textArea)) as Record<string, unknown>;
+                } catch (error) {
+                    throw new LoggedAiTaskError("Failed to parse code evaluation JSON", { responseText: textArea }, error);
+                }
 
-        const session = await getSession();
+                const result: Record<string, unknown> & { score: number; feedback?: string } = {
+                    ...parsedData,
+                    score: submittedUnchangedStarterCode ? 0 : Number(parsedData.score || 0),
+                };
+
+                if (submittedUnchangedStarterCode && !result.feedback) {
+                    result.feedback = "\u0042\u1ea1\u006e \u0111\u0061\u006e\u0067 \u006e\u1ed9\u0070 \u006c\u1ea1\u0069 \u006e\u0067\u0075\u0079\u00ea\u006e \u0074\u0072\u1ea1\u006e\u0067 \u0111\u006f\u1ea1\u006e \u0063\u006f\u0064\u0065 \u006c\u1ed7\u0069 \u0062\u0061\u006e \u0111\u1ea7\u0075, \u006e\u00ea\u006e \u0062\u00e0\u0069 \u006e\u00e0\u0079 \u0111\u01b0\u1ee3\u0063 \u0063\u0068\u1ea5\u006d 0 \u0111\u0069\u1ec3\u006d.";
+                }
+
+                return {
+                    value: result,
+                    responsePayload: parsedData,
+                };
+            },
+        });
+
         if (session && session.username && problemObj.id) {
             await recordProblemScore(session.username, problemObj.id, finalData.score || 0);
         }
