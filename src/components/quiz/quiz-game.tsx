@@ -16,6 +16,13 @@ interface Question {
     options: string[];
     correctAnswer: number;
     explanation: string;
+    source: {
+        sourceKey: string;
+        lessonId: string | null;
+        lessonTitle: string;
+        lessonSlug: string;
+        courseSlug: string;
+    };
 }
 
 export interface QuizGameGenerationConfig {
@@ -53,6 +60,13 @@ const DEBUG_QUESTIONS: Record<NonNullable<QuizGameProps["debugPreset"]>, Questio
             options: ["`5`", "`6`", "`23`", "Loi bien dich"],
             correctAnswer: 1,
             explanation: "- **Dung**: `2 * 3 = 6`.",
+            source: {
+                sourceKey: "debug::lesson-1",
+                lessonId: null,
+                lessonTitle: "Debug Lesson 1",
+                lessonSlug: "debug-lesson-1",
+                courseSlug: "debug-course",
+            },
         },
         {
             id: 2,
@@ -67,6 +81,13 @@ const DEBUG_QUESTIONS: Record<NonNullable<QuizGameProps["debugPreset"]>, Questio
             options: ["`char`", "`string`", "`bool`", "`double`"],
             correctAnswer: 1,
             explanation: "- `name` duoc khai bao la **`string`**.",
+            source: {
+                sourceKey: "debug::lesson-2",
+                lessonId: null,
+                lessonTitle: "Debug Lesson 2",
+                lessonSlug: "debug-lesson-2",
+                courseSlug: "debug-course",
+            },
         },
     ],
 };
@@ -201,6 +222,8 @@ export function QuizGame({ debugPreset, generationConfig }: QuizGameProps) {
                     score: actualScore,
                     correctAnswers: finalScore,
                     totalQuestions: questions.length,
+                    questionSources: questions.map((question) => question.source),
+                    questionPayload: questions,
                 }),
             });
 

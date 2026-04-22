@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { Editor } from "@monaco-editor/react";
@@ -29,7 +29,7 @@ export default function CodeGradingPage() {
     const decorationsRef = useRef<string[]>([]);
     const searchParams = useSearchParams();
 
-    const loadProblem = async (options?: { excludeProblemId?: string }) => {
+    const loadProblem = useCallback(async (options?: { excludeProblemId?: string }) => {
         const specificId = searchParams.get("id");
         let p: CodingProblem | null = null;
         
@@ -62,7 +62,7 @@ export default function CodeGradingPage() {
         } catch (err) {
             console.error("Error smart fetching:", err);
         }
-    };
+    }, [searchParams]);
 
     useEffect(() => {
         if (mode !== "auto") {
@@ -70,7 +70,13 @@ export default function CodeGradingPage() {
         }
 
         loadProblem();
-    }, [searchParams, mode]);
+    }, [loadProblem, mode]);
+
+    useEffect(() => {
+        if (editorRef.current) {
+            updatePlaceholders(editorRef.current);
+        }
+    }, [userCode]);
 
     if (mode !== "auto") {
         return (
@@ -158,12 +164,6 @@ export default function CodeGradingPage() {
 
         decorationsRef.current = editor.deltaDecorations(decorationsRef.current, newDecorations);
     };
-
-    useEffect(() => {
-        if (editorRef.current) {
-            updatePlaceholders(editorRef.current);
-        }
-    }, [userCode]);
 
     const handleNewProblem = async () => {
         setScore(null);

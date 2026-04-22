@@ -9,6 +9,15 @@ export interface QuizQuestion {
     options: string[];
     correctAnswer: number;
     explanation: string;
+    source: QuizQuestionSource;
+}
+
+export interface QuizQuestionSource {
+    sourceKey: string;
+    lessonId: string | null;
+    lessonTitle: string;
+    lessonSlug: string;
+    courseSlug: string;
 }
 
 export interface QuizGenerationOptions {
@@ -48,6 +57,10 @@ type HistoryRow = {
 
 const EXPLANATION_MAX_LENGTH = 150;
 
+function buildSourceKey(row: Pick<HistoryRow, "lesson_id" | "course_slug" | "lesson_slug">) {
+    return row.lesson_id || `${row.course_slug}::${row.lesson_slug}`;
+}
+
 function resolveQuestionCount(lessonCount: number) {
     if (lessonCount > 10) return 40;
     if (lessonCount >= 8) return 30;
@@ -67,21 +80,25 @@ function getLessonContentLimit(lessonCount: number) {
 
 function getCarefulnessInstruction(lessonCount: number) {
     if (lessonCount > 10) {
-        return "Nguoi dung da chon rat nhieu bai hoc. Hay doc ky toan bo nguon, doi chieu giua cac bai, uu tien do chinh xac tuyet doi va chap nhan xu ly cham hon de tranh nham lan.";
+        return "Người dùng đã chọn rất nhiều bài học. Hãy đọc kỹ toàn bộ nguồn, đối chiếu giữa các bài, ưu tiên độ chính xác tuyệt đối và chấp nhận xử lý chậm hơn để tránh nhầm lẫn.";
     }
 
     if (lessonCount >= 8) {
-        return "Nguoi dung da chon nhieu bai hoc. Hay doc ky tung bai, so sanh cac khai niem gan nhau truoc khi tao cau hoi de tranh trung lap va sai lech.";
+        return "Người dùng đã chọn nhiều bài học. Hãy đọc kỹ từng bài, so sánh các khái niệm gần nhau trước khi tạo câu hỏi để tránh trùng lặp và sai lệch.";
     }
 
     if (lessonCount >= 5) {
-        return "Nguoi dung da chon mot pham vi kha rong. Hay bao quat toan bo bai da chon va phan bo cau hoi deu, chinh xac.";
+        return "Người dùng đã chọn một phạm vi khá rộng. Hãy bao quát toàn bộ bài đã chọn và phân bổ câu hỏi đều, chính xác.";
     }
 
-    return "Hay tap trung bam sat cac bai da chon va tao cau hoi ro rang, can bang.";
+    return "Hãy tập trung bám sát các bài đã chọn và tạo câu hỏi rõ ràng, cân bằng.";
 }
 
-function validateQuizQuestions(payload: unknown, expectedQuestionCount: number): QuizQuestion[] {
+function validateQuizQuestions(
+    payload: unknown,
+    expectedQuestionCount: number,
+    allowedSources: Map<string, QuizQuestionSource>,
+): QuizQuestion[] {
     if (!Array.isArray(payload) || payload.length === 0) {
         throw new Error("Quiz payload must be a non-empty array");
     }
@@ -112,6 +129,9 @@ function validateQuizQuestions(payload: unknown, expectedQuestionCount: number):
             : Number(rawCorrectAnswer);
         const rawId = (item as { id?: unknown }).id;
         const id = typeof rawId === "number" ? rawId : index + 1;
+        const sourceLessonKey = typeof (item as { sourceLessonKey?: unknown }).sourceLessonKey === "string"
+            ? (item as { sourceLessonKey: string }).sourceLessonKey.trim()
+            : "";
 
         if (!question) {
             throw new Error(`Question ${index + 1} is missing content`);
@@ -133,12 +153,18 @@ function validateQuizQuestions(payload: unknown, expectedQuestionCount: number):
             throw new Error(`Question ${index + 1} explanation must be at most ${EXPLANATION_MAX_LENGTH} characters`);
         }
 
+        const source = allowedSources.get(sourceLessonKey);
+        if (!source) {
+            throw new Error(`Question ${index + 1} has an invalid sourceLessonKey`);
+        }
+
         return {
             id,
             question,
             options,
             correctAnswer,
             explanation,
+            source,
         };
     });
 }
@@ -152,7 +178,7 @@ async function getHistoryRows(username: string) {
 
     if (error) {
         console.error("Error fetching history:", error);
-        throw new Error("Khong the lay lich su hoc tap");
+        throw new Error("Không thể lấy lịch sử học tập");
     }
 
     return (data || []) as HistoryRow[];
@@ -228,7 +254,7 @@ async function getAutoLessonSources(username: string) {
     const history = historyRows.slice(0, 3);
 
     if (history.length === 0) {
-        throw new Error("Ban chua hoc bai nao de kiem tra kien thuc.");
+        throw new Error("Bạn chưa học bài nào để kiểm tra kiến thức.");
     }
 
     return {
@@ -242,7 +268,7 @@ async function getCustomLessonSources(username: string, selectedLessonIds: strin
     const uniqueLessonIds = Array.from(new Set(selectedLessonIds.filter(Boolean)));
 
     if (uniqueLessonIds.length < 3) {
-        throw new Error("Hay chon it nhat 3 bai hoc de tao bai kiem tra tu chon.");
+        throw new Error("Hãy chọn ít nhất 3 bài học để tạo bài kiểm tra tự chọn.");
     }
 
     const historyRows = await getHistoryRows(username);
@@ -259,7 +285,7 @@ async function getCustomLessonSources(username: string, selectedLessonIds: strin
         .filter((row): row is HistoryRow => Boolean(row));
 
     if (selectedHistory.length !== uniqueLessonIds.length) {
-        throw new Error("Mot so bai hoc da chon khong con hop le trong lich su hoc tap.");
+        throw new Error("Một số bài học đã chọn không còn hợp lệ trong lịch sử học tập.");
     }
 
     return {
@@ -280,11 +306,12 @@ export async function generateQuizForUser(username: string, options: QuizGenerat
     const questionCount = sourceBundle.questionCount;
 
     if (questionCount === 0) {
-        throw new Error("Chua du so luong bai hoc de tao bai kiem tra.");
+        throw new Error("Chưa đủ số lượng bài học để tạo bài kiểm tra.");
     }
 
     let fullContent = "";
     const lessonContentLimit = getLessonContentLimit(lessonCount);
+    const allowedSources = new Map<string, QuizQuestionSource>();
 
     for (const item of sourceBundle.history) {
         const lesson = await getLesson(item.course_slug, item.lesson_slug);
@@ -292,51 +319,71 @@ export async function generateQuizForUser(username: string, options: QuizGenerat
             continue;
         }
 
+        const sourceKey = buildSourceKey(item);
+        allowedSources.set(sourceKey, {
+            sourceKey,
+            lessonId: item.lesson_id,
+            lessonTitle: item.lesson_title,
+            lessonSlug: item.lesson_slug,
+            courseSlug: item.course_slug,
+        });
+
         const truncatedContent = lesson.content.substring(0, lessonContentLimit);
-        fullContent += `\n\n--- Bai hoc: ${item.lesson_title} ---\n${truncatedContent}`;
+        fullContent += `\n\n--- Bài học: ${item.lesson_title} ---\nsourceLessonKey: ${sourceKey}\ncourseSlug: ${item.course_slug}\nlessonSlug: ${item.lesson_slug}\n${truncatedContent}`;
     }
 
     if (!fullContent) {
-        throw new Error("Khong tim thay noi dung bai hoc.");
+        throw new Error("Không tìm thấy nội dung bài học.");
     }
+
+    const sourceCatalog = Array.from(allowedSources.values())
+        .map((source) => `- ${source.sourceKey} => ${source.lessonTitle} (courseSlug: ${source.courseSlug}, lessonSlug: ${source.lessonSlug})`)
+        .join("\n");
 
     let lastError: Error | null = null;
     const carefulnessInstruction = getCarefulnessInstruction(lessonCount);
 
     for (let attempt = 0; attempt < 2; attempt += 1) {
         const prompt = `
-        Ban la mot tro ly AI giao duc (AI Tutor). Dua tren noi dung cac bai hoc duoi day ma nguoi dung ${sourceBundle.isCustomSelection ? "da tu chon tu lich su hoc tap" : "vua hoc"}, hay tao ra dung ${questionCount} cau hoi trac nghiem bang Tieng Viet de kiem tra do hieu bai.
+        Bạn là một trợ lý AI giáo dục (AI Tutor). Dựa trên nội dung các bài học dưới đây mà người dùng ${sourceBundle.isCustomSelection ? "đã tự chọn từ lịch sử học tập" : "vừa học"}, hãy tạo ra đúng ${questionCount} câu hỏi trắc nghiệm bằng Tiếng Việt để kiểm tra độ hiểu bài.
 
-        Yeu cau:
-        1. Cau hoi phai lien quan truc tiep den noi dung cung cap.
-        2. Chi su dung thong tin co trong du lieu dau vao. Khong tu them kien thuc ngoai bai hoc, khong suy dien lan man, khong dat cau hoi lac de.
-        3. Cau hoi phai chat che, ro rang, khong mo ho, khong danh do bang cach dien dat roi.
-        4. Do kho: Trung binh den kho.
-        5. Moi cau co dung 4 dap an lua chon va chi 1 dap an dung.
-        6. Cac dap an nhieu phai hop ly, bam sat ngu canh bai hoc, nhung khong duoc gay hieu sai do dien dat cau tha.
-        7. "correctAnswer" phai la so nguyen 0, 1, 2 hoac 3.
-        8. "options" phai la mang dung 4 chuoi.
-        9. "question" va "explanation" duoc phep dung Markdown.
-        10. Neu du lieu bai hoc co ma nguon, cu phap, hoac doan chuong trinh, hay uu tien tao cau hoi co snippet code de kiem tra hieu biet; dung fenced code block chuan voi ngon ngu phu hop, vi du \`\`\`cpp ... \`\`\`.
-        11. "explanation" phai ngan gon nhung chinh xac, di thang vao ly do dap an dung, toi da ${EXPLANATION_MAX_LENGTH} ky tu.
-        12. Trong "explanation", uu tien dung Markdown ngan de lam ro y nhu **nhan manh**, \`inline code\`, hoac gach dau dong rat ngan neu thuc su can.
-        13. Khong viet explanation lan man, khong lap lai nguyen de bai, khong them chi tiet ngoai du lieu nguon.
-        14. Toan bo phan hoi phai la JSON array thuan tuy hop le. Khong boc toan bo output trong markdown hay code block. Khong them bat ky loi dan hay ghi chu nao ngoai JSON.
+        Yêu cầu:
+        1. Câu hỏi phải liên quan trực tiếp đến nội dung cung cấp.
+        2. Chỉ sử dụng thông tin có trong dữ liệu đầu vào. Không tự thêm kiến thức ngoài bài học, không suy diễn lan man, không đặt câu hỏi lạc đề.
+        3. Câu hỏi phải chặt chẽ, rõ ràng, không mơ hồ, không đánh đố bằng cách diễn đạt rối.
+        4. Độ khó: Trung bình đến khó.
+        5. Mỗi câu có đúng 4 đáp án lựa chọn và chỉ 1 đáp án đúng.
+        6. Các đáp án nhiễu phải hợp lý, bám sát ngữ cảnh bài học, nhưng không được gây hiểu sai do diễn đạt cẩu thả.
+        7. "correctAnswer" phải là số nguyên 0, 1, 2 hoặc 3.
+        8. "options" phải là mảng đúng 4 chuỗi.
+        9. "question" và "explanation" được phép dùng Markdown.
+        10. Nếu dữ liệu bài học có mã nguồn, cú pháp, hoặc đoạn chương trình, hãy ưu tiên tạo câu hỏi có snippet code để kiểm tra hiểu biết; dùng fenced code block chuẩn với ngôn ngữ phù hợp, ví dụ \`\`\`cpp ... \`\`\`.
+        11. "explanation" phải ngắn gọn nhưng chính xác, đi thẳng vào lý do đáp án đúng, tối đa ${EXPLANATION_MAX_LENGTH} ký tự.
+        12. Trong "explanation", ưu tiên dùng Markdown ngắn để làm rõ ý như **nhấn mạnh**, \`inline code\`, hoặc gạch đầu dòng rất ngắn nếu thực sự cần.
+        13. Không viết explanation lan man, không lặp lại nguyên đề bài, không thêm chi tiết ngoài dữ liệu nguồn.
+        14. Toàn bộ phản hồi phải là JSON array thuần túy hợp lệ. Không bọc toàn bộ output trong markdown hay code block. Không thêm bất kỳ lời dẫn hay ghi chú nào ngoài JSON.
         15. ${carefulnessInstruction}
-        16. Hay phan bo cau hoi du rong tren toan bo cac bai da chon, tranh don qua nhieu cau vao mot bai duy nhat neu khong that su can thiet.
-        ${attempt > 0 ? `17. Lan tra loi truoc khong dung schema. Lan nay bat buoc bam sat schema tuyet doi va tra ve dung ${questionCount} cau hoi.` : ""}
+        16. Hãy phân bổ câu hỏi đủ rộng trên toàn bộ các bài đã chọn, tránh dồn quá nhiều câu vào một bài duy nhất nếu không thật sự cần thiết.
+        17. Mỗi câu hỏi bắt buộc phải có trường "sourceLessonKey" để chỉ ra câu đó lấy trực tiếp từ bài học nào.
+        18. "sourceLessonKey" phải khớp chính xác một giá trị trong danh sách nguồn hợp lệ bên dưới. Không được tự tạo key mới, không được để trống.
+        19. Chỉ gán một nguồn cho mỗi câu hỏi, và nguồn đó phải là bài học chính được dùng để tạo câu hỏi.
+        ${attempt > 0 ? `20. Lần trả lời trước không đúng schema. Lần này bắt buộc bám sát schema tuyệt đối và trả về đúng ${questionCount} câu hỏi.` : ""}
 
-        Du lieu bai hoc:
+        Dữ liệu bài học:
+        Danh sách nguồn hợp lệ:
+        ${sourceCatalog}
+
         ${fullContent}
 
-        Output format hop le:
+        Output format hợp lệ:
         [
           {
             "id": 1,
-            "question": "Noi dung cau hoi bang Markdown neu can.",
-            "options": ["Dap an A", "Dap an B", "Dap an C", "Dap an D"],
+            "question": "Nội dung câu hỏi bằng Markdown nếu cần.",
+            "options": ["Đáp án A", "Đáp án B", "Đáp án C", "Đáp án D"],
             "correctAnswer": 0,
-            "explanation": "**Dung** vi \`x\` tang sau vong lap; bam sat vi du trong bai."
+            "explanation": "**Đúng** vì \`x\` tăng sau vòng lặp; bám sát ví dụ trong bài.",
+            "sourceLessonKey": "lesson-id-hoac-course::lesson"
           }
         ]
         `;
@@ -345,7 +392,11 @@ export async function generateQuizForUser(username: string, options: QuizGenerat
             const result = await geminiModel.generateContent(prompt);
             const response = await result.response;
             const text = response.text();
-            const questions = validateQuizQuestions(JSON.parse(sanitizeModelJson(text)), questionCount);
+            const questions = validateQuizQuestions(
+                JSON.parse(sanitizeModelJson(text)),
+                questionCount,
+                allowedSources,
+            );
 
             return questions;
         } catch (error) {
@@ -354,5 +405,5 @@ export async function generateQuizForUser(username: string, options: QuizGenerat
         }
     }
 
-    throw new Error(lastError?.message || "Loi khi xu ly du lieu tu AI.");
+    throw new Error(lastError?.message || "Lỗi khi xử lý dữ liệu từ AI.");
 }

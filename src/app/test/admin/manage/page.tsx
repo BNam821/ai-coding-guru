@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { 
@@ -24,11 +24,7 @@ export default function AdminManageProblemsPage() {
     const [deleteId, setDeleteId] = useState<string | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
 
-    useEffect(() => {
-        fetchProblems();
-    }, []);
-
-    const fetchProblems = async () => {
+    const fetchProblems = useCallback(async () => {
         setIsLoading(true);
         try {
             const res = await fetch("/api/admin/problems");
@@ -43,7 +39,11 @@ export default function AdminManageProblemsPage() {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [router]);
+
+    useEffect(() => {
+        fetchProblems();
+    }, [fetchProblems]);
 
     const handleDelete = async () => {
         if (!deleteId) return;

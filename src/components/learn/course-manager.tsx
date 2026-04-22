@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { MoveVertical, Plus, ArrowRight, Pencil, Trash2, Check, X, Loader2 } from "lucide-react";
+import { MoveVertical, Plus, ArrowRight, Pencil, Trash2, Check, X, Loader2, ClipboardCheck } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { LessonReorderView } from "./lesson-reorder-view";
@@ -30,6 +30,39 @@ interface CourseManagerProps {
     isAdmin: boolean;
 }
 
+function buildQuizHref(params: { lessonIds: string[]; sourceLabel: string }) {
+    const searchParams = new URLSearchParams({
+        mode: "custom",
+        lessonIds: params.lessonIds.join(","),
+        sourceLabel: params.sourceLabel,
+    });
+
+    return `/test/exam?${searchParams.toString()}`;
+}
+
+function QuizShortcutButton({
+    href,
+    title,
+}: {
+    href: string;
+    title: string;
+}) {
+    return (
+        <Link
+            href={href}
+            className="group inline-flex h-9 items-center rounded-full border border-amber-300/20 bg-amber-300/8 px-2.5 text-[11px] font-bold uppercase tracking-[0.16em] text-amber-100 transition-all duration-200 hover:border-amber-200/60 hover:bg-amber-300/18 hover:text-white hover:shadow-[0_0_24px_rgba(252,211,77,0.22)]"
+            title={title}
+        >
+            <ClipboardCheck className="h-3.5 w-3.5 shrink-0" />
+            <span className="grid max-w-0 overflow-hidden opacity-0 transition-all duration-200 group-hover:max-w-40 group-hover:opacity-100">
+                <span className="whitespace-nowrap pl-0 leading-[1.25] transition-all duration-200 group-hover:pl-1.5">
+                    Tạo bài kiểm tra
+                </span>
+            </span>
+        </Link>
+    );
+}
+
 export function CourseManager({ course, chapters, isAdmin }: CourseManagerProps) {
     const [isReordering, setIsReordering] = useState(false);
 
@@ -44,9 +77,9 @@ export function CourseManager({ course, chapters, isAdmin }: CourseManagerProps)
                 {isAdmin && chapters.length > 0 && (
                     <button
                         onClick={() => setIsReordering(true)}
-                        className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-blue-500/20 border border-white/10 hover:border-blue-500/30 rounded-lg text-sm text-gray-300 hover:text-blue-400 transition-all font-bold"
+                        className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm font-bold text-gray-300 transition-all hover:border-blue-500/30 hover:bg-blue-500/20 hover:text-blue-400"
                     >
-                        <MoveVertical className="w-4 h-4" />
+                        <MoveVertical className="h-4 w-4" />
                         Sắp xếp bài học
                     </button>
                 )}
@@ -87,6 +120,11 @@ function ChapterCard({
     const [isSaving, setIsSaving] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
+    const chapterLessonIds = chapter.lessons?.map((lesson) => lesson.id) || [];
+    const chapterQuizHref = buildQuizHref({
+        lessonIds: chapterLessonIds,
+        sourceLabel: `Chương ${toRoman(chapterIndex + 1)}: ${chapter.title}`,
+    });
 
     useEffect(() => {
         if (isEditing && inputRef.current) {
@@ -109,9 +147,9 @@ function ChapterCard({
 
         setIsSaving(true);
         try {
-            const res = await fetch('/api/learn/chapter', {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+            const res = await fetch("/api/learn/chapter", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ id: chapter.id, title: trimmed }),
             });
             const data = await res.json();
@@ -119,12 +157,12 @@ function ChapterCard({
             if (data.success) {
                 setIsEditing(false);
                 router.refresh();
-                window.dispatchEvent(new CustomEvent('learn-structure-changed'));
+                window.dispatchEvent(new CustomEvent("learn-structure-changed"));
             } else {
-                alert(data.error || 'Lỗi khi cập nhật chương');
+                alert(data.error || "Lỗi khi cập nhật chương");
             }
         } catch {
-            alert('Đã có lỗi xảy ra');
+            alert("Đã có lỗi xảy ra");
         } finally {
             setIsSaving(false);
         }
@@ -137,31 +175,31 @@ function ChapterCard({
 
         setIsDeleting(true);
         try {
-            const res = await fetch('/api/learn/chapter', {
-                method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' },
+            const res = await fetch("/api/learn/chapter", {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ id: chapter.id }),
             });
             const data = await res.json();
 
             if (data.success) {
                 router.refresh();
-                window.dispatchEvent(new CustomEvent('learn-structure-changed'));
+                window.dispatchEvent(new CustomEvent("learn-structure-changed"));
             } else {
-                alert(data.error || 'Lỗi khi xoá chương');
+                alert(data.error || "Lỗi khi xoá chương");
             }
         } catch {
-            alert('Đã có lỗi xảy ra');
+            alert("Đã có lỗi xảy ra");
         } finally {
             setIsDeleting(false);
         }
     };
 
     return (
-        <div className="bg-white/5 rounded-xl border border-white/10 overflow-hidden">
-            <div className="px-6 py-5 border-b border-white/10 bg-gradient-to-r from-white/[0.03] to-transparent flex items-center justify-between gap-4 group/chap">
+        <div className="overflow-hidden rounded-xl border border-white/10 bg-white/5">
+            <div className="group/chap flex items-center justify-between gap-4 border-b border-white/10 bg-gradient-to-r from-white/[0.03] to-transparent px-6 py-5">
                 <div className="flex min-w-0 items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 shrink-0">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-blue-500/20 bg-blue-500/10 text-blue-400">
                         <span className="text-sm font-bold">{toRoman(chapterIndex + 1)}</span>
                     </div>
                     {isEditing ? (
@@ -172,8 +210,8 @@ function ChapterCard({
                                 value={title}
                                 onChange={(e) => setTitle(e.target.value)}
                                 onKeyDown={(e) => {
-                                    if (e.key === 'Enter') handleSaveTitle();
-                                    if (e.key === 'Escape') handleCancelEdit();
+                                    if (e.key === "Enter") handleSaveTitle();
+                                    if (e.key === "Escape") handleCancelEdit();
                                 }}
                                 onBlur={handleCancelEdit}
                                 disabled={isSaving}
@@ -210,7 +248,7 @@ function ChapterCard({
                         </div>
                     ) : (
                         <div className="flex min-w-0 items-center gap-2">
-                            <h3 className="truncate text-lg font-bold text-white group-hover/chap:text-blue-400 transition-colors">
+                            <h3 className="truncate text-lg font-bold text-white transition-colors group-hover/chap:text-blue-400">
                                 {chapter.title}
                             </h3>
                             {isAdmin && (
@@ -218,7 +256,7 @@ function ChapterCard({
                                     <button
                                         type="button"
                                         onClick={() => setIsEditing(true)}
-                                        className="rounded-md p-1 text-gray-400 hover:bg-blue-500/10 hover:text-blue-400 transition-colors"
+                                        className="rounded-md p-1 text-gray-400 transition-colors hover:bg-blue-500/10 hover:text-blue-400"
                                         title="Chỉnh sửa tên chương"
                                     >
                                         <Pencil className="h-4 w-4" />
@@ -227,7 +265,7 @@ function ChapterCard({
                                         type="button"
                                         onClick={handleDelete}
                                         disabled={isDeleting}
-                                        className="rounded-md p-1 text-gray-400 hover:bg-red-500/10 hover:text-red-400 transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+                                        className="rounded-md p-1 text-gray-400 transition-colors hover:bg-red-500/10 hover:text-red-400 disabled:cursor-not-allowed disabled:opacity-60"
                                         title="Xoá chương"
                                     >
                                         {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
@@ -237,38 +275,70 @@ function ChapterCard({
                         </div>
                     )}
                 </div>
-                {isAdmin && !isEditing && (
-                    <Link
-                        href={`/learn/create?courseId=${courseId}&chapterId=${chapter.id}`}
-                        className="flex items-center gap-1.5 px-3 py-1 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 rounded-lg text-xs font-bold transition-all border border-blue-500/20 shrink-0"
-                    >
-                        <Plus className="w-3.5 h-3.5" />
-                        Thêm bài học
-                    </Link>
+                {!isEditing && (
+                    <div className="flex shrink-0 items-center gap-2">
+                        {chapterLessonIds.length > 0 && (
+                            <QuizShortcutButton
+                                href={chapterQuizHref}
+                                title={`Tạo bài kiểm tra từ ${chapter.title}`}
+                            />
+                        )}
+                        {isAdmin && (
+                            <Link
+                                href={`/learn/create?courseId=${courseId}&chapterId=${chapter.id}`}
+                                className="flex items-center gap-1.5 rounded-lg border border-blue-500/20 bg-blue-500/10 px-3 py-1 text-xs font-bold text-blue-400 transition-all hover:bg-blue-500/20"
+                            >
+                                <Plus className="h-3.5 w-3.5" />
+                                Thêm bài học
+                            </Link>
+                        )}
+                    </div>
                 )}
             </div>
 
             <div className="divide-y divide-white/5">
-                {chapter.lessons?.map((lesson, lessonIndex) => (
-                    <Link
-                        key={lesson.id}
-                        href={`/learn/${courseSlug}/${lesson.slug}`}
-                        className="flex items-center justify-between px-6 py-4 hover:bg-white/5 transition-colors group"
-                    >
-                        <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-blue-500/10 text-blue-400 flex items-center justify-center text-sm font-medium">
-                                {lessonIndex + 1}
+                {chapter.lessons?.map((lesson, lessonIndex) => {
+                    const lessonQuizHref = buildQuizHref({
+                        lessonIds: [lesson.id],
+                        sourceLabel: `Bài ${lesson.order}: ${lesson.title}`,
+                    });
+
+                    return (
+                        <div
+                            key={lesson.id}
+                            className="group flex items-center justify-between gap-4 px-6 py-4 transition-colors hover:bg-white/5"
+                        >
+                            <Link
+                                href={`/learn/${courseSlug}/${lesson.slug}`}
+                                className="flex min-w-0 flex-1 items-center gap-3"
+                            >
+                                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500/10 text-sm font-medium text-blue-400">
+                                    {lessonIndex + 1}
+                                </div>
+                                <span className="truncate text-gray-300 transition-colors group-hover:text-white">
+                                    Bài {lesson.order}: {lesson.title}
+                                </span>
+                            </Link>
+
+                            <div className="flex shrink-0 items-center gap-2">
+                                <QuizShortcutButton
+                                    href={lessonQuizHref}
+                                    title={`Tạo bài kiểm tra từ bài ${lesson.title}`}
+                                />
+                                <Link
+                                    href={`/learn/${courseSlug}/${lesson.slug}`}
+                                    className="rounded-full p-1 text-gray-500 transition-all hover:text-blue-400"
+                                    aria-label={`Mở bài ${lesson.title}`}
+                                >
+                                    <ArrowRight className="h-4 w-4 transition-all group-hover:translate-x-1" />
+                                </Link>
                             </div>
-                            <span className="text-gray-300 group-hover:text-white transition-colors">
-                                Bài {lesson.order}: {lesson.title}
-                            </span>
                         </div>
-                        <ArrowRight className="w-4 h-4 text-gray-500 group-hover:text-blue-400 group-hover:translate-x-1 transition-all" />
-                    </Link>
-                ))}
+                    );
+                })}
 
                 {(!chapter.lessons || chapter.lessons.length === 0) && (
-                    <div className="px-6 py-4 text-gray-500 text-sm">
+                    <div className="px-6 py-4 text-sm text-gray-500">
                         Chương này chưa có bài học.
                     </div>
                 )}

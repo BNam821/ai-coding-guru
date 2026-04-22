@@ -18,6 +18,7 @@ import { AdminLoginForm } from "@/components/auth/login-form";
 import { DashboardOverviewTabs, type DashboardTabKey } from "@/components/dashboard/dashboard-overview-tabs";
 import { WikiManagePage } from "@/components/wiki/wiki-manage-page";
 import { getSession } from "@/lib/auth";
+import { getDashboardAiEvaluation, type DashboardAiEvaluation } from "@/lib/dashboard-ai-evaluation";
 import { supabase } from "@/lib/supabase";
 import {
     getDashboardChartsData,
@@ -321,9 +322,20 @@ export default async function DashboardPage({
     let recentLearningLessons: RecentLearningLesson[] = [];
     let nextLearningLesson: NextLearningLesson | null = null;
     let recentProblems: RecentProblem[] = [];
+    let aiEvaluation: DashboardAiEvaluation = {
+        hasData: false,
+        bullets: [
+            "Bạn chưa có dữ liệu trắc nghiệm để AI phân tích.",
+            "Hãy làm thêm vài bài kiểm tra để hệ thống nhận ra điểm mạnh của bạn.",
+            "Sau đó dashboard sẽ tự đề xuất các bài học nên ôn lại.",
+        ],
+        recommendedLessons: [],
+        attemptCount: 0,
+        averageScore: 0,
+    };
 
     try {
-        const [postsRes, currentUserRes, progressSnapshot, fetchedChartsData, fetchedLeaderboard, learningDetails, fetchedRecentProblems] = await Promise.all([
+        const [postsRes, currentUserRes, progressSnapshot, fetchedChartsData, fetchedLeaderboard, learningDetails, fetchedRecentProblems, fetchedAiEvaluation] = await Promise.all([
             supabase
                 .from("wiki_posts")
                 .select("*", { count: "exact", head: true })
@@ -338,6 +350,7 @@ export default async function DashboardPage({
             getLeaderboardData(),
             getDashboardLearningDetails(session.username),
             getRecentCodingProblems(session.username, 10),
+            getDashboardAiEvaluation(session.username),
         ]);
 
         postCount = postsRes.count || 0;
@@ -357,6 +370,7 @@ export default async function DashboardPage({
         recentLearningLessons = learningDetails.recentLessons;
         nextLearningLesson = learningDetails.nextLesson;
         recentProblems = fetchedRecentProblems;
+        aiEvaluation = fetchedAiEvaluation;
     } catch (error) {
         console.error("Failed to fetch dashboard overview:", error);
     }
@@ -510,6 +524,7 @@ export default async function DashboardPage({
                             lessonCount={uniqueLessonCount}
                             recentLessons={recentLearningLessons}
                             nextLesson={nextLearningLesson}
+                            aiEvaluation={aiEvaluation}
                             initialTab={initialTab}
                             overviewContent={(
                                 <section className="space-y-7 py-3">

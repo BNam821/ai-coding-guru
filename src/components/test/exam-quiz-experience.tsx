@@ -7,10 +7,18 @@ import { TestMode, TestModeToggle } from "@/components/test/test-mode-toggle";
 
 interface ExamQuizExperienceProps {
     debugPreset?: "codeblock";
+    initialMode?: TestMode;
+    initialSelectedLessonIds?: string[];
+    initialSelectionLabel?: string;
 }
 
-export function ExamQuizExperience({ debugPreset }: ExamQuizExperienceProps) {
-    const [mode, setMode] = useState<TestMode>(null);
+export function ExamQuizExperience({
+    debugPreset,
+    initialMode = null,
+    initialSelectedLessonIds = [],
+    initialSelectionLabel,
+}: ExamQuizExperienceProps) {
+    const [mode, setMode] = useState<TestMode>(initialMode);
     const [quizConfig, setQuizConfig] = useState<QuizGameGenerationConfig | null>(null);
 
     const handleModeSelect = (nextMode: Exclude<TestMode, null>) => {
@@ -41,6 +49,8 @@ export function ExamQuizExperience({ debugPreset }: ExamQuizExperienceProps) {
             <CustomQuizBuilder
                 onBack={() => setMode(null)}
                 onStart={handleStartCustomQuiz}
+                initialSelectedLessonIds={initialSelectedLessonIds}
+                initialSelectionLabel={initialSelectionLabel}
             />
         );
     }
@@ -50,19 +60,19 @@ export function ExamQuizExperience({ debugPreset }: ExamQuizExperienceProps) {
             <div className="w-full rounded-[28px] border border-white/10 bg-black/40 p-6 text-white shadow-2xl backdrop-blur-xl md:p-8">
                 <div className="space-y-3 text-center">
                     <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-white/60">
-                        Chon che do truoc
+                        Chọn chế độ trước
                     </div>
-                    <h1 className="text-3xl font-black tracking-tight md:text-4xl">Chon che do lam bai trac nghiem</h1>
+                    <h1 className="text-3xl font-black tracking-tight md:text-4xl">Chọn chế độ làm bài trắc nghiệm</h1>
                     <p className="mx-auto max-w-2xl text-sm leading-6 text-gray-400 md:text-base">
-                        Ban co the de he thong tu tao de tu lich su gan nhat, hoac tu chon chinh xac khoa hoc, chuong va bai hoc da hoc de tao de theo nhu cau rieng.
+                        Bạn có thể để hệ thống tự tạo đề từ lịch sử gần nhất, hoặc tự chọn chính xác khóa học, chương và bài học đã học để tạo đề theo nhu cầu riêng.
                     </p>
                 </div>
 
                 <TestModeToggle mode={mode} onSelect={handleModeSelect} className="mt-8" />
 
                 <div className="rounded-2xl border border-dashed border-white/10 bg-white/[0.03] p-5 text-center text-sm text-gray-400">
-                    Chon <span className="font-semibold text-yellow-200">Kiem tra tu dong</span> de tao de tu lich su gan nhat,
-                    hoac chon <span className="font-semibold text-white">Kiem tra tu chon</span> de tu quyet dinh pham vi bai hoc dung cho de.
+                    Chọn <span className="font-semibold text-yellow-200">Kiểm tra tự động</span> để tạo đề từ lịch sử gần nhất,
+                    hoặc chọn <span className="font-semibold text-white">Kiểm tra tự chọn</span> để tự quyết định phạm vi bài học dùng cho đề.
                 </div>
             </div>
         </div>

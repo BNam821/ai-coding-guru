@@ -1,6 +1,55 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase-admin";
+import type { QuizQuestion, QuizQuestionSource } from "@/lib/quiz-service";
+
+type QuizScoreInsertPayload = {
+    username: string;
+    score: number;
+    correct_answers?: number;
+    total_questions?: number;
+    question_sources?: QuizQuestionSource[];
+    question_payload?: QuizQuestion[];
+};
+
+async function insertQuizScoreWithFallback(payload: QuizScoreInsertPayload) {
+    const attempts: QuizScoreInsertPayload[] = [
+        payload,
+        {
+            username: payload.username,
+            score: payload.score,
+            ...(typeof payload.correct_answers === "number" ? { correct_answers: payload.correct_answers } : {}),
+            ...(typeof payload.total_questions === "number" ? { total_questions: payload.total_questions } : {}),
+            ...(payload.question_sources ? { question_sources: payload.question_sources } : {}),
+        },
+        {
+            username: payload.username,
+            score: payload.score,
+            ...(typeof payload.correct_answers === "number" ? { correct_answers: payload.correct_answers } : {}),
+            ...(typeof payload.total_questions === "number" ? { total_questions: payload.total_questions } : {}),
+        },
+        {
+            username: payload.username,
+            score: payload.score,
+        },
+    ];
+
+    let lastError: Error | null = null;
+
+    for (const attempt of attempts) {
+        const { error } = await supabaseAdmin
+            .from("quiz_scores")
+            .insert([attempt]);
+
+        if (!error) {
+            return;
+        }
+
+        lastError = error;
+    }
+
+    throw lastError || new Error("Unable to insert quiz score");
+}
 
 export async function POST(req: Request) {
     try {
@@ -9,7 +58,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
         }
 
-        const { score, correctAnswers, totalQuestions } = await req.json();
+        const { score, correctAnswers, totalQuestions, questionSources, questionPayload } = await req.json();
 
         if (typeof score !== 'number' || score < 0 || score > 100) {
             return NextResponse.json({ success: false, error: "Invalid score" }, { status: 400 });
@@ -29,35 +78,30 @@ export async function POST(req: Request) {
             return NextResponse.json({ success: false, error: "Invalid totalQuestions" }, { status: 400 });
         }
 
-        const payload = {
+        if (
+            questionSources !== undefined &&
+            (!Array.isArray(questionSources) || questionSources.some((source) => !source || typeof source !== "object"))
+        ) {
+            return NextResponse.json({ success: false, error: "Invalid questionSources" }, { status: 400 });
+        }
+
+        if (
+            questionPayload !== undefined &&
+            (!Array.isArray(questionPayload) || questionPayload.some((question) => !question || typeof question !== "object"))
+        ) {
+            return NextResponse.json({ success: false, error: "Invalid questionPayload" }, { status: 400 });
+        }
+
+        const payload: QuizScoreInsertPayload = {
             username: session.username,
             score,
             ...(typeof correctAnswers === "number" ? { correct_answers: correctAnswers } : {}),
             ...(typeof totalQuestions === "number" ? { total_questions: totalQuestions } : {}),
+            ...(Array.isArray(questionSources) ? { question_sources: questionSources as QuizQuestionSource[] } : {}),
+            ...(Array.isArray(questionPayload) ? { question_payload: questionPayload as QuizQuestion[] } : {}),
         };
 
-        let { error } = await supabaseAdmin
-            .from("quiz_scores")
-            .insert([payload]);
-
-        // Fallback for old schema that still only has `score`.
-        if (error && (error.message.includes("correct_answers") || error.message.includes("total_questions"))) {
-            const fallback = await supabaseAdmin
-                .from("quiz_scores")
-                .insert([
-                    {
-                        username: session.username,
-                        score,
-                    }
-                ]);
-
-            error = fallback.error;
-        }
-
-        if (error) {
-            console.error("Supabase Insert Error:", error);
-            throw error;
-        }
+        await insertQuizScoreWithFallback(payload);
 
         return NextResponse.json({ success: true });
     } catch (error: any) {

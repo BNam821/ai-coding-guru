@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, BookOpen, CheckSquare2, FolderTree, Loader2 } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { ArrowLeft, BookOpen, CheckSquare2, FolderTree, Loader2, Sparkles } from "lucide-react";
 
 export interface CustomQuizLessonOption {
     id: string;
@@ -34,6 +34,8 @@ export interface CustomQuizStartPayload {
 interface CustomQuizBuilderProps {
     onStart: (payload: CustomQuizStartPayload) => void;
     onBack: () => void;
+    initialSelectedLessonIds?: string[];
+    initialSelectionLabel?: string;
 }
 
 function resolveQuestionCount(lessonCount: number) {
@@ -46,7 +48,7 @@ function resolveQuestionCount(lessonCount: number) {
 }
 
 function formatDate(value: string | null) {
-    if (!value) return "Chua ro";
+    if (!value) return "Chưa rõ";
 
     return new Intl.DateTimeFormat("vi-VN", {
         dateStyle: "short",
@@ -54,11 +56,18 @@ function formatDate(value: string | null) {
     }).format(new Date(value));
 }
 
-export function CustomQuizBuilder({ onStart, onBack }: CustomQuizBuilderProps) {
+export function CustomQuizBuilder({
+    onStart,
+    onBack,
+    initialSelectedLessonIds = [],
+    initialSelectionLabel,
+}: CustomQuizBuilderProps) {
     const [courses, setCourses] = useState<CustomQuizCourseOption[]>([]);
     const [selectedLessonIds, setSelectedLessonIds] = useState<Set<string>>(new Set());
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [prefillSummary, setPrefillSummary] = useState<{ matched: number; missing: number } | null>(null);
+    const hasAppliedInitialSelection = useRef(false);
 
     useEffect(() => {
         const loadOptions = async () => {
@@ -70,12 +79,12 @@ export function CustomQuizBuilder({ onStart, onBack }: CustomQuizBuilderProps) {
                 const data = await res.json();
 
                 if (!res.ok) {
-                    throw new Error(data.error || "Khong the tai lich su hoc tap");
+                    throw new Error(data.error || "Không thể tải lịch sử học tập");
                 }
 
                 setCourses(data.courses || []);
             } catch (err: any) {
-                setError(err.message || "Khong the tai danh sach bai hoc da hoc.");
+                setError(err.message || "Không thể tải danh sách bài học đã học.");
             } finally {
                 setLoading(false);
             }
@@ -84,17 +93,40 @@ export function CustomQuizBuilder({ onStart, onBack }: CustomQuizBuilderProps) {
         void loadOptions();
     }, []);
 
+    useEffect(() => {
+        if (hasAppliedInitialSelection.current || courses.length === 0 || initialSelectedLessonIds.length === 0) {
+            return;
+        }
+
+        const availableLessonIds = new Set(
+            courses.flatMap((course) =>
+                course.chapters.flatMap((chapter) => chapter.lessons.map((lesson) => lesson.id))
+            )
+        );
+        const matchedLessonIds = initialSelectedLessonIds.filter((lessonId) => availableLessonIds.has(lessonId));
+
+        setSelectedLessonIds(new Set(matchedLessonIds));
+        setPrefillSummary({
+            matched: matchedLessonIds.length,
+            missing: initialSelectedLessonIds.length - matchedLessonIds.length,
+        });
+        hasAppliedInitialSelection.current = true;
+    }, [courses, initialSelectedLessonIds]);
+
     const totalSelected = selectedLessonIds.size;
     const questionCount = resolveQuestionCount(totalSelected);
 
     const totalLearnedLessons = useMemo(
-        () => courses.reduce(
-            (courseAcc, course) => courseAcc + course.chapters.reduce(
-                (chapterAcc, chapter) => chapterAcc + chapter.lessons.length,
+        () =>
+            courses.reduce(
+                (courseAcc, course) =>
+                    courseAcc +
+                    course.chapters.reduce(
+                        (chapterAcc, chapter) => chapterAcc + chapter.lessons.length,
+                        0
+                    ),
                 0
             ),
-            0
-        ),
         [courses]
     );
 
@@ -129,8 +161,8 @@ export function CustomQuizBuilder({ onStart, onBack }: CustomQuizBuilderProps) {
             <div className="mx-auto flex min-h-[50vh] max-w-4xl items-center justify-center">
                 <div className="rounded-3xl border border-white/10 bg-black/40 px-8 py-10 text-center text-white backdrop-blur-xl">
                     <Loader2 className="mx-auto mb-4 h-10 w-10 animate-spin text-yellow-400" />
-                    <p className="text-lg font-bold">Dang tai lich su hoc tap cua ban...</p>
-                    <p className="mt-2 text-sm text-gray-400">He thong dang gom bai hoc da hoc de ban chon de kiem tra.</p>
+                    <p className="text-lg font-bold">Đang tải lịch sử học tập của bạn...</p>
+                    <p className="mt-2 text-sm text-gray-400">Hệ thống đang gom các bài học đã học để bạn chọn đề kiểm tra.</p>
                 </div>
             </div>
         );
@@ -140,7 +172,7 @@ export function CustomQuizBuilder({ onStart, onBack }: CustomQuizBuilderProps) {
         return (
             <div className="mx-auto flex min-h-[50vh] max-w-3xl items-center justify-center">
                 <div className="w-full rounded-3xl border border-red-500/20 bg-red-500/10 p-6 text-center">
-                    <p className="text-lg font-bold text-white">Khong the tai danh sach bai hoc</p>
+                    <p className="text-lg font-bold text-white">Không thể tải danh sách bài học</p>
                     <p className="mt-2 text-sm text-red-200">{error}</p>
                     <button
                         type="button"
@@ -148,7 +180,7 @@ export function CustomQuizBuilder({ onStart, onBack }: CustomQuizBuilderProps) {
                         className="mt-5 inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-white/10"
                     >
                         <ArrowLeft size={16} />
-                        Quay lai chon che do
+                        Quay lại chọn chế độ
                     </button>
                 </div>
             </div>
@@ -160,9 +192,9 @@ export function CustomQuizBuilder({ onStart, onBack }: CustomQuizBuilderProps) {
             <div className="mx-auto flex min-h-[50vh] max-w-3xl items-center justify-center">
                 <div className="w-full rounded-3xl border border-white/10 bg-black/40 p-6 text-center text-white backdrop-blur-xl">
                     <BookOpen className="mx-auto mb-4 h-10 w-10 text-gray-400" />
-                    <p className="text-lg font-bold">Chua co bai hoc nao trong lich su hoc tap</p>
+                    <p className="text-lg font-bold">Chưa có bài học nào trong lịch sử học tập</p>
                     <p className="mt-2 text-sm text-gray-400">
-                        Ban can hoc it nhat vai bai trong he thong truoc khi tao bai kiem tra tu chon.
+                        Bạn cần học ít nhất vài bài trong hệ thống trước khi tạo bài kiểm tra tự chọn.
                     </p>
                     <button
                         type="button"
@@ -170,7 +202,7 @@ export function CustomQuizBuilder({ onStart, onBack }: CustomQuizBuilderProps) {
                         className="mt-5 inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-white/10"
                     >
                         <ArrowLeft size={16} />
-                        Quay lai chon che do
+                        Quay lại chọn chế độ
                     </button>
                 </div>
             </div>
@@ -187,46 +219,64 @@ export function CustomQuizBuilder({ onStart, onBack }: CustomQuizBuilderProps) {
                         className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-white/60 transition-colors hover:bg-white/10"
                     >
                         <ArrowLeft size={14} />
-                        Doi che do
+                        Đổi chế độ
                     </button>
                     <div>
-                        <h1 className="text-3xl font-black tracking-tight text-white md:text-4xl">Bai kiem tra tu chon</h1>
+                        <h1 className="text-3xl font-black tracking-tight text-white md:text-4xl">Bài kiểm tra tự chọn</h1>
                         <p className="mt-2 max-w-3xl text-sm leading-6 text-gray-400 md:text-base">
-                            Chon bai hoc, chuong hoac toan bo khoa hoc tu lich su hoc tap cua ban. He thong se chi dung nhung bai ban da chon de tao de trac nghiem ca nhan hoa.
+                            Chọn bài học, chương hoặc toàn bộ khóa học từ lịch sử học tập của bạn. Hệ thống sẽ chỉ dùng những bài bạn đã chọn để tạo đề trắc nghiệm cá nhân hóa.
                         </p>
                     </div>
+                    {initialSelectionLabel && prefillSummary && (
+                        <div className="max-w-3xl rounded-2xl border border-amber-300/15 bg-amber-300/10 p-4 text-sm text-amber-50">
+                            <div className="flex items-center gap-2 font-bold">
+                                <Sparkles size={16} />
+                                Đã chọn sẵn từ {initialSelectionLabel}
+                            </div>
+                            <p className="mt-2 text-amber-100/80">
+                                Có {prefillSummary.matched} bài học từ lựa chọn này xuất hiện trong lịch sử học tập của bạn và đã được đánh dấu sẵn.
+                            </p>
+                            {prefillSummary.missing > 0 && (
+                                <p className="mt-1 text-amber-100/70">
+                                    {prefillSummary.missing} bài chưa có trong lịch sử học tập nên chưa thể đưa vào đề kiểm tra tự chọn.
+                                </p>
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 <div className="rounded-2xl border border-yellow-400/20 bg-yellow-400/10 p-4 text-sm text-yellow-50 md:min-w-[280px]">
                     <div className="flex items-center gap-2 font-bold">
                         <CheckSquare2 size={16} />
-                        Tom tat lua chon
+                        Tóm tắt lựa chọn
                     </div>
                     <p className="mt-3 text-3xl font-black">{totalSelected}</p>
-                    <p className="text-yellow-100/75">bai hoc da chon tren tong {totalLearnedLessons} bai trong lich su</p>
+                    <p className="text-yellow-100/75">bài học đã chọn trên tổng {totalLearnedLessons} bài trong lịch sử</p>
                     <div className="mt-4 rounded-xl border border-yellow-300/15 bg-black/20 p-3">
-                        <p className="text-xs uppercase tracking-[0.18em] text-yellow-100/55">So cau se tao</p>
+                        <p className="text-xs uppercase tracking-[0.18em] text-yellow-100/55">Số câu sẽ tạo</p>
                         <p className="mt-1 text-2xl font-black">{questionCount || "--"}</p>
                         <p className="mt-1 text-xs text-yellow-100/70">
-                            3-4 bai: 10 cau, 5-7 bai: 20 cau, 8-10 bai: 30 cau, tren 10 bai: 40 cau.
+                            3-4 bài: 10 câu, 5-7 bài: 20 câu, 8-10 bài: 30 câu, trên 10 bài: 40 câu.
                         </p>
                     </div>
                     <button
                         type="button"
-                        onClick={() => onStart({
-                            mode: "custom",
-                            selectedLessonIds: Array.from(selectedLessonIds),
-                            selectedLessonCount: totalSelected,
-                            questionCount,
-                        })}
+                        onClick={() =>
+                            onStart({
+                                mode: "custom",
+                                selectedLessonIds: Array.from(selectedLessonIds),
+                                selectedLessonCount: totalSelected,
+                                questionCount,
+                            })
+                        }
                         disabled={questionCount === 0}
                         className="mt-4 w-full rounded-2xl bg-yellow-400 px-4 py-3 text-sm font-black uppercase tracking-[0.16em] text-black transition-all hover:bg-yellow-300 disabled:cursor-not-allowed disabled:opacity-40"
                     >
-                        Tao bai kiem tra
+                        Tạo bài kiểm tra
                     </button>
                     {questionCount === 0 && (
                         <p className="mt-2 text-xs text-yellow-100/70">
-                            Hay chon it nhat 3 bai hoc de he thong bat dau tao de.
+                            Hãy chọn ít nhất 3 bài học để hệ thống bắt đầu tạo đề.
                         </p>
                     )}
                 </div>
@@ -254,7 +304,7 @@ export function CustomQuizBuilder({ onStart, onBack }: CustomQuizBuilderProps) {
                                 </div>
                                 <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-white/70">
                                     <FolderTree size={14} />
-                                    {courseState.selectedCount}/{courseLessonIds.length} bai da chon trong khoa nay
+                                    {courseState.selectedCount}/{courseLessonIds.length} bài đã chọn trong khóa này
                                 </div>
                             </div>
 
@@ -275,11 +325,11 @@ export function CustomQuizBuilder({ onStart, onBack }: CustomQuizBuilderProps) {
                                                     />
                                                     <div>
                                                         <p className="text-lg font-bold text-white">{chapter.title}</p>
-                                                        <p className="text-xs text-gray-400">Chon ca chuong de lay toan bo bai trong muc nay.</p>
+                                                        <p className="text-xs text-gray-400">Chọn cả chương để lấy toàn bộ bài trong mục này.</p>
                                                     </div>
                                                 </div>
                                                 <div className="text-xs text-white/55">
-                                                    {chapterState.selectedCount}/{chapterLessonIds.length} bai da chon
+                                                    {chapterState.selectedCount}/{chapterLessonIds.length} bài đã chọn
                                                 </div>
                                             </div>
 
@@ -306,11 +356,11 @@ export function CustomQuizBuilder({ onStart, onBack }: CustomQuizBuilderProps) {
                                                                 <p className="font-semibold text-white">{lesson.title}</p>
                                                                 <div className="mt-2 flex flex-wrap gap-2 text-xs text-gray-400">
                                                                     <span className="rounded-full border border-white/10 bg-white/5 px-2 py-1">
-                                                                        Hoc luc: {formatDate(lesson.updatedAt)}
+                                                                        Học lúc: {formatDate(lesson.updatedAt)}
                                                                     </span>
                                                                     {typeof lesson.progressPercent === "number" && (
                                                                         <span className="rounded-full border border-white/10 bg-white/5 px-2 py-1">
-                                                                            Tien do: {lesson.progressPercent}%
+                                                                            Tiến độ: {lesson.progressPercent}%
                                                                         </span>
                                                                     )}
                                                                 </div>
