@@ -6,7 +6,6 @@ import {
     Sparkles,
     Database,
     Code2,
-    List,
     Settings,
 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -14,7 +13,6 @@ import { useEffect, useState } from "react";
 export default function TestLandingPage() {
     const [showOptions, setShowOptions] = useState(false);
     const [isAdmin, setIsAdmin] = useState(false);
-    const [isMember, setIsMember] = useState(false);
 
     useEffect(() => {
         fetch("/api/auth/session")
@@ -22,8 +20,6 @@ export default function TestLandingPage() {
             .then(session => {
                 if (session && session.role === "admin") {
                     setIsAdmin(true);
-                } else if (session && session.username) {
-                    setIsMember(true);
                 }
             })
             .catch(() => {});
@@ -89,18 +85,6 @@ export default function TestLandingPage() {
                                     <p className="text-sm text-gray-400 mb-4 tracking-wide">Làm bài tập lập trình thực tế, AI phân tích logic và đánh giá độ phức tạp thuật toán.</p>
                                 </div>
                             </div>
-                        </Link>
-                    </div>
-                )}
-
-                {showOptions && isMember && (
-                    <div className="animate-fade-in-up delay-200">
-                        <Link
-                            href="/test/code/list"
-                            className="inline-flex items-center gap-3 rounded-2xl border border-cyan-400/20 bg-cyan-400/10 px-6 py-3 text-sm font-bold text-cyan-100 transition-all hover:border-cyan-300/40 hover:bg-cyan-400/15"
-                        >
-                            <List size={18} />
-                            <span>Xem danh sách bài tập</span>
                         </Link>
                     </div>
                 )}
