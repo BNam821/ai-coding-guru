@@ -182,13 +182,16 @@ export function LessonAiQuestionCard({
             <GlassCard
                 className={cn(
                     "border-yellow-400/15 bg-gradient-to-br from-yellow-400/10 via-white/5 to-cyan-400/5 p-0",
-                    isHighlighted && "border-amber-300/45 shadow-[0_0_36px_rgba(251,191,36,0.16)] ring-1 ring-amber-300/35"
+                    isHighlighted && "border-amber-200/70 bg-gradient-to-br from-amber-300/18 via-yellow-300/10 to-cyan-400/8 shadow-[0_0_50px_rgba(251,191,36,0.22)] ring-2 ring-amber-300/45"
                 )}
                 hoverEffect={false}
             >
-                <div className="border-b border-white/10 px-6 py-4">
+                <div className={cn("border-b border-white/10 px-6 py-4", isHighlighted && "bg-gradient-to-r from-amber-300/14 via-yellow-300/10 to-transparent")}>
                     <div className="flex flex-wrap items-center gap-3">
-                        <div className="inline-flex items-center gap-1.5 rounded-full border border-yellow-400/25 bg-yellow-400/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.16em] text-yellow-300">
+                        <div className={cn(
+                            "inline-flex items-center gap-1.5 rounded-full border border-yellow-400/25 bg-yellow-400/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.16em] text-yellow-300",
+                            isHighlighted && "border-amber-200/60 bg-amber-300/20 px-3 py-1 text-[10px] text-amber-100 shadow-[0_0_24px_rgba(252,211,77,0.24)]"
+                        )}>
                             <BrainCircuit size={10} />
                             Câu hỏi từ AI
                         </div>
@@ -202,9 +205,12 @@ export function LessonAiQuestionCard({
                         )}
                     </div>
                     {isHighlighted && guideText ? (
-                        <p className="mt-3 text-sm font-medium leading-7 text-amber-100">
-                            {guideText}
-                        </p>
+                        <div className="mt-4 rounded-2xl border border-amber-200/35 bg-black/20 p-4 shadow-[0_0_30px_rgba(252,211,77,0.12)]">
+                            <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-amber-200">{"Vi\u1ec7c c\u1ea7n l\u00e0m \u1edf b\u01b0\u1edbc 5"}</p>
+                            <p className="mt-2 text-sm font-medium leading-7 text-amber-50">
+                                {guideText}
+                            </p>
+                        </div>
                     ) : null}
                 </div>
 

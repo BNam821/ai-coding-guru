@@ -118,8 +118,17 @@ export const PRODUCT_TOUR_STEPS = [
         route: "/learn/[course]/[lesson]",
         kind: "guided-content",
         badge: "B\u01b0\u1edbc 5",
-        title: "L\u0103n chu\u1ed9t \u0111\u1ec3 \u0111\u1ecdc t\u00e0i li\u1ec7u",
-        description: "L\u0103n chu\u1ed9t \u0111\u1ec3 \u0111\u1ecdc t\u00e0i li\u1ec7u. Khi g\u1eb7p ph\u1ea7n \"C\u00e2u h\u1ecfi t\u1eeb AI\", h\u00e3y l\u00e0m c\u00e1c c\u00e2u h\u1ecfi t\u1eeb AI \u0111\u1ec3 hi\u1ec3u h\u01a1n v\u1ec1 n\u1ed9i dung b\u1ea1n v\u1eeba h\u1ecdc.",
+        title: "T\u1eadp trung v\u00e0o ph\u1ea7n C\u00e2u h\u1ecfi t\u1eeb AI",
+        description: "L\u0103n chu\u1ed9t \u0111\u1ec3 \u0111\u1ecdc t\u00e0i li\u1ec7u. Khi g\u1eb7p ph\u1ea7n \"C\u00e2u h\u1ecfi t\u1eeb AI\", h\u00e3y d\u1eebng l\u1ea1i, tr\u1ea3 l\u1eddi ngay v\u00e0 xem gi\u1ea3i th\u00edch \u0111\u1ec3 c\u1ee7ng c\u1ed1 ki\u1ebfn th\u1ee9c v\u1eeba h\u1ecdc.",
+    },
+    {
+        id: "lesson-quiz-check",
+        order: 6,
+        route: "/test/exam",
+        kind: "guided-content",
+        badge: "B\u01b0\u1edbc 6",
+        title: "Ki\u1ec3m tra",
+        description: "B\u1ea1n \u0111\u00e3 ho\u00e0n th\u00e0nh b\u00e0i h\u1ecdc \u0111\u1ea7u ti\u00ean. H\u00e3y b\u1eaft \u0111\u1ea7u b\u00e0i ki\u1ec3m tra t\u1ef1 \u0111\u1ed9ng \u0111\u1ec3 AI Coding Guru \u0111\u00e1nh gi\u00e1 nhanh m\u1ee9c \u0111\u1ed9 hi\u1ec3u b\u00e0i c\u1ee7a b\u1ea1n.",
     },
 ] as const;
 

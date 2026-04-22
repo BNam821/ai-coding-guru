@@ -334,6 +334,11 @@ export function QuizGame({ debugPreset, generationConfig }: QuizGameProps) {
                     <p className="text-gray-400 text-lg">
                         Ban da tra loi dung <span className="text-white font-bold">{score}/{questions.length}</span> cau hoi.
                     </p>
+                    {questions.length === 10 ? (
+                        <p className="mt-5 rounded-2xl border border-yellow-300/20 bg-yellow-400/10 px-5 py-4 text-base font-medium leading-7 text-yellow-50">
+                            {"B\u1ea1n \u0111\u00e3 ho\u00e0n th\u00e0nh kh\u00f3a h\u01b0\u1edbng d\u1eabn c\u1ee7a AI Coding Guru! H\u00e3y kh\u00e1m ph\u00e1 th\u00eam nhi\u1ec1u t\u00ednh n\u0103ng c\u1ee7a h\u1ec7 th\u1ed1ng nh\u00e9!"}
+                        </p>
+                    ) : null}
                     <p className="mt-4 text-sm text-gray-400">
                         {isDebugMode && "Dang o debug mode, ket qua khong duoc luu."}
                         {syncState === "saving" && "Dang dong bo ket qua vao dashboard..."}
