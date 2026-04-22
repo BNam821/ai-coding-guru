@@ -7,6 +7,7 @@ import { GlassCard } from "@/components/ui/glass-card";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { WikiImage } from "@/components/wiki/wiki-image";
+import { AiReportButton } from "@/components/ai/ai-report-button";
 import "highlight.js/styles/atom-one-dark.css";
 import { MarkdownRenderer } from "@/components/markdown/markdown-renderer";
 
@@ -115,6 +116,7 @@ function getInitialEstimatedSeconds(config?: QuizGameGenerationConfig) {
 
 export function QuizGame({ debugPreset, generationConfig }: QuizGameProps) {
     const [questions, setQuestions] = useState<Question[]>([]);
+    const [interactionId, setInteractionId] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [refreshKey, setRefreshKey] = useState(0);
@@ -145,8 +147,9 @@ export function QuizGame({ debugPreset, generationConfig }: QuizGameProps) {
         return () => clearInterval(interval);
     }, [loading, estimatedSeconds]);
 
-    const resetGameState = (nextQuestions: Question[]) => {
+    const resetGameState = (nextQuestions: Question[], nextInteractionId: string | null = null) => {
         setQuestions(nextQuestions);
+        setInteractionId(nextInteractionId);
         setCurrentIndex(0);
         setSelectedAnswer(null);
         setShowExplanation(false);
@@ -164,7 +167,7 @@ export function QuizGame({ debugPreset, generationConfig }: QuizGameProps) {
             setEstimatedSeconds(estimatedInitialSeconds);
 
             if (debugPreset) {
-                resetGameState(DEBUG_QUESTIONS[debugPreset]);
+                resetGameState(DEBUG_QUESTIONS[debugPreset], null);
                 setLoading(false);
                 return;
             }
@@ -182,7 +185,10 @@ export function QuizGame({ debugPreset, generationConfig }: QuizGameProps) {
                 if (!res.ok) throw new Error(data.error || "Failed to generate quiz");
                 if (!data.questions || data.questions.length === 0) throw new Error("No questions generated");
 
-                resetGameState(data.questions);
+                resetGameState(
+                    data.questions,
+                    typeof data.interactionId === "string" ? data.interactionId : null,
+                );
             } catch (err: any) {
                 console.error("Quiz Fetch Error:", err);
                 setError(err.message || "Có lỗi khi tạo bài kiểm tra. Vui lòng thử lại.");
@@ -467,6 +473,21 @@ export function QuizGame({ debugPreset, generationConfig }: QuizGameProps) {
                     </div>
                 )}
             </GlassCard>
+
+            <div className="rounded-2xl border border-red-400/15 bg-red-500/5 p-4">
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-red-100/70">
+                    Báo cáo nội dung AI
+                </p>
+                <p className="mt-2 text-sm leading-6 text-red-50/72">
+                    Nếu câu hỏi hoặc lời giải trong bài quiz do AI tạo có vấn đề, hãy gửi báo cáo để đội ngũ kiểm tra lại.
+                </p>
+                <AiReportButton
+                    className="mt-4"
+                    interactionId={interactionId}
+                    source="quiz-game"
+                    hideWhenUnavailable
+                />
+            </div>
 
             <div className="flex justify-between items-center pt-4">
                 <button

@@ -16,14 +16,14 @@ export async function POST(req: Request) {
             body = {};
         }
 
-        const questions = await generateQuizForUser(session.username, {
+        const result = await generateQuizForUser(session.username, {
             mode: body.mode === "custom" ? "custom" : "auto",
             selectedLessonIds: Array.isArray(body.selectedLessonIds)
                 ? body.selectedLessonIds.filter((item): item is string => typeof item === "string")
                 : [],
         });
 
-        return NextResponse.json({ success: true, questions });
+        return NextResponse.json({ success: true, questions: result.questions, interactionId: result.interactionId });
     } catch (error: any) {
         console.error("Quiz API Error:", error);
         return NextResponse.json({ success: false, error: error.message || "Internal Server Error" }, { status: 500 });

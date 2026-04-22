@@ -70,15 +70,15 @@ export default async function HistoryAiPage({ searchParams }: HistoryAiPageProps
                         <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/70">
                             <BrainCircuit size={30} />
                         </div>
-                        <h1 className="mt-6 text-3xl font-bold text-white">Dang nhap de xem lich su AI</h1>
+                        <h1 className="mt-6 text-3xl font-bold text-white">Đăng nhập để xem lịch sử AI</h1>
                         <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-white/60">
-                            Trang nay luu cac ket qua AI da tra ve cho tai khoan cua ban trong 30 ngay gan day.
+                            Trang này lưu các kết quả AI đã trả về cho tài khoản của bạn trong 30 ngày gần đây.
                         </p>
                         <Link
                             href="/dashboard/account"
                             className="mt-6 inline-flex rounded-2xl border border-cyan-400/20 bg-cyan-400/10 px-5 py-3 text-sm font-semibold text-cyan-100 transition-colors hover:bg-cyan-400/15"
                         >
-                            Mo trang dang nhap
+                            Mở trang đăng nhập
                         </Link>
                     </GlassCard>
                 </div>
@@ -109,7 +109,7 @@ export default async function HistoryAiPage({ searchParams }: HistoryAiPageProps
                         className="inline-flex items-center gap-2 text-sm text-gray-400 transition-colors hover:text-white"
                     >
                         <ArrowLeft size={16} />
-                        Quay lai lich su hoc tap
+                        Quay lại lịch sử học tập
                     </Link>
 
                     <GlassCard className="border-white/10 p-6" hoverEffect={false}>
@@ -118,11 +118,11 @@ export default async function HistoryAiPage({ searchParams }: HistoryAiPageProps
                             AI History
                         </div>
                         <h1 className="mt-4 text-4xl font-black tracking-tight text-white md:text-5xl">
-                            Lich su phan hoi tu AI
+                            Lịch sử phản hồi từ AI
                         </h1>
                         <p className="mt-4 max-w-3xl text-sm leading-6 text-white/60">
-                            Ban dang xem phien ban an toan cua log AI. Chi output, metadata va trang thai duoc hien thi,
-                            prompt noi bo se chi danh cho admin.
+                            Bạn đang xem phiên bản an toàn của log AI. Chỉ output, metadata và trạng thái được hiển thị,
+                            prompt nội bộ sẽ chỉ dành cho admin.
                         </p>
                     </GlassCard>
                 </div>
@@ -132,14 +132,14 @@ export default async function HistoryAiPage({ searchParams }: HistoryAiPageProps
                         <label className="space-y-2 text-sm text-white/70">
                             <span className="inline-flex items-center gap-2 font-semibold">
                                 <Filter size={14} />
-                                Loai tac vu
+                                Loại tác vụ
                             </span>
                             <select
                                 name="taskType"
                                 defaultValue={taskTypeValue || ""}
                                 className="w-full rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-white outline-none"
                             >
-                                <option value="">Tat ca</option>
+                                <option value="">Tất cả</option>
                                 {AI_TASK_TYPES.map((taskType) => (
                                     <option key={taskType} value={taskType}>
                                         {getAiTaskLabel(taskType)}
@@ -149,13 +149,13 @@ export default async function HistoryAiPage({ searchParams }: HistoryAiPageProps
                         </label>
 
                         <label className="space-y-2 text-sm text-white/70">
-                            <span className="font-semibold">Trang thai</span>
+                            <span className="font-semibold">Trạng thái</span>
                             <select
                                 name="status"
                                 defaultValue={statusValue || ""}
                                 className="w-full rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-white outline-none"
                             >
-                                <option value="">Tat ca</option>
+                                <option value="">Tất cả</option>
                                 {AI_INTERACTION_STATUSES.map((status) => (
                                     <option key={status} value={status}>
                                         {getAiStatusLabel(status)}
@@ -165,7 +165,7 @@ export default async function HistoryAiPage({ searchParams }: HistoryAiPageProps
                         </label>
 
                         <label className="space-y-2 text-sm text-white/70">
-                            <span className="font-semibold">Tu ngay</span>
+                            <span className="font-semibold">Từ ngày</span>
                             <input
                                 type="date"
                                 name="from"
@@ -175,7 +175,7 @@ export default async function HistoryAiPage({ searchParams }: HistoryAiPageProps
                         </label>
 
                         <label className="space-y-2 text-sm text-white/70">
-                            <span className="font-semibold">Den ngay</span>
+                            <span className="font-semibold">Đến ngày</span>
                             <input
                                 type="date"
                                 name="to"
@@ -189,13 +189,13 @@ export default async function HistoryAiPage({ searchParams }: HistoryAiPageProps
                                 type="submit"
                                 className="inline-flex h-12 items-center justify-center rounded-2xl border border-cyan-400/20 bg-cyan-400/10 px-5 text-sm font-semibold text-cyan-100 transition-colors hover:bg-cyan-400/15"
                             >
-                                Ap dung
+                                Áp dụng
                             </button>
                             <Link
                                 href="/history/ai"
                                 className="inline-flex h-12 items-center justify-center rounded-2xl border border-white/10 bg-white/5 px-5 text-sm font-semibold text-white/80 transition-colors hover:bg-white/10"
                             >
-                                Xoa loc
+                                Xóa lọc
                             </Link>
                         </div>
                     </form>
@@ -203,7 +203,7 @@ export default async function HistoryAiPage({ searchParams }: HistoryAiPageProps
 
                 <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-white/60">
                     <p>
-                        Tim thay <span className="font-semibold text-white">{result.totalCount}</span> ban ghi trong 30 ngay gan day.
+                        Tìm thấy <span className="font-semibold text-white">{result.totalCount}</span> bản ghi trong 30 ngày gần đây.
                     </p>
                     <p className="inline-flex items-center gap-2">
                         <Sparkles size={14} />
@@ -214,8 +214,8 @@ export default async function HistoryAiPage({ searchParams }: HistoryAiPageProps
                 <AiLogList
                     logs={result.logs}
                     isAdmin={false}
-                    emptyTitle="Chua co AI log nao"
-                    emptyDescription="Khi ban su dung tinh nang tao cau hoi, tao quiz hoac cham code AI, lich su se xuat hien tai day."
+                    emptyTitle="Chưa có AI log nào"
+                    emptyDescription="Khi bạn sử dụng tính năng tạo câu hỏi, tạo quiz hoặc chấm code AI, lịch sử sẽ xuất hiện tại đây."
                 />
 
                 {result.totalPages > 1 && (
@@ -229,7 +229,7 @@ export default async function HistoryAiPage({ searchParams }: HistoryAiPageProps
                                     : "border-white/10 bg-white/5 text-white/80 transition-colors hover:bg-white/10"
                             }`}
                         >
-                            Trang truoc
+                            Trang trước
                         </Link>
                         <Link
                             href={buildPageHref(currentSearchParams, Math.min(result.totalPages, result.page + 1))}

@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { getFullLearningTree } from "@/lib/learn-db";
 import { AI_PROMPT_IDS, buildDashboardAiEvaluationPrompt } from "@/lib/ai-prompts";
 import { LoggedAiTaskError, runLoggedAiTask } from "@/lib/ai-logging";
+import { findLatestAiInteractionId } from "@/lib/ai-interactions";
 import { sanitizeModelJson } from "@/lib/learn-ai-question";
 import {
     GEMINI_MODEL_NAME,
@@ -105,13 +106,13 @@ export type DashboardAiEvaluation = {
     recommendedLessons: AiRecommendedLesson[];
     attemptCount: number;
     averageScore: number;
+    interactionId: string | null;
     rawChartData: DashboardAiRawChartData;
 };
 
 type AiEvaluationResponse = {
     bullets: string[];
     recommendedLessonKeys: string[];
-    rawChartData: DashboardAiRawChartData;
 };
 
 type DashboardAiEvaluationCacheRow = {
@@ -533,8 +534,17 @@ async function getCachedEvaluation(username: string, dataSignature: string) {
         return null;
     }
 
+    const interactionId = typeof row.evaluation_payload.interactionId === "string"
+        ? row.evaluation_payload.interactionId
+        : await findLatestAiInteractionId({
+            username,
+            taskType: "dashboard-ai-evaluation",
+            endpoint: "/dashboard",
+        });
+
     return {
         ...row.evaluation_payload,
+        interactionId,
         rawChartData: {
             ...buildEmptyChartData(),
             ...(row.evaluation_payload.rawChartData || {}),
@@ -597,7 +607,6 @@ async function generateAiEvaluation(input: {
         chapterTitle: string;
     }>;
     recommendationCandidates: LessonSignal[];
-    fallbackChartData: DashboardAiRawChartData;
 }) {
     const prompt = buildDashboardAiEvaluationPrompt({
         attemptCount: input.attemptCount,
@@ -607,7 +616,6 @@ async function generateAiEvaluation(input: {
         attemptBreakdown: input.attemptBreakdown,
         lessonSignals: input.lessonSignals,
         recommendationCandidates: input.recommendationCandidates,
-        fallbackChartData: input.fallbackChartData,
     });
 
     return runLoggedAiTask({
@@ -625,22 +633,17 @@ async function generateAiEvaluation(input: {
             recommendationCandidateCount: input.recommendationCandidates.length,
             lessonSignalCount: input.lessonSignals.length,
         },
-        metadata: {
-            hasFallbackChartData: true,
-        },
         generateResponseText: generateGeminiResponseText,
         parseResponse: (text) => {
             let payload: {
                 bullets?: unknown;
                 recommendedLessonKeys?: unknown;
-                rawChartData?: unknown;
             };
 
             try {
                 payload = JSON.parse(sanitizeModelJson(text)) as {
                     bullets?: unknown;
                     recommendedLessonKeys?: unknown;
-                    rawChartData?: unknown;
                 };
             } catch (error) {
                 throw new LoggedAiTaskError("Failed to parse dashboard AI evaluation JSON", { responseText: text }, error);
@@ -653,10 +656,6 @@ async function generateAiEvaluation(input: {
             const recommendedLessonKeys = Array.isArray(payload.recommendedLessonKeys)
                 ? payload.recommendedLessonKeys.filter((item): item is string => typeof item === "string").map((item) => item.trim()).filter(Boolean)
                 : [];
-
-            const chartCandidate = payload.rawChartData && typeof payload.rawChartData === "object"
-                ? payload.rawChartData as Record<string, unknown>
-                : null;
 
             if (bullets.length !== 3) {
                 throw new LoggedAiTaskError(
@@ -672,73 +671,6 @@ async function generateAiEvaluation(input: {
                 value: {
                     bullets,
                     recommendedLessonKeys,
-                    rawChartData: {
-                        summary: {
-                            attempts: getChartSummaryNumber(
-                                typeof chartCandidate?.summary === "object" && chartCandidate.summary
-                                    ? chartCandidate.summary as Record<string, unknown>
-                                    : null,
-                                "attempts",
-                            ),
-                            averageScore: getChartSummaryNumber(
-                                typeof chartCandidate?.summary === "object" && chartCandidate.summary
-                                    ? chartCandidate.summary as Record<string, unknown>
-                                    : null,
-                                "averageScore",
-                                1,
-                            ),
-                            totalQuestions: getChartSummaryNumber(
-                                typeof chartCandidate?.summary === "object" && chartCandidate.summary
-                                    ? chartCandidate.summary as Record<string, unknown>
-                                    : null,
-                                "totalQuestions",
-                            ),
-                            totalCorrectAnswers: getChartSummaryNumber(
-                                typeof chartCandidate?.summary === "object" && chartCandidate.summary
-                                    ? chartCandidate.summary as Record<string, unknown>
-                                    : null,
-                                "totalCorrectAnswers",
-                            ),
-                            totalWrongAnswers: getChartSummaryNumber(
-                                typeof chartCandidate?.summary === "object" && chartCandidate.summary
-                                    ? chartCandidate.summary as Record<string, unknown>
-                                    : null,
-                                "totalWrongAnswers",
-                            ),
-                            accuracyRate: getChartSummaryNumber(
-                                typeof chartCandidate?.summary === "object" && chartCandidate.summary
-                                    ? chartCandidate.summary as Record<string, unknown>
-                                    : null,
-                                "accuracyRate",
-                                1,
-                            ),
-                            recentQuestionCount: getChartSummaryNumber(
-                                typeof chartCandidate?.summary === "object" && chartCandidate.summary
-                                    ? chartCandidate.summary as Record<string, unknown>
-                                    : null,
-                                "recentQuestionCount",
-                            ),
-                            recentCorrectAnswers: getChartSummaryNumber(
-                                typeof chartCandidate?.summary === "object" && chartCandidate.summary
-                                    ? chartCandidate.summary as Record<string, unknown>
-                                    : null,
-                                "recentCorrectAnswers",
-                            ),
-                            recentWrongAnswers: getChartSummaryNumber(
-                                typeof chartCandidate?.summary === "object" && chartCandidate.summary
-                                    ? chartCandidate.summary as Record<string, unknown>
-                                    : null,
-                                "recentWrongAnswers",
-                            ),
-                        },
-                        scoreTrend: normalizeChartData(chartCandidate?.scoreTrend),
-                        weakLessons: normalizeChartData(chartCandidate?.weakLessons),
-                        strongLessons: normalizeChartData(chartCandidate?.strongLessons),
-                        lessonCoverage: normalizeChartData(chartCandidate?.lessonCoverage),
-                        lessonPerformance: normalizeLessonPerformanceData(chartCandidate?.lessonPerformance),
-                        wrongByLesson: normalizeChartData(chartCandidate?.wrongByLesson),
-                        wrongByChapter: normalizeChartData(chartCandidate?.wrongByChapter),
-                    },
                 } satisfies AiEvaluationResponse,
                 responsePayload: payload,
             };
@@ -762,6 +694,7 @@ export async function getDashboardAiEvaluation(username: string): Promise<Dashbo
             recommendedLessons: [],
             attemptCount: 0,
             averageScore: 0,
+            interactionId: null,
             rawChartData: buildEmptyChartData(),
         };
     }
@@ -964,6 +897,7 @@ export async function getDashboardAiEvaluation(username: string): Promise<Dashbo
         strongLessons,
     });
     let recommendedLessonKeys = recommendationCandidates.slice(0, 3).map((lesson) => lesson.sourceKey);
+    let interactionId: string | null = null;
     let rawChartData = fallbackChartData;
 
     try {
@@ -977,21 +911,11 @@ export async function getDashboardAiEvaluation(username: string): Promise<Dashbo
                 attemptBreakdown,
                 lessonSignals: allSignals,
                 recommendationCandidates,
-                fallbackChartData,
             });
 
-            bullets = aiResult.bullets;
-            recommendedLessonKeys = aiResult.recommendedLessonKeys;
-            rawChartData = {
-                summary: aiResult.rawChartData.summary.attempts > 0 ? aiResult.rawChartData.summary : fallbackChartData.summary,
-                scoreTrend: aiResult.rawChartData.scoreTrend.length > 0 ? aiResult.rawChartData.scoreTrend : fallbackChartData.scoreTrend,
-                weakLessons: aiResult.rawChartData.weakLessons.length > 0 ? aiResult.rawChartData.weakLessons : fallbackChartData.weakLessons,
-                strongLessons: aiResult.rawChartData.strongLessons.length > 0 ? aiResult.rawChartData.strongLessons : fallbackChartData.strongLessons,
-                lessonCoverage: aiResult.rawChartData.lessonCoverage.length > 0 ? aiResult.rawChartData.lessonCoverage : fallbackChartData.lessonCoverage,
-                lessonPerformance: aiResult.rawChartData.lessonPerformance.length > 0 ? aiResult.rawChartData.lessonPerformance : fallbackChartData.lessonPerformance,
-                wrongByLesson: aiResult.rawChartData.wrongByLesson.length > 0 ? aiResult.rawChartData.wrongByLesson : fallbackChartData.wrongByLesson,
-                wrongByChapter: aiResult.rawChartData.wrongByChapter.length > 0 ? aiResult.rawChartData.wrongByChapter : fallbackChartData.wrongByChapter,
-            };
+            interactionId = aiResult.interactionId;
+            bullets = aiResult.value.bullets;
+            recommendedLessonKeys = aiResult.value.recommendedLessonKeys;
         }
     } catch (error) {
         console.error("Dashboard AI evaluation fallback activated:", error);
@@ -1047,6 +971,7 @@ export async function getDashboardAiEvaluation(username: string): Promise<Dashbo
         recommendedLessons,
         attemptCount: rows.length,
         averageScore,
+        interactionId,
         rawChartData,
     };
 

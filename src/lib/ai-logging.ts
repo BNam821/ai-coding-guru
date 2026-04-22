@@ -31,6 +31,11 @@ export interface RunLoggedAiTaskOptions<TValue> {
     parseResponse: (responseText: string) => Promise<LoggedAiTaskResult<TValue>> | LoggedAiTaskResult<TValue>;
 }
 
+export interface RunLoggedAiTaskResult<TValue> {
+    value: TValue;
+    interactionId: string | null;
+}
+
 export class LoggedAiTaskError extends Error {
     context: LoggedAiTaskErrorContext;
 
@@ -66,7 +71,7 @@ function getErrorMessage(error: unknown) {
     return "Unknown AI logging error";
 }
 
-export async function runLoggedAiTask<TValue>(options: RunLoggedAiTaskOptions<TValue>): Promise<TValue> {
+export async function runLoggedAiTask<TValue>(options: RunLoggedAiTaskOptions<TValue>): Promise<RunLoggedAiTaskResult<TValue>> {
     const startedAt = Date.now();
     let responseText: string | null = null;
     let responsePayload: unknown = null;
@@ -76,7 +81,7 @@ export async function runLoggedAiTask<TValue>(options: RunLoggedAiTaskOptions<TV
         const parsed = await options.parseResponse(responseText);
         responsePayload = parsed.responsePayload ?? null;
 
-        await persistAiInteraction({
+        const interactionId = await persistAiInteraction({
             username: options.username ?? null,
             taskType: options.taskType,
             promptId: options.promptId ?? null,
@@ -92,7 +97,10 @@ export async function runLoggedAiTask<TValue>(options: RunLoggedAiTaskOptions<TV
             durationMs: Date.now() - startedAt,
         });
 
-        return parsed.value;
+        return {
+            value: parsed.value,
+            interactionId,
+        };
     } catch (error) {
         const context = error instanceof LoggedAiTaskError ? error.context : undefined;
         const mergedMetadata = mergeMetadata(options.metadata, context?.metadata);

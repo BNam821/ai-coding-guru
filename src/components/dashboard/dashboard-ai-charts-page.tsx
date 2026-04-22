@@ -3,10 +3,12 @@
 import Link from "next/link";
 import { ArrowLeft, BarChart3 } from "lucide-react";
 import { Chart } from "react-google-charts";
+import { AiReportButton } from "@/components/ai/ai-report-button";
 import type { DashboardAiRawChartData } from "@/lib/dashboard-ai-evaluation";
 
 type DashboardAiChartsPageProps = {
     chartData: DashboardAiRawChartData;
+    interactionId: string | null;
 };
 
 function EmptyState({ message }: { message: string }) {
@@ -97,7 +99,7 @@ function PieChartCard({
     );
 }
 
-export function DashboardAiChartsPage({ chartData }: DashboardAiChartsPageProps) {
+export function DashboardAiChartsPage({ chartData, interactionId }: DashboardAiChartsPageProps) {
     const recentQuestionCount = chartData.summary.recentQuestionCount || 0;
     const recentCorrectAnswers = chartData.summary.recentCorrectAnswers || 0;
     const recentWrongAnswers = chartData.summary.recentWrongAnswers || 0;
@@ -159,6 +161,20 @@ export function DashboardAiChartsPage({ chartData }: DashboardAiChartsPageProps)
                     label="Độ chính xác"
                     value={`${recentAccuracyRate}%`}
                     hint="Tỷ lệ đúng trên tập câu trả lời gần đây đã ghi nhận."
+                />
+            </div>
+
+            <div className="rounded-[1.35rem] border border-red-400/14 bg-red-500/5 p-5">
+                <p className="text-xs font-bold uppercase tracking-[0.22em] text-red-100/78">
+                    Báo cáo nội dung AI
+                </p>
+                <p className="mt-2 max-w-3xl text-sm leading-6 text-red-50/72">
+                    Nếu biểu đồ hoặc phần phân tích từ AI có vấn đề, hãy gửi báo cáo để đội ngũ kiểm tra lại log tương ứng.
+                </p>
+                <AiReportButton
+                    className="mt-4"
+                    interactionId={interactionId}
+                    source="dashboard-ai-charts"
                 />
             </div>
 

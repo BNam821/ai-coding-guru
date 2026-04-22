@@ -98,7 +98,7 @@ export default async function DashboardAiLogsPage({ searchParams }: DashboardAiL
                         className="inline-flex items-center gap-2 text-sm text-gray-400 transition-colors hover:text-white"
                     >
                         <ArrowLeft size={16} />
-                        Quay lai dashboard
+                        Quay lại dashboard
                     </Link>
 
                     <GlassCard className="border-white/10 p-6" hoverEffect={false}>
@@ -107,10 +107,10 @@ export default async function DashboardAiLogsPage({ searchParams }: DashboardAiL
                             Admin AI Logs
                         </div>
                         <h1 className="mt-4 text-4xl font-black tracking-tight text-white md:text-5xl">
-                            Quan tri AI exchange logs
+                            Quản trị AI exchange logs
                         </h1>
                         <p className="mt-4 max-w-3xl text-sm leading-6 text-white/60">
-                            Trang nay hien thi full exchange phia server, bao gom prompt, payload yeu cau, output raw va thong tin loi.
+                            Trang này hiển thị full exchange phía server, bao gồm prompt, payload yêu cầu, output raw và thông tin lỗi.
                         </p>
                         <div className="mt-5">
                             <AiLogCleanupButton />
@@ -129,19 +129,19 @@ export default async function DashboardAiLogsPage({ searchParams }: DashboardAiL
                                 type="text"
                                 name="username"
                                 defaultValue={usernameValue}
-                                placeholder="vi du: campha8"
+                                placeholder="ví dụ: campha8"
                                 className="w-full rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-white outline-none"
                             />
                         </label>
 
                         <label className="space-y-2 text-sm text-white/70">
-                            <span className="font-semibold">Loai tac vu</span>
+                            <span className="font-semibold">Loại tác vụ</span>
                             <select
                                 name="taskType"
                                 defaultValue={taskTypeValue || ""}
                                 className="w-full rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-white outline-none"
                             >
-                                <option value="">Tat ca</option>
+                                <option value="">Tất cả</option>
                                 {AI_TASK_TYPES.map((taskType) => (
                                     <option key={taskType} value={taskType}>
                                         {getAiTaskLabel(taskType)}
@@ -151,13 +151,13 @@ export default async function DashboardAiLogsPage({ searchParams }: DashboardAiL
                         </label>
 
                         <label className="space-y-2 text-sm text-white/70">
-                            <span className="font-semibold">Trang thai</span>
+                            <span className="font-semibold">Trạng thái</span>
                             <select
                                 name="status"
                                 defaultValue={statusValue || ""}
                                 className="w-full rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-white outline-none"
                             >
-                                <option value="">Tat ca</option>
+                                <option value="">Tất cả</option>
                                 {AI_INTERACTION_STATUSES.map((status) => (
                                     <option key={status} value={status}>
                                         {getAiStatusLabel(status)}
@@ -167,7 +167,7 @@ export default async function DashboardAiLogsPage({ searchParams }: DashboardAiL
                         </label>
 
                         <label className="space-y-2 text-sm text-white/70">
-                            <span className="font-semibold">Tu ngay</span>
+                            <span className="font-semibold">Từ ngày</span>
                             <input
                                 type="date"
                                 name="from"
@@ -177,7 +177,7 @@ export default async function DashboardAiLogsPage({ searchParams }: DashboardAiL
                         </label>
 
                         <label className="space-y-2 text-sm text-white/70">
-                            <span className="font-semibold">Den ngay</span>
+                            <span className="font-semibold">Đến ngày</span>
                             <input
                                 type="date"
                                 name="to"
@@ -191,13 +191,13 @@ export default async function DashboardAiLogsPage({ searchParams }: DashboardAiL
                                 type="submit"
                                 className="inline-flex h-12 items-center justify-center rounded-2xl border border-amber-300/20 bg-amber-300/10 px-5 text-sm font-semibold text-amber-100 transition-colors hover:bg-amber-300/15"
                             >
-                                Ap dung
+                                Áp dụng
                             </button>
                             <Link
                                 href="/dashboard/ai-logs"
                                 className="inline-flex h-12 items-center justify-center rounded-2xl border border-white/10 bg-white/5 px-5 text-sm font-semibold text-white/80 transition-colors hover:bg-white/10"
                             >
-                                Xoa loc
+                                Xóa lọc
                             </Link>
                         </div>
                     </form>
@@ -205,7 +205,7 @@ export default async function DashboardAiLogsPage({ searchParams }: DashboardAiL
 
                 <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-white/60">
                     <p>
-                        Tim thay <span className="font-semibold text-white">{result.totalCount}</span> ban ghi.
+                        Tìm thấy <span className="font-semibold text-white">{result.totalCount}</span> bản ghi.
                     </p>
                     <p className="inline-flex items-center gap-2">
                         <BrainCircuit size={14} />
@@ -216,8 +216,8 @@ export default async function DashboardAiLogsPage({ searchParams }: DashboardAiL
                 <AiLogList
                     logs={result.logs}
                     isAdmin
-                    emptyTitle="Chua co AI log nao"
-                    emptyDescription="Khi he thong AI duoc goi, full exchange se duoc luu tai day de theo doi va debug."
+                    emptyTitle="Chưa có AI log nào"
+                    emptyDescription="Khi hệ thống AI được gọi, full exchange sẽ được lưu tại đây để theo dõi và debug."
                 />
 
                 {result.totalPages > 1 && (
@@ -231,7 +231,7 @@ export default async function DashboardAiLogsPage({ searchParams }: DashboardAiL
                                     : "border-white/10 bg-white/5 text-white/80 transition-colors hover:bg-white/10"
                             }`}
                         >
-                            Trang truoc
+                            Trang trước
                         </Link>
                         <Link
                             href={buildPageHref(currentSearchParams, Math.min(result.totalPages, result.page + 1))}

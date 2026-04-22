@@ -7,6 +7,7 @@ import { Editor } from "@monaco-editor/react";
 import { MarkdownRenderer } from "@/components/markdown/markdown-renderer";
 import { TestMode, TestModeToggle } from "@/components/test/test-mode-toggle";
 import { CodeExerciseTypeToggle } from "@/components/test/code-exercise-type-toggle";
+import { AiReportButton } from "@/components/ai/ai-report-button";
 import { Play, CheckCircle2, AlertCircle, Loader2, Lightbulb, ChevronRight, X } from "lucide-react";
 import { getCodingProblemById, CodingProblem } from "@/lib/coding-problems-service";
 import {
@@ -32,6 +33,7 @@ export default function CodeGradingPage() {
     const [score, setScore] = useState<number | null>(null);
     const [feedback, setFeedback] = useState("");
     const [suggestion, setSuggestion] = useState("");
+    const [interactionId, setInteractionId] = useState<string | null>(null);
     const [isExhausted, setIsExhausted] = useState(false);
     const [exhaustedMessage, setExhaustedMessage] = useState("");
     const [isLoadingNextProblem, setIsLoadingNextProblem] = useState(false);
@@ -97,6 +99,7 @@ export default function CodeGradingPage() {
         setActualOutput("");
         setFeedback("");
         setSuggestion("");
+        setInteractionId(null);
         setShowSuggestions(false);
         setIsExhausted(false);
     }, []);
@@ -196,6 +199,7 @@ export default function CodeGradingPage() {
         setScore(null);
         setFeedback("");
         setSuggestion("");
+        setInteractionId(null);
         setShowSuggestions(false);
 
         const zeroScoreStreakBeforeSubmission = problem.exerciseType === "fix_bug"
@@ -230,6 +234,7 @@ export default function CodeGradingPage() {
             setScore(nextScore);
             setFeedback(data.feedback || "Không có phản hồi");
             setSuggestion(data.suggestion || "");
+            setInteractionId(typeof data.interactionId === "string" ? data.interactionId : null);
         } catch (_error) {
             setFeedback("Có lỗi xảy ra khi chấm bài.");
         } finally {
@@ -242,6 +247,7 @@ export default function CodeGradingPage() {
         setActualOutput("");
         setFeedback("");
         setSuggestion("");
+        setInteractionId(null);
         setShowSuggestions(false);
         setIsLoadingNextProblem(true);
 
@@ -526,6 +532,12 @@ export default function CodeGradingPage() {
                                                     <AlertCircle size={14} className="text-yellow-400" />
                                                     AI nhận xét
                                                 </span>
+
+                                                <AiReportButton
+                                                    interactionId={interactionId}
+                                                    source="code-evaluation"
+                                                    hideWhenUnavailable
+                                                />
 
                                                 {score !== null && score < 100 && (
                                                     <button

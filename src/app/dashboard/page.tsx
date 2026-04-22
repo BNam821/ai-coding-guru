@@ -336,18 +336,19 @@ export default async function DashboardPage({
         recommendedLessons: [],
         attemptCount: 0,
         averageScore: 0,
-            rawChartData: {
-                summary: {
-                    attempts: 0,
-                    averageScore: 0,
-                    totalQuestions: 0,
-                    totalCorrectAnswers: 0,
-                    totalWrongAnswers: 0,
-                    accuracyRate: 0,
-                    recentQuestionCount: 0,
-                    recentCorrectAnswers: 0,
-                    recentWrongAnswers: 0,
-                },
+        interactionId: null,
+        rawChartData: {
+            summary: {
+                attempts: 0,
+                averageScore: 0,
+                totalQuestions: 0,
+                totalCorrectAnswers: 0,
+                totalWrongAnswers: 0,
+                accuracyRate: 0,
+                recentQuestionCount: 0,
+                recentCorrectAnswers: 0,
+                recentWrongAnswers: 0,
+            },
             scoreTrend: [],
             weakLessons: [],
             strongLessons: [],
@@ -549,6 +550,7 @@ export default async function DashboardPage({
                             recentLessons={recentLearningLessons}
                             nextLesson={nextLearningLesson}
                             aiEvaluation={aiEvaluation}
+                            isAdmin={session.role === "admin"}
                             initialTab={initialTab}
                             overviewContent={(
                                 <section className="space-y-7 py-3">

@@ -2,6 +2,7 @@ import {
     BrainCircuit,
     Clock3,
     Database,
+    Flag,
     ShieldCheck,
     Sparkles,
 } from "lucide-react";
@@ -11,6 +12,7 @@ import {
     type AiLogListItem,
 } from "@/lib/ai-interactions";
 import { GlassCard } from "@/components/ui/glass-card";
+import { AiReportButton } from "@/components/ai/ai-report-button";
 
 interface AiLogListProps {
     logs: AiLogListItem[];
@@ -77,6 +79,7 @@ export function AiLogList({
         <div className="grid gap-4">
             {logs.map((log) => {
                 const isError = log.status === "error";
+                const isReported = log.report.isReported;
 
                 return (
                     <GlassCard
@@ -109,6 +112,12 @@ export function AiLogList({
                                             {log.username}
                                         </span>
                                     )}
+                                    {isReported && (
+                                        <span className="inline-flex items-center gap-2 rounded-full border border-red-400/25 bg-red-500/10 px-3 py-1 text-[11px] font-semibold text-red-100">
+                                            <Flag size={13} />
+                                            Đã báo cáo
+                                        </span>
+                                    )}
                                 </div>
 
                                 <div>
@@ -134,10 +143,36 @@ export function AiLogList({
                                         {log.errorMessage}
                                     </div>
                                 ) : null}
+
+                                {isReported ? (
+                                    <div className="rounded-2xl border border-red-400/20 bg-red-500/10 px-4 py-3 text-sm text-red-100">
+                                        Nội dung này đã được báo cáo
+                                        {log.report.reportedBy ? ` bởi ${log.report.reportedBy}` : ""}.
+                                        {log.report.reportedAt ? ` Thời điểm: ${formatDateTime(log.report.reportedAt)}.` : ""}
+                                        {log.report.source ? ` Nguồn gửi: ${log.report.source}.` : ""}
+                                    </div>
+                                ) : null}
                             </div>
                         </div>
 
                         <div className="mt-6 space-y-3">
+                            {!isAdmin ? (
+                                <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                                    <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/62">
+                                        Báo cáo nội dung AI
+                                    </p>
+                                    <p className="mt-2 text-sm leading-6 text-white/55">
+                                        Nếu bạn thấy nội dung AI có vấn đề, hãy gửi báo cáo để đội ngũ kiểm tra lại log này.
+                                    </p>
+                                    <AiReportButton
+                                        className="mt-4"
+                                        interactionId={log.id}
+                                        source="history-ai"
+                                        initialReported={isReported}
+                                    />
+                                </div>
+                            ) : null}
+
                             <details className="rounded-2xl border border-white/10 bg-black/20 p-4">
                                 <summary className="cursor-pointer list-none text-sm font-bold uppercase tracking-[0.18em] text-cyan-100">
                                     Output AI

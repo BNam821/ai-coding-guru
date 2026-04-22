@@ -108,10 +108,13 @@ export async function POST(req: Request) {
         });
 
         if (session && session.username && problemObj.id) {
-            await recordProblemScore(session.username, problemObj.id, finalData.score || 0);
+            await recordProblemScore(session.username, problemObj.id, finalData.value.score || 0);
         }
 
-        return NextResponse.json(finalData);
+        return NextResponse.json({
+            ...finalData.value,
+            interactionId: finalData.interactionId,
+        });
     } catch (error) {
         console.error("\u004c\u1ed7\u0069 \u006b\u0068\u0069 \u0063\u0068\u1ea5\u006d \u0062\u00e0\u0069 \u0063\u006f\u0064\u0065:", error);
         return NextResponse.json(

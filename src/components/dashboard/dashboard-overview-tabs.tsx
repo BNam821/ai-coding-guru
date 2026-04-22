@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { ReactNode, useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { BookOpen, Brain, ChevronRight, FileText, Layers3, Sparkles, TriangleAlert } from "lucide-react";
+import { BookOpen, Brain, BrainCircuit, ChevronRight, FileText, Layers3, ShieldCheck, Sparkles, TriangleAlert } from "lucide-react";
+import { AiReportButton } from "@/components/ai/ai-report-button";
 import type { DashboardAiEvaluation } from "@/lib/dashboard-ai-evaluation";
 import type { NextLearningLesson, RecentLearningLesson } from "@/lib/user-progress";
 import { cn } from "@/lib/utils";
@@ -15,6 +16,7 @@ type DashboardOverviewTabsProps = {
     recentLessons: RecentLearningLesson[];
     nextLesson: NextLearningLesson | null;
     aiEvaluation: DashboardAiEvaluation;
+    isAdmin: boolean;
     overviewContent: ReactNode;
     articlesContent: ReactNode;
     initialTab?: DashboardTabKey;
@@ -39,6 +41,7 @@ export function DashboardOverviewTabs({
     recentLessons,
     nextLesson,
     aiEvaluation,
+    isAdmin,
     overviewContent,
     articlesContent,
     initialTab = "overview",
@@ -155,6 +158,20 @@ export function DashboardOverviewTabs({
                                 ))}
                             </div>
 
+                            <div className="mt-5 rounded-[1.1rem] border border-red-400/12 bg-red-500/5 p-4">
+                                <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-red-100/78">
+                                    Báo cáo nội dung AI
+                                </p>
+                                <p className="mt-2 text-sm leading-6 text-red-50/70">
+                                    Nếu phần phân tích hoặc gợi ý ôn lại từ AI có vấn đề, hãy gửi báo cáo để đội ngũ kiểm tra log tương ứng.
+                                </p>
+                                <AiReportButton
+                                    className="mt-4"
+                                    interactionId={aiEvaluation.interactionId}
+                                    source="dashboard-learning-tab"
+                                />
+                            </div>
+
                             <div className="mt-6 rounded-[1.25rem] border border-white/14 bg-[#0f1113] p-4">
                                 <div className="flex items-center justify-between gap-3">
                                     <div>
@@ -181,7 +198,7 @@ export function DashboardOverviewTabs({
                             ) : null}
                         </div>
 
-                        <div className="relative overflow-hidden rounded-[1.35rem] border border-white/28 bg-[linear-gradient(180deg,rgba(28,30,34,0.98),rgba(17,18,21,0.98))] p-5 shadow-[0_18px_38px_rgba(0,0,0,0.28)]">
+                        <div className="relative flex h-full flex-col overflow-hidden rounded-[1.35rem] border border-white/28 bg-[linear-gradient(180deg,rgba(28,30,34,0.98),rgba(17,18,21,0.98))] p-5 shadow-[0_18px_38px_rgba(0,0,0,0.28)]">
                             <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#ffe08a]/60 to-transparent" />
                             <div className="flex items-center gap-2 text-[#90defa]">
                                 <Sparkles className="h-4 w-4" />
@@ -212,6 +229,59 @@ export function DashboardOverviewTabs({
                                         Chưa có đủ tín hiệu để đề xuất bài học cụ thể. Hãy tiếp tục làm thêm quiz để AI xác định lộ trình ôn tập sát hơn.
                                     </div>
                                 )}
+                            </div>
+
+                            <div className="mt-6 border-t border-white/10 pt-5">
+                                <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-white/44">
+                                    Truy cập lịch sử AI
+                                </p>
+                                <p className="mt-2 text-sm leading-6 text-white/52">
+                                    Xem lại các lần AI tạo nội dung, sinh quiz, chấm bài và truy cập khu vực quản trị log nếu bạn là admin.
+                                </p>
+
+                                <div className={cn("mt-4 grid gap-3", isAdmin ? "sm:grid-cols-2" : "sm:grid-cols-1")}>
+                                    <Link
+                                        href="/history/ai"
+                                        className="group rounded-2xl border border-cyan-400/20 bg-cyan-400/10 px-4 py-4 transition-all hover:border-cyan-300/35 hover:bg-cyan-400/15"
+                                    >
+                                        <div className="flex items-start justify-between gap-3">
+                                            <div>
+                                                <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-cyan-100/80">
+                                                    Dành cho người dùng
+                                                </p>
+                                                <p className="mt-2 text-base font-semibold text-white">
+                                                    Mở Lịch sử AI
+                                                </p>
+                                                <p className="mt-2 text-sm leading-6 text-cyan-50/75">
+                                                    Kiểm tra lại phản hồi AI gần đây theo dạng an toàn, dễ theo dõi.
+                                                </p>
+                                            </div>
+                                            <BrainCircuit className="h-5 w-5 shrink-0 text-cyan-100/85 transition-transform group-hover:translate-x-0.5" />
+                                        </div>
+                                    </Link>
+
+                                    {isAdmin ? (
+                                        <Link
+                                            href="/dashboard/ai-logs"
+                                            className="group rounded-2xl border border-amber-300/20 bg-amber-300/10 px-4 py-4 transition-all hover:border-amber-200/35 hover:bg-amber-300/15"
+                                        >
+                                            <div className="flex items-start justify-between gap-3">
+                                                <div>
+                                                    <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-amber-100/80">
+                                                        Dành cho quản trị viên
+                                                    </p>
+                                                    <p className="mt-2 text-base font-semibold text-white">
+                                                        Mở AI Logs quản trị
+                                                    </p>
+                                                    <p className="mt-2 text-sm leading-6 text-amber-50/75">
+                                                        Xem prompt, payload, response raw và lỗi hệ thống để debug.
+                                                    </p>
+                                                </div>
+                                                <ShieldCheck className="h-5 w-5 shrink-0 text-amber-100/85 transition-transform group-hover:translate-x-0.5" />
+                                            </div>
+                                        </Link>
+                                    ) : null}
+                                </div>
                             </div>
                         </div>
                     </div>

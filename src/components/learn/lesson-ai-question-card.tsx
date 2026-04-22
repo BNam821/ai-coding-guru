@@ -5,6 +5,7 @@ import { BrainCircuit, CheckCircle2, Eye, Loader2, RotateCcw, Sparkles, XCircle 
 import { GlassCard } from "@/components/ui/glass-card";
 import { NeonButton } from "@/components/ui/neon-button";
 import { MarkdownRenderer } from "@/components/markdown/markdown-renderer";
+import { AiReportButton } from "@/components/ai/ai-report-button";
 import type { LearnLessonSection } from "@/lib/learn-toc";
 import type { LearnAiQuestion } from "@/lib/learn-ai-question";
 import { evaluateLearnAiAnswer } from "@/lib/learn-ai-question";
@@ -69,6 +70,7 @@ export function LessonAiQuestionCard({
 
     const [status, setStatus] = useState<QuestionStatus>(autoGenerate ? "prefetch-pending" : "idle");
     const [question, setQuestion] = useState<LearnAiQuestion | null>(null);
+    const [interactionId, setInteractionId] = useState<string | null>(null);
     const [error, setError] = useState("");
     const [userAnswer, setUserAnswer] = useState("");
     const [result, setResult] = useState<AnswerResult>(null);
@@ -88,6 +90,7 @@ export function LessonAiQuestionCard({
         hasRequestedRef.current = true;
         resetAnswerState();
         setQuestion(null);
+        setInteractionId(null);
         setError("");
         setStatus("loading");
 
@@ -114,6 +117,7 @@ export function LessonAiQuestionCard({
             }
 
             setQuestion(payload.question);
+            setInteractionId(typeof payload.interactionId === "string" ? payload.interactionId : null);
             setStatus("ready");
         } catch (fetchError) {
             setError(fetchError instanceof Error ? fetchError.message : "Không thể tạo câu hỏi cho phần này.");
@@ -359,6 +363,21 @@ export function LessonAiQuestionCard({
                                 <NeonButton type="button" variant="ghost" onClick={handleRetry} icon={<RotateCcw size={16} />}>
                                     Sinh lại
                                 </NeonButton>
+                            </div>
+
+                            <div className="rounded-2xl border border-red-400/15 bg-red-500/5 p-4">
+                                <p className="text-xs font-bold uppercase tracking-[0.22em] text-red-100/80">
+                                    Báo cáo nội dung AI
+                                </p>
+                                <p className="mt-2 text-sm leading-6 text-red-50/72">
+                                    Nếu câu hỏi hoặc lời giải từ AI có vấn đề, bạn có thể báo cáo ngay để đội ngũ kiểm tra lại.
+                                </p>
+                                <AiReportButton
+                                    className="mt-4"
+                                    interactionId={interactionId}
+                                    source="learn-ai-question-card"
+                                    hideWhenUnavailable
+                                />
                             </div>
 
                             {result && (

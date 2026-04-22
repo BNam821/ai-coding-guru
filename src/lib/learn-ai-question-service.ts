@@ -39,13 +39,18 @@ function normalizeQuestion(question: LearnAiQuestion): LearnAiQuestion {
     };
 }
 
+export interface GenerateLearnAiQuestionResult {
+    question: LearnAiQuestion;
+    interactionId: string | null;
+}
+
 async function generateQuestion(request: LearnAiQuestionRequest) {
     let lastError: Error | null = null;
 
     for (let attempt = 0; attempt < 2; attempt += 1) {
         try {
             const prompt = buildLearnAiQuestionPrompt(request, attempt > 0);
-            return await runLoggedAiTask({
+            const result = await runLoggedAiTask({
                 taskType: "learn-ai-question",
                 promptId: AI_PROMPT_IDS.LEARN_AI_QUESTION,
                 endpoint: "/api/learn/ai-question",
@@ -94,6 +99,11 @@ async function generateQuestion(request: LearnAiQuestionRequest) {
                     }
                 },
             });
+
+            return {
+                question: result.value,
+                interactionId: result.interactionId,
+            } satisfies GenerateLearnAiQuestionResult;
         } catch (error) {
             lastError = error instanceof Error ? error : new Error("Unknown Gemini error");
         }
@@ -102,7 +112,7 @@ async function generateQuestion(request: LearnAiQuestionRequest) {
     throw lastError || new Error("Unknown Gemini error");
 }
 
-export async function generateLearnAiQuestion(request: LearnAiQuestionRequest): Promise<LearnAiQuestion> {
+export async function generateLearnAiQuestion(request: LearnAiQuestionRequest): Promise<GenerateLearnAiQuestionResult> {
     if (!request.sectionContent.trim()) {
         throw new Error("Phần nội dung này chưa đủ dữ liệu để tạo câu hỏi.");
     }

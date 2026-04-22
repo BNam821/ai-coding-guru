@@ -16,6 +16,13 @@ export type AiLogViewerRole = "admin" | "user";
 
 type JsonRecord = Record<string, unknown>;
 
+export interface AiInteractionReportInfo {
+    isReported: boolean;
+    reportedAt: string | null;
+    reportedBy: string | null;
+    source: string | null;
+}
+
 type RawAiInteractionRow = {
     id?: string | null;
     username?: string | null;
@@ -67,6 +74,7 @@ interface AiLogListItemBase {
     modelName: string;
     status: AiInteractionStatus;
     metadata: JsonRecord;
+    report: AiInteractionReportInfo;
     responseText: string | null;
     responsePayload: unknown;
     errorMessage: string | null;
@@ -121,6 +129,28 @@ export interface ListAiInteractionsResult<TLog extends AiLogListItem = AiLogList
     pageSize: number;
     totalCount: number;
     totalPages: number;
+}
+
+export interface MarkAiInteractionReportedInput {
+    interactionId: string;
+    viewerRole?: AiLogViewerRole | null;
+    viewerUsername?: string | null;
+    reportedBy?: string | null;
+    reportSource?: string | null;
+}
+
+export interface MarkAiInteractionReportedResult {
+    success: boolean;
+    reason?: "not_found" | "forbidden";
+    alreadyReported?: boolean;
+    interactionId?: string;
+    report?: AiInteractionReportInfo;
+}
+
+export interface FindLatestAiInteractionIdInput {
+    username: string;
+    taskType: AiTaskType;
+    endpoint?: string;
 }
 
 const AI_TASK_LABELS: Record<AiTaskType, string> = {
@@ -195,6 +225,18 @@ function normalizeAiInteractionRow(row: RawAiInteractionRow): AiInteractionRow {
     };
 }
 
+export function getAiInteractionReportInfo(metadata: JsonRecord): AiInteractionReportInfo {
+    const report = isJsonRecord(metadata.report) ? metadata.report : null;
+    const reportedAt = typeof report?.reportedAt === "string" ? report.reportedAt : null;
+
+    return {
+        isReported: report?.isReported === true || Boolean(reportedAt),
+        reportedAt,
+        reportedBy: typeof report?.reportedBy === "string" ? report.reportedBy : null,
+        source: typeof report?.source === "string" ? report.source : null,
+    };
+}
+
 function serializeAiInteractionForAdmin(row: AiInteractionRow): AiAdminLogListItem {
     return {
         visibility: "admin",
@@ -208,6 +250,7 @@ function serializeAiInteractionForAdmin(row: AiInteractionRow): AiAdminLogListIt
         status: row.status,
         requestPayload: row.request_payload,
         metadata: row.metadata,
+        report: getAiInteractionReportInfo(row.metadata),
         promptText: row.prompt_text,
         responseText: row.response_text,
         responsePayload: row.response_payload,
@@ -230,6 +273,7 @@ function serializeAiInteractionForUser(row: AiInteractionRow): AiUserLogListItem
         modelName: row.model_name,
         status: row.status,
         metadata: row.metadata,
+        report: getAiInteractionReportInfo(row.metadata),
         responseText: row.response_text,
         responsePayload: row.response_payload,
         errorMessage: row.error_message,
@@ -265,7 +309,7 @@ export function getAiStatusLabel(status: AiInteractionStatus) {
 
 export async function persistAiInteraction(input: PersistAiInteractionInput) {
     try {
-        const { error } = await supabaseAdmin
+        const { data, error } = await supabaseAdmin
             .from("ai_interactions")
             .insert([
                 {
@@ -284,13 +328,19 @@ export async function persistAiInteraction(input: PersistAiInteractionInput) {
                     error_message: input.errorMessage ?? null,
                     duration_ms: input.durationMs ?? null,
                 },
-            ]);
+            ])
+            .select("id")
+            .single();
 
         if (error) {
             console.error("AI interaction log skipped:", error);
+            return null;
         }
+
+        return normalizeNullableText(data?.id);
     } catch (error) {
         console.error("AI interaction log skipped:", error);
+        return null;
     }
 }
 
@@ -383,5 +433,99 @@ export async function cleanupExpiredAiInteractions() {
     return {
         deletedCount: data?.length || 0,
         cleanedAt: now,
+    };
+}
+
+export async function findLatestAiInteractionId(
+    input: FindLatestAiInteractionIdInput,
+): Promise<string | null> {
+    let query = supabaseAdmin
+        .from("ai_interactions")
+        .select("id")
+        .eq("username", input.username)
+        .eq("task_type", input.taskType)
+        .order("created_at", { ascending: false })
+        .limit(1);
+
+    if (input.endpoint) {
+        query = query.eq("endpoint", input.endpoint);
+    }
+
+    const { data, error } = await query.maybeSingle();
+
+    if (error) {
+        console.error("Failed to find latest AI interaction id:", error);
+        return null;
+    }
+
+    return normalizeNullableText(data?.id);
+}
+
+export async function markAiInteractionReported(
+    input: MarkAiInteractionReportedInput,
+): Promise<MarkAiInteractionReportedResult> {
+    const { data, error } = await supabaseAdmin
+        .from("ai_interactions")
+        .select("id, username, metadata")
+        .eq("id", input.interactionId)
+        .maybeSingle();
+
+    if (error) {
+        console.error("Failed to read AI interaction for report:", error);
+        return { success: false, reason: "not_found" };
+    }
+
+    const interaction = data as { id?: string | null; username?: string | null; metadata?: unknown } | null;
+    if (!interaction?.id) {
+        return { success: false, reason: "not_found" };
+    }
+
+    const ownerUsername = normalizeNullableText(interaction.username);
+    const isAdmin = input.viewerRole === "admin";
+
+    if (!isAdmin && ownerUsername && input.viewerUsername !== ownerUsername) {
+        return { success: false, reason: "forbidden" };
+    }
+
+    const currentMetadata = normalizeJsonRecord(interaction.metadata);
+    const currentReport = getAiInteractionReportInfo(currentMetadata);
+
+    if (currentReport.isReported) {
+        return {
+            success: true,
+            alreadyReported: true,
+            interactionId: interaction.id,
+            report: currentReport,
+        };
+    }
+
+    const nextReport: AiInteractionReportInfo = {
+        isReported: true,
+        reportedAt: new Date().toISOString(),
+        reportedBy: input.reportedBy ?? input.viewerUsername ?? ownerUsername ?? null,
+        source: input.reportSource?.trim() || null,
+    };
+    const nextMetadata = {
+        ...currentMetadata,
+        report: nextReport,
+    };
+
+    const { error: updateError } = await supabaseAdmin
+        .from("ai_interactions")
+        .update({
+            metadata: nextMetadata,
+        })
+        .eq("id", interaction.id);
+
+    if (updateError) {
+        console.error("Failed to mark AI interaction as reported:", updateError);
+        return { success: false, reason: "not_found" };
+    }
+
+    return {
+        success: true,
+        alreadyReported: false,
+        interactionId: interaction.id,
+        report: nextReport,
     };
 }

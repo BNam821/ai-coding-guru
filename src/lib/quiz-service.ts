@@ -31,6 +31,11 @@ export interface QuizGenerationOptions {
     selectedLessonIds?: string[];
 }
 
+export interface GenerateQuizResult {
+    questions: QuizQuestion[];
+    interactionId: string | null;
+}
+
 export interface QuizSelectionLesson {
     id: string;
     title: string;
@@ -301,7 +306,7 @@ async function getCustomLessonSources(username: string, selectedLessonIds: strin
     };
 }
 
-export async function generateQuizForUser(username: string, options: QuizGenerationOptions = {}): Promise<QuizQuestion[]> {
+export async function generateQuizForUser(username: string, options: QuizGenerationOptions = {}): Promise<GenerateQuizResult> {
     console.log(`Generating quiz for user: ${username}`, options);
 
     const sourceBundle = options.mode === "custom"
@@ -376,7 +381,7 @@ export async function generateQuizForUser(username: string, options: QuizGenerat
         });
 
         try {
-            return await runLoggedAiTask({
+            const result = await runLoggedAiTask({
                 username,
                 taskType: "quiz-generation",
                 promptId: AI_PROMPT_IDS.QUIZ_GENERATION,
@@ -426,6 +431,11 @@ export async function generateQuizForUser(username: string, options: QuizGenerat
                     }
                 },
             });
+
+            return {
+                questions: result.value,
+                interactionId: result.interactionId,
+            };
         } catch (error) {
             lastError = error instanceof Error ? error : new Error("Unknown Gemini error");
             console.error(`Quiz generation attempt ${attempt + 1} failed:`, lastError);

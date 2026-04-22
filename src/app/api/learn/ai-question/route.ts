@@ -26,9 +26,9 @@ export async function POST(req: Request) {
             );
         }
 
-        const question = await generateLearnAiQuestion(payload);
+        const result = await generateLearnAiQuestion(payload);
 
-        return NextResponse.json({ success: true, question });
+        return NextResponse.json({ success: true, question: result.question, interactionId: result.interactionId });
     } catch (error) {
         const message = error instanceof Error ? error.message : "Internal Server Error";
         return NextResponse.json({ success: false, error: message }, { status: 500 });
