@@ -213,10 +213,7 @@ export default function CodeGradingPage() {
                 body: JSON.stringify({
                     userCode,
                     problemId: problem.id,
-                    problemObj: problem,
                     exerciseType: problem.exerciseType,
-                    starterCode: problem.starterCode,
-                    bugChangeSummary: problem.bugChangeSummary,
                     zeroScoreStreakBeforeSubmission,
                 }),
             });

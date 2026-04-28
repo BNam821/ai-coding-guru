@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
-import { recordProblemScore } from "@/lib/coding-problems-service";
+import { getCodingProblemById, recordProblemScore } from "@/lib/coding-problems-service";
+import { parseCodeExerciseType, prepareCodingProblem } from "@/lib/code-exercise";
 import { AI_PROMPT_IDS, buildCodeEvaluationPrompt } from "@/lib/ai-prompts";
 import { LoggedAiTaskError, runLoggedAiTask } from "@/lib/ai-logging";
 import {
@@ -9,6 +10,13 @@ import {
     generateGeminiResponseText,
 } from "@/lib/gemini";
 import { sanitizeModelJson } from "@/lib/learn-ai-question";
+import {
+    buildRateLimitKey,
+    consumeRateLimit,
+    getRateLimitHeaders,
+} from "@/lib/security";
+
+const MAX_CODE_LENGTH = 20000;
 
 function normalizeCode(value: string) {
     return value
@@ -28,40 +36,65 @@ function parseZeroScoreStreak(value: unknown) {
 }
 
 export async function POST(req: Request) {
-    try {
-        const session = await getSession();
-        const body = await req.json();
-        const {
-            userCode,
-            problemObj,
-            exerciseType,
-            starterCode,
-            bugChangeSummary,
-            zeroScoreStreakBeforeSubmission,
-        } = body;
+    const session = await getSession();
+    if (!session) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-        if (!userCode || !problemObj) {
-            return NextResponse.json({ error: "Missing parameters" }, { status: 400 });
+    const rateLimit = consumeRateLimit({
+        key: buildRateLimitKey(req, "code-evaluate", session.username),
+        limit: 20,
+        windowMs: 15 * 60 * 1000,
+    });
+
+    if (!rateLimit.ok) {
+        return NextResponse.json(
+            { error: "Too many evaluation requests. Please wait and try again." },
+            { status: 429, headers: getRateLimitHeaders(rateLimit) },
+        );
+    }
+
+    try {
+        const body = await req.json();
+        const userCode = typeof body.userCode === "string" ? body.userCode : "";
+        const problemId = typeof body.problemId === "string" ? body.problemId.trim() : "";
+        const exerciseType = parseCodeExerciseType(
+            typeof body.exerciseType === "string" ? body.exerciseType : undefined,
+        );
+        const previousZeroScoreStreak = parseZeroScoreStreak(body.zeroScoreStreakBeforeSubmission);
+
+        if (!userCode.trim() || !problemId) {
+            return NextResponse.json({ error: "Missing parameters" }, { status: 400, headers: getRateLimitHeaders(rateLimit) });
         }
 
-        const isFixBugExercise = exerciseType === "fix_bug";
-        const previousZeroScoreStreak = parseZeroScoreStreak(zeroScoreStreakBeforeSubmission);
-        const submittedUnchangedStarterCode = isFixBugExercise
-            && typeof starterCode === "string"
-            && normalizeCode(userCode) === normalizeCode(starterCode);
+        if (userCode.length > MAX_CODE_LENGTH) {
+            return NextResponse.json(
+                { error: `Submitted code is too large. Maximum ${MAX_CODE_LENGTH} characters.` },
+                { status: 413, headers: getRateLimitHeaders(rateLimit) },
+            );
+        }
+
+        const canonicalProblem = await getCodingProblemById(problemId);
+        if (!canonicalProblem) {
+            return NextResponse.json({ error: "Problem not found" }, { status: 404, headers: getRateLimitHeaders(rateLimit) });
+        }
+
+        const preparedProblem = prepareCodingProblem(canonicalProblem, exerciseType);
+        const submittedUnchangedStarterCode = exerciseType === "fix_bug"
+            && normalizeCode(userCode) === normalizeCode(preparedProblem.starterCode);
 
         const prompt = buildCodeEvaluationPrompt({
             userCode,
-            problemObj,
+            problemObj: preparedProblem,
             exerciseType,
-            starterCode,
-            bugChangeSummary,
+            starterCode: preparedProblem.starterCode,
+            bugChangeSummary: preparedProblem.bugChangeSummary,
             previousZeroScoreStreak,
             submittedUnchangedStarterCode,
         });
 
         const finalData = await runLoggedAiTask({
-            username: session?.username ?? null,
+            username: session.username,
             taskType: "code-evaluation",
             promptId: AI_PROMPT_IDS.CODE_EVALUATION,
             endpoint: "/api/code-evaluate",
@@ -69,17 +102,18 @@ export async function POST(req: Request) {
             modelName: GEMINI_MODEL_NAME,
             promptText: prompt,
             requestPayload: {
-                problemId: problemObj.id ?? null,
-                problemTitle: typeof problemObj.title === "string" ? problemObj.title : null,
-                exerciseType: exerciseType ?? "solve",
+                problemId: preparedProblem.id,
+                problemTitle: preparedProblem.title,
+                exerciseType,
                 submittedUnchangedStarterCode,
                 previousZeroScoreStreak,
-                userCodeLength: typeof userCode === "string" ? userCode.length : 0,
-                starterCodeLength: typeof starterCode === "string" ? starterCode.length : 0,
-                bugChangeSummaryLength: typeof bugChangeSummary === "string" ? bugChangeSummary.length : 0,
+                userCodeLength: userCode.length,
+                starterCodeLength: preparedProblem.starterCode.length,
+                bugChangeSummaryLength: preparedProblem.bugChangeSummary?.length || 0,
             },
             metadata: {
-                hasExpectedInput: typeof problemObj.expected_input === "string" && problemObj.expected_input.trim().length > 0,
+                hasExpectedInput: typeof preparedProblem.expected_input === "string"
+                    && preparedProblem.expected_input.trim().length > 0,
             },
             generateResponseText: generateGeminiResponseText,
             parseResponse: (textArea) => {
@@ -97,7 +131,7 @@ export async function POST(req: Request) {
                 };
 
                 if (submittedUnchangedStarterCode && !result.feedback) {
-                    result.feedback = "\u0042\u1ea1\u006e \u0111\u0061\u006e\u0067 \u006e\u1ed9\u0070 \u006c\u1ea1\u0069 \u006e\u0067\u0075\u0079\u00ea\u006e \u0074\u0072\u1ea1\u006e\u0067 \u0111\u006f\u1ea1\u006e \u0063\u006f\u0064\u0065 \u006c\u1ed7\u0069 \u0062\u0061\u006e \u0111\u1ea7\u0075, \u006e\u00ea\u006e \u0062\u00e0\u0069 \u006e\u00e0\u0079 \u0111\u01b0\u1ee3\u0063 \u0063\u0068\u1ea5\u006d 0 \u0111\u0069\u1ec3\u006d.";
+                    result.feedback = "Bạn đang nộp lại nguyên trạng đoạn code lỗi ban đầu, nên bài này được chấm 0 điểm.";
                 }
 
                 return {
@@ -107,23 +141,24 @@ export async function POST(req: Request) {
             },
         });
 
-        if (session && session.username && problemObj.id) {
-            await recordProblemScore(session.username, problemObj.id, finalData.value.score || 0);
-        }
+        await recordProblemScore(session.username, preparedProblem.id, finalData.value.score || 0);
 
-        return NextResponse.json({
-            ...finalData.value,
-            interactionId: finalData.interactionId,
-        });
-    } catch (error) {
-        console.error("\u004c\u1ed7\u0069 \u006b\u0068\u0069 \u0063\u0068\u1ea5\u006d \u0062\u00e0\u0069 \u0063\u006f\u0064\u0065:", error);
         return NextResponse.json(
             {
-                actualOutput: "\u004c\u1ed7\u0069 \u0068\u1ec7 \u0074\u0068\u1ed1\u006e\u0067 \u0068\u006f\u1eb7\u0063 \u006c\u1ed7\u0069 \u0074\u0068\u1ef1\u0063 \u0074\u0068\u0069 AI.",
-                score: 0,
-                feedback: "\u0048\u1ec7 \u0074\u0068\u1ed1\u006e\u0067 AI \u006b\u0068\u00f4\u006e\u0067 \u0070\u0068\u1ea3\u006e \u0068\u1ed3\u0069 JSON \u0074\u0069\u00ea\u0075 \u0063\u0068\u0075\u1ea9\u006e \u0068\u006f\u1eb7\u0063 \u006d\u00e1\u0079 \u0063\u0068\u1ee7 \u0067\u1eb7\u0070 \u0076\u1ea5\u006e \u0111\u1ec1.",
+                ...finalData.value,
+                interactionId: finalData.interactionId,
             },
-            { status: 500 }
+            { headers: getRateLimitHeaders(rateLimit) },
+        );
+    } catch (error) {
+        console.error("Lỗi khi chấm bài code:", error);
+        return NextResponse.json(
+            {
+                actualOutput: "Lỗi hệ thống hoặc lỗi thực thi AI.",
+                score: 0,
+                feedback: "Hệ thống AI không phản hồi JSON tiêu chuẩn hoặc máy chủ gặp vấn đề.",
+            },
+            { status: 500, headers: getRateLimitHeaders(rateLimit) },
         );
     }
 }

@@ -1,82 +1,105 @@
-import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import { supabase } from "@/lib/supabase";
-import { getSession } from "@/lib/auth";
-import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
+import { createUserSession, getSession } from "@/lib/auth";
+import { normalizeOptionalHttpUrl } from "@/lib/security";
+import { supabaseAdmin } from "@/lib/supabase-admin";
+
+const SIMPLE_EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export async function POST(req: Request) {
     try {
         const session = await getSession();
         if (!session) {
-            return NextResponse.json({ success: false, error: "Bạn cần đăng nhập" }, { status: 401 });
+            return NextResponse.json({ success: false, error: "Báº¡n cáº§n Ä‘Äƒng nháº­p" }, { status: 401 });
         }
 
-        const { displayName, email, bio, avatarUrl, location, newPassword, oldPassword } = await req.json();
+        const {
+            displayName,
+            email,
+            bio,
+            avatarUrl,
+            location,
+            newPassword,
+            oldPassword,
+        } = await req.json();
 
-        // 1. Lấy thông tin người dùng hiện tại từ DB
-        const { data: user, error: fetchError } = await supabase
+        const normalizedDisplayName = typeof displayName === "string" ? displayName.trim().slice(0, 80) : "";
+        const normalizedEmail = typeof email === "string" ? email.trim().toLowerCase() : "";
+        const normalizedBio = typeof bio === "string" ? bio.trim().slice(0, 500) : "";
+        const normalizedAvatarUrl = normalizeOptionalHttpUrl(avatarUrl, { allowRelative: true });
+        const normalizedLocation = typeof location === "string" ? location.trim().slice(0, 120) : "";
+        const normalizedNewPassword = typeof newPassword === "string" ? newPassword : "";
+        const normalizedOldPassword = typeof oldPassword === "string" ? oldPassword : "";
+
+        if (!SIMPLE_EMAIL_REGEX.test(normalizedEmail) || normalizedEmail.length > 254) {
+            return NextResponse.json({ success: false, error: "Email khÃ´ng há»£p lá»‡" }, { status: 400 });
+        }
+
+        if (!normalizedOldPassword) {
+            return NextResponse.json({ success: false, error: "Máº­t kháº©u cÅ© lÃ  báº¯t buá»™c" }, { status: 400 });
+        }
+
+        if (newPassword && (normalizedNewPassword.length < 8 || normalizedNewPassword.length > 128)) {
+            return NextResponse.json({ success: false, error: "Máº­t kháº©u má»›i pháº£i tá»« 8 Ä‘áº¿n 128 kÃ½ tá»±" }, { status: 400 });
+        }
+
+        if (avatarUrl && !normalizedAvatarUrl) {
+            return NextResponse.json({ success: false, error: "Avatar URL khÃ´ng há»£p lá»‡" }, { status: 400 });
+        }
+
+        const { data: user, error: fetchError } = await supabaseAdmin
             .from("users")
             .select("*")
             .eq("username", session.username)
             .single();
 
         if (fetchError || !user) {
-            return NextResponse.json({ success: false, error: "Không tìm thấy người dùng" }, { status: 404 });
+            return NextResponse.json({ success: false, error: "KhÃ´ng tÃ¬m tháº¥y ngÆ°á»i dÃ¹ng" }, { status: 404 });
         }
 
-        // 2. Xác thực mật khẩu cũ
-        const isMatch = await bcrypt.compare(oldPassword, user.password);
+        const isMatch = await bcrypt.compare(normalizedOldPassword, user.password);
         if (!isMatch) {
-            return NextResponse.json({ success: false, error: "Mật khẩu cũ không chính xác" }, { status: 400 });
+            return NextResponse.json({ success: false, error: "Máº­t kháº©u cÅ© khÃ´ng chÃ­nh xÃ¡c" }, { status: 400 });
         }
 
-        // 3. Kiểm tra trùng lặp Email mới (nếu thay đổi)
-        if (email !== user.email) {
-            const { data: existingUser } = await supabase
+        if (normalizedEmail !== user.email) {
+            const { data: existingUser } = await supabaseAdmin
                 .from("users")
                 .select("email")
-                .eq("email", email)
+                .eq("email", normalizedEmail)
                 .neq("id", user.id)
                 .maybeSingle();
 
             if (existingUser) {
-                return NextResponse.json({ success: false, error: "Email đã được sử dụng" }, { status: 400 });
+                return NextResponse.json({ success: false, error: "Email Ä‘Ã£ Ä‘Æ°á»£c sá»­ dá»¥ng" }, { status: 400 });
             }
         }
 
-        // 4. Chuẩn bị dữ liệu cập nhật
-        const updateData: any = {
-            display_name: displayName,
-            email,
-            bio: bio,
-            avatar_url: avatarUrl,
-            location: location
+        const updateData: Record<string, unknown> = {
+            display_name: normalizedDisplayName,
+            email: normalizedEmail,
+            bio: normalizedBio,
+            avatar_url: normalizedAvatarUrl,
+            location: normalizedLocation,
         };
-        if (newPassword) {
+
+        if (normalizedNewPassword) {
             const salt = await bcrypt.genSalt(10);
-            updateData.password = await bcrypt.hash(newPassword, salt);
+            updateData.password = await bcrypt.hash(normalizedNewPassword, salt);
         }
 
-        // 5. Cập nhật DB
-        const { error: updateError } = await supabase
+        const { error: updateError } = await supabaseAdmin
             .from("users")
             .update(updateData)
             .eq("id", user.id);
 
         if (updateError) {
-            return NextResponse.json({ success: false, error: "Không thể cập nhật thông tin" }, { status: 500 });
+            return NextResponse.json({ success: false, error: "KhÃ´ng thá»ƒ cáº­p nháº­t thÃ´ng tin" }, { status: 500 });
         }
 
-        // 6. Cập nhật Session cookie (Giữ nguyên username vì không thay đổi)
-        (await cookies()).set("session", JSON.stringify({ username: session.username, role: session.role }), {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            maxAge: 60 * 60 * 24,
-            path: "/",
-        });
+        await createUserSession(session.username);
 
-        return NextResponse.json({ success: true, message: "Cập nhật thông tin thành công" });
-
+        return NextResponse.json({ success: true, message: "Cáº­p nháº­t thÃ´ng tin thÃ nh cÃ´ng" });
     } catch (error) {
         console.error("Update profile error:", error);
         return NextResponse.json({ success: false, error: "Internal Server Error" }, { status: 500 });

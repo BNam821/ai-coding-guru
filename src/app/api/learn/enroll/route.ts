@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
 import { getSession } from '@/lib/auth';
-import { supabase } from '@/lib/supabase';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 
 export async function GET() {
@@ -43,10 +42,16 @@ export async function POST(request: Request) {
             return NextResponse.json({ success: false, error: 'Missing courseId' }, { status: 400 });
         }
 
-        const { data: course, error: courseError } = await supabase
+        const normalizedCourseId = typeof courseId === "string" ? courseId.trim() : "";
+
+        if (!normalizedCourseId) {
+            return NextResponse.json({ success: false, error: 'Invalid courseId' }, { status: 400 });
+        }
+
+        const { data: course, error: courseError } = await supabaseAdmin
             .from('courses')
             .select('id')
-            .eq('id', courseId)
+            .eq('id', normalizedCourseId)
             .single();
 
         if (courseError || !course) {
@@ -57,7 +62,7 @@ export async function POST(request: Request) {
             .from('user_course_registrations')
             .upsert({
                 username: session.username,
-                course_id: courseId,
+                course_id: normalizedCourseId,
                 registered_at: new Date().toISOString(),
             }, { onConflict: 'username,course_id' });
 

@@ -1,31 +1,44 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
-import { isAdminAuthenticated } from '@/lib/auth';
-import { revalidatePath } from 'next/cache';
+import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
+import { isAdminAuthenticated } from "@/lib/auth";
+import { supabaseAdmin } from "@/lib/supabase-admin";
 
-// PUT: Update course (rename)
+function normalizeText(value: unknown, maxLength = 200) {
+    if (typeof value !== "string") {
+        return "";
+    }
+
+    return value.trim().slice(0, maxLength);
+}
+
+function normalizeId(value: string) {
+    return value.trim();
+}
+
 export async function PUT(
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
     const isAdmin = await isAdminAuthenticated();
     if (!isAdmin) {
-        return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+        return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
     }
 
     try {
         const { id } = await params;
+        const courseId = normalizeId(id);
         const body = await request.json();
-        const { title, description } = body;
+        const title = normalizeText(body.title);
+        const description = normalizeText(body.description, 1000) || null;
 
-        if (!title) {
-            return NextResponse.json({ success: false, error: 'Title is required' }, { status: 400 });
+        if (!courseId || !title) {
+            return NextResponse.json({ success: false, error: "Course ID and title are required" }, { status: 400 });
         }
 
-        const { data, error } = await supabase
-            .from('courses')
+        const { data, error } = await supabaseAdmin
+            .from("courses")
             .update({ title, description })
-            .eq('id', id)
+            .eq("id", courseId)
             .select();
 
         if (error) {
@@ -33,32 +46,36 @@ export async function PUT(
         }
 
         if (!data || data.length === 0) {
-            return NextResponse.json({ success: false, error: 'Course not found' }, { status: 404 });
+            return NextResponse.json({ success: false, error: "Course not found" }, { status: 404 });
         }
 
         revalidatePath("/learn");
         return NextResponse.json({ success: true, course: data[0] });
-    } catch (e) {
-        return NextResponse.json({ success: false, error: 'Invalid request body' }, { status: 400 });
+    } catch {
+        return NextResponse.json({ success: false, error: "Invalid request body" }, { status: 400 });
     }
 }
 
-// DELETE: Delete course
 export async function DELETE(
-    request: NextRequest,
+    _request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
     const isAdmin = await isAdminAuthenticated();
     if (!isAdmin) {
-        return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+        return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
     }
 
     const { id } = await params;
+    const courseId = normalizeId(id);
 
-    const { error } = await supabase
-        .from('courses')
+    if (!courseId) {
+        return NextResponse.json({ success: false, error: "Missing course ID" }, { status: 400 });
+    }
+
+    const { error } = await supabaseAdmin
+        .from("courses")
         .delete()
-        .eq('id', id);
+        .eq("id", courseId);
 
     if (error) {
         return NextResponse.json({ success: false, error: error.message }, { status: 500 });

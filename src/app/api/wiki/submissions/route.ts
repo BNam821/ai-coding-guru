@@ -1,7 +1,7 @@
-import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
-import { supabase } from "@/lib/supabase";
+import { NextResponse } from "next/server";
 import { getSession, isAdminAuthenticated } from "@/lib/auth";
+import { supabaseAdmin } from "@/lib/supabase-admin";
 import { calculateWikiReadTime, getWikiPublishDate } from "@/lib/wiki";
 
 export async function GET(req: Request) {
@@ -13,7 +13,7 @@ export async function GET(req: Request) {
         const { searchParams } = new URL(req.url);
         const status = searchParams.get("status") || "pending";
 
-        let query = supabase
+        let query = supabaseAdmin
             .from("wiki_submissions")
             .select("*, author_details:users(display_name, avatar_url)")
             .order("created_at", { ascending: false });
@@ -27,7 +27,7 @@ export async function GET(req: Request) {
         if (result.error) {
             console.error("Supabase error fetching wiki submissions:", result.error);
 
-            let fallbackQuery = supabase
+            let fallbackQuery = supabaseAdmin
                 .from("wiki_submissions")
                 .select("*")
                 .order("created_at", { ascending: false });
@@ -65,25 +65,25 @@ export async function PATCH(req: Request) {
         const normalizedReviewNotes = String(review_notes || "").trim() || null;
 
         if (!id || !["approve", "reject"].includes(action)) {
-            return NextResponse.json({ success: false, error: "Yêu cầu duyệt bài không hợp lệ" }, { status: 400 });
+            return NextResponse.json({ success: false, error: "YÃªu cáº§u duyá»‡t bÃ i khÃ´ng há»£p lá»‡" }, { status: 400 });
         }
 
-        const { data: submission, error: fetchError } = await supabase
+        const { data: submission, error: fetchError } = await supabaseAdmin
             .from("wiki_submissions")
             .select("*")
             .eq("id", id)
             .single();
 
         if (fetchError || !submission) {
-            return NextResponse.json({ success: false, error: "Không tìm thấy bài chờ duyệt" }, { status: 404 });
+            return NextResponse.json({ success: false, error: "KhÃ´ng tÃ¬m tháº¥y bÃ i chá» duyá»‡t" }, { status: 404 });
         }
 
         if (submission.status !== "pending") {
-            return NextResponse.json({ success: false, error: "Bài viết này đã được xử lý trước đó" }, { status: 400 });
+            return NextResponse.json({ success: false, error: "BÃ i viáº¿t nÃ y Ä‘Ã£ Ä‘Æ°á»£c xá»­ lÃ½ trÆ°á»›c Ä‘Ã³" }, { status: 400 });
         }
 
         if (action === "reject") {
-            const { error: rejectError } = await supabase
+            const { error: rejectError } = await supabaseAdmin
                 .from("wiki_submissions")
                 .update({
                     status: "rejected",
@@ -104,7 +104,7 @@ export async function PATCH(req: Request) {
             return NextResponse.json({ success: true, moderationStatus: "rejected" });
         }
 
-        const { data: publishedPost, error: insertError } = await supabase
+        const { data: publishedPost, error: insertError } = await supabaseAdmin
             .from("wiki_posts")
             .insert([{
                 title: submission.title,
@@ -124,18 +124,19 @@ export async function PATCH(req: Request) {
 
         if (insertError) {
             if (insertError.code === "23505") {
-                return NextResponse.json({ success: false, error: "Slug bài viết đã tồn tại trong Wiki" }, { status: 400 });
+                return NextResponse.json({ success: false, error: "Slug bÃ i viáº¿t Ä‘Ã£ tá»“n táº¡i trong Wiki" }, { status: 400 });
             }
+
             return NextResponse.json({ success: false, error: insertError.message }, { status: 500 });
         }
 
-        const { error: deleteSubmissionError } = await supabase
+        const { error: deleteSubmissionError } = await supabaseAdmin
             .from("wiki_submissions")
             .delete()
             .eq("id", id);
 
         if (deleteSubmissionError) {
-            await supabase.from("wiki_posts").delete().eq("slug", publishedPost.slug);
+            await supabaseAdmin.from("wiki_posts").delete().eq("slug", publishedPost.slug);
             return NextResponse.json({ success: false, error: deleteSubmissionError.message }, { status: 500 });
         }
 

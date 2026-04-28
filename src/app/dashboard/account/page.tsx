@@ -1,7 +1,7 @@
 import { getSession } from "@/lib/auth";
 import { AccountContent } from "@/components/auth/account-content";
 import { AdminLoginForm } from "@/components/auth/login-form";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabase-admin";
 import { getUserProgressSnapshot } from "@/lib/user-progress";
 import { AccountBackButton } from "./account-back-button";
 
@@ -33,14 +33,14 @@ export default async function DashboardAccountPage() {
     if (isAuthenticated) {
         try {
             const [postsRes, usersRes, currentUserRes, progressSnapshot] = await Promise.all([
-                supabase
+                supabaseAdmin
                     .from("wiki_posts")
                     .select("*", { count: "exact", head: true })
                     .eq("author", session.username),
-                supabase
+                supabaseAdmin
                     .from("users")
                     .select("*", { count: "exact", head: true }),
-                supabase
+                supabaseAdmin
                     .from("users")
                     .select("email, display_name, bio, location, avatar_url, created_at")
                     .eq("username", session.username)

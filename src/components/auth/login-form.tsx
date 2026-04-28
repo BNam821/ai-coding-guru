@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff, Lock, ShieldAlert, User } from "lucide-react";
+import { Eye, EyeOff, Lock, User } from "lucide-react";
 import { GlassCard } from "@/components/ui/glass-card";
 import { NeonButton } from "@/components/ui/neon-button";
 
@@ -13,7 +13,6 @@ const ACCOUNT_LABEL = "\u0054\u00e0\u0069\u0020\u006b\u0068\u006f\u1ea3\u006e\u0
 const ACCOUNT_PLACEHOLDER = "\u004e\u0068\u1ead\u0070\u0020\u0075\u0073\u0065\u0072\u006e\u0061\u006d\u0065\u0020\u0068\u006f\u1eb7\u0063\u0020\u0065\u006d\u0061\u0069\u006c";
 const PASSWORD_LABEL = "\u004d\u1ead\u0074\u0020\u006b\u0068\u1ea9\u0075";
 const PASSWORD_PLACEHOLDER = "\u004e\u0068\u1ead\u0070\u0020\u006d\u1ead\u0074\u0020\u006b\u0068\u1ea9\u0075";
-const ADMIN_KEY_PLACEHOLDER = "\u004e\u0068\u1ead\u0070\u0020\u006d\u00e3\u0020\u0062\u00ed\u0020\u006d\u1ead\u0074";
 const LOGIN_ERROR = "\u0110\u00e3\u0020\u0063\u00f3\u0020\u006c\u1ed7\u0069\u0020\u0078\u1ea3\u0079\u0020\u0072\u0061\u002e\u0020\u0056\u0075\u0069\u0020\u006c\u00f2\u006e\u0067\u0020\u0074\u0068\u1eed\u0020\u006c\u1ea1\u0069\u002e";
 const LOGIN_BUTTON = "\u0110\u0103\u006e\u0067\u0020\u006e\u0068\u1ead\u0070\u0020\u006e\u0067\u0061\u0079";
 const LOGIN_LOADING = "\u0110\u0061\u006e\u0067\u0020\u0078\u1eed\u0020\u006c\u00fd\u002e\u002e\u002e";
@@ -23,32 +22,10 @@ const SIGNUP_LABEL = "\u0110\u0103\u006e\u0067\u0020\u006b\u00fd";
 export function LoginForm() {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
-    const [adminKey, setAdminKey] = useState("");
     const [showPassword, setShowPassword] = useState(false);
-    const [showAdminKey, setShowAdminKey] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
     const router = useRouter();
-    const clickTimes = useRef<number[]>([]);
-
-    const handleEyeClick = () => {
-        setShowPassword(!showPassword);
-
-        const now = Date.now();
-        clickTimes.current.push(now);
-
-        if (clickTimes.current.length > 5) {
-            clickTimes.current.shift();
-        }
-
-        if (clickTimes.current.length === 5) {
-            const firstClick = clickTimes.current[0];
-            if (now - firstClick <= 2000) {
-                setShowAdminKey(true);
-                clickTimes.current = [];
-            }
-        }
-    };
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -59,7 +36,7 @@ export function LoginForm() {
             const res = await fetch("/api/auth/login", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ username, password, adminKey: showAdminKey ? adminKey : undefined }),
+                body: JSON.stringify({ username, password }),
             });
 
             const data = await res.json();
@@ -123,31 +100,13 @@ export function LoginForm() {
                         />
                         <button
                             type="button"
-                            onClick={handleEyeClick}
+                            onClick={() => setShowPassword(!showPassword)}
                             className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 transition-colors hover:text-white"
                         >
                             {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                         </button>
                     </div>
                 </div>
-
-                {showAdminKey && (
-                    <div className="animate-in slide-in-from-top-2 fade-in space-y-2 duration-300">
-                        <label className="ml-1 flex items-center gap-2 text-sm font-medium text-accent-secondary">
-                            <ShieldAlert size={14} /> Secret Key (Admin)
-                        </label>
-                        <div className="group relative">
-                            <input
-                                type="password"
-                                value={adminKey}
-                                onChange={(e) => setAdminKey(e.target.value)}
-                                className="w-full rounded-xl border border-accent-secondary/30 bg-accent-secondary/5 px-4 py-3 text-white transition-all focus:border-accent-secondary focus:outline-none"
-                                placeholder={ADMIN_KEY_PLACEHOLDER}
-                                required
-                            />
-                        </div>
-                    </div>
-                )}
 
                 <div className="flex justify-center">
                     <NeonButton

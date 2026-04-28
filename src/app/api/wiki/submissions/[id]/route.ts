@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { getSession, isUserAuthenticated } from "@/lib/auth";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabase-admin";
+import { normalizeOptionalHttpUrl } from "@/lib/security";
 import { calculateWikiReadTime, generateWikiSlug } from "@/lib/wiki";
 
 function validateWikiPayload(payload: Record<string, unknown>) {
@@ -9,10 +10,14 @@ function validateWikiPayload(payload: Record<string, unknown>) {
     const excerpt = String(payload.excerpt || "").trim();
     const content = String(payload.content || "").trim();
     const category = String(payload.category || "").trim();
-    const image_url = String(payload.image_url || "").trim();
+    const imageUrl = normalizeOptionalHttpUrl(payload.image_url, { allowRelative: true });
 
     if (!title || !excerpt || !content || !category) {
-        return { error: "Thiếu thông tin bài viết bắt buộc" };
+        return { error: "Thiếu thông tin bài viết bắt buộc" as const };
+    }
+
+    if (payload.image_url && !imageUrl) {
+        return { error: "Liên kết ảnh bìa không hợp lệ" as const };
     }
 
     return {
@@ -20,18 +25,18 @@ function validateWikiPayload(payload: Record<string, unknown>) {
         excerpt,
         content,
         category,
-        image_url: image_url || null,
+        image_url: imageUrl,
     };
 }
 
 async function hasSlugConflict(slug: string, currentId: number) {
     const [{ data: publishedPost }, { data: pendingSubmission }] = await Promise.all([
-        supabase
+        supabaseAdmin
             .from("wiki_posts")
             .select("slug")
             .eq("slug", slug)
             .maybeSingle(),
-        supabase
+        supabaseAdmin
             .from("wiki_submissions")
             .select("id")
             .eq("slug", slug)
@@ -40,11 +45,11 @@ async function hasSlugConflict(slug: string, currentId: number) {
             .maybeSingle(),
     ]);
 
-    return !!publishedPost || !!pendingSubmission;
+    return Boolean(publishedPost || pendingSubmission);
 }
 
 async function getAuthorizedSubmission(id: number, username: string, role: string) {
-    const { data: submission, error } = await supabase
+    const { data: submission, error } = await supabaseAdmin
         .from("wiki_submissions")
         .select("*")
         .eq("id", id)
@@ -78,13 +83,16 @@ export async function GET(
         const { id } = await params;
         const submissionId = Number(id);
 
-        if (!Number.isFinite(submissionId)) {
+        if (!Number.isInteger(submissionId) || submissionId <= 0) {
             return NextResponse.json({ success: false, error: "ID bài viết không hợp lệ" }, { status: 400 });
         }
 
         const { error, submission } = await getAuthorizedSubmission(submissionId, session.username, session.role);
         if (error || !submission) {
-            return NextResponse.json({ success: false, error }, { status: error === "Không tìm thấy bài viết đang duyệt" ? 404 : 403 });
+            return NextResponse.json(
+                { success: false, error },
+                { status: error === "Không tìm thấy bài viết đang duyệt" ? 404 : 403 },
+            );
         }
 
         return NextResponse.json({ success: true, submission });
@@ -112,7 +120,7 @@ export async function PUT(
         const body = await req.json();
         const payload = validateWikiPayload(body);
 
-        if (!Number.isFinite(submissionId)) {
+        if (!Number.isInteger(submissionId) || submissionId <= 0) {
             return NextResponse.json({ success: false, error: "ID bài viết không hợp lệ" }, { status: 400 });
         }
 
@@ -122,7 +130,10 @@ export async function PUT(
 
         const { error, submission } = await getAuthorizedSubmission(submissionId, session.username, session.role);
         if (error || !submission) {
-            return NextResponse.json({ success: false, error }, { status: error === "Không tìm thấy bài viết đang duyệt" ? 404 : 403 });
+            return NextResponse.json(
+                { success: false, error },
+                { status: error === "Không tìm thấy bài viết đang duyệt" ? 404 : 403 },
+            );
         }
 
         if (submission.status !== "pending") {
@@ -138,7 +149,7 @@ export async function PUT(
             return NextResponse.json({ success: false, error: "Slug này đã tồn tại hoặc đang chờ duyệt" }, { status: 400 });
         }
 
-        const { error: updateError } = await supabase
+        const { error: updateError } = await supabaseAdmin
             .from("wiki_submissions")
             .update({
                 title: payload.title,
@@ -182,16 +193,19 @@ export async function DELETE(
         const { id } = await params;
         const submissionId = Number(id);
 
-        if (!Number.isFinite(submissionId)) {
+        if (!Number.isInteger(submissionId) || submissionId <= 0) {
             return NextResponse.json({ success: false, error: "ID bài viết không hợp lệ" }, { status: 400 });
         }
 
         const { error, submission } = await getAuthorizedSubmission(submissionId, session.username, session.role);
         if (error || !submission) {
-            return NextResponse.json({ success: false, error }, { status: error === "Không tìm thấy bài viết đang duyệt" ? 404 : 403 });
+            return NextResponse.json(
+                { success: false, error },
+                { status: error === "Không tìm thấy bài viết đang duyệt" ? 404 : 403 },
+            );
         }
 
-        const { error: deleteError } = await supabase
+        const { error: deleteError } = await supabaseAdmin
             .from("wiki_submissions")
             .delete()
             .eq("id", submissionId);

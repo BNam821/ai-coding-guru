@@ -149,7 +149,7 @@ export async function getSmartCodingProblem(
 ): Promise<{ problem: CodingProblem | null, status: 'ok' | 'exhausted' }> {
 
     // 1. Lấy 3 bài học gần nhất của user để lấy tags
-    const { data: recentLessons } = await supabase
+    const { data: recentLessons } = await supabaseAdmin
         .from('user_learning_history')
         .select('lesson_id')
         .eq('username', username)
@@ -171,7 +171,7 @@ export async function getSmartCodingProblem(
     }
 
     // 2. Lấy danh sách ID các bài tập user đã đạt 100đ
-    const { data: completedHistory } = await supabase
+    const { data: completedHistory } = await supabaseAdmin
         .from('user_problem_history')
         .select('problem_id')
         .eq('username', username)
@@ -241,7 +241,7 @@ export async function getSmartCodingProblem(
  */
 export async function recordProblemScore(username: string, problemId: string, score: number) {
     // 1. Lưu lịch sử bài làm (ngắn hạn)
-    const { error } = await supabase
+    const { error } = await supabaseAdmin
         .from('user_problem_history')
         .upsert({ 
             username, 
@@ -300,5 +300,5 @@ export async function recordProblemScore(username: string, problemId: string, sc
  * Xóa lịch sử làm bài bài tập của user.
  */
 export async function resetProblemHistory(username: string) {
-    await supabase.from('user_problem_history').delete().eq('username', username);
+    await supabaseAdmin.from('user_problem_history').delete().eq('username', username);
 }

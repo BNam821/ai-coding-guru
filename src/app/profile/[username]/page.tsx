@@ -1,6 +1,7 @@
 import { AccountContent } from "@/components/auth/account-content";
 import { BackButton } from "@/components/ui/back-button";
-import { supabase } from "@/lib/supabase";
+import { resolveUserRole } from "@/lib/auth";
+import { supabaseAdmin } from "@/lib/supabase-admin";
 import { getUserProgressSnapshot } from "@/lib/user-progress";
 import { notFound } from "next/navigation";
 
@@ -18,9 +19,9 @@ export default async function ProfilePage({ params }: { params: { username: stri
     let userData: any = null;
 
     try {
-        const targetUserRes = await supabase
+        const targetUserRes = await supabaseAdmin
             .from("users")
-            .select("username, email, display_name, bio, location, avatar_url, created_at")
+            .select("username, email, display_name, bio, location, avatar_url, created_at, role, user_type, is_admin, admin")
             .eq("username", username)
             .single();
 
@@ -44,16 +45,16 @@ export default async function ProfilePage({ params }: { params: { username: stri
         userData = {
             ...rawUserData,
             email: maskEmail(rawUserData.email),
-            role: "admin"
+            role: resolveUserRole(rawUserData)
         };
         const actualUsername = userData.username;
 
         const [postsRes, usersRes, progressRes] = await Promise.allSettled([
-            supabase
+            supabaseAdmin
                 .from("wiki_posts")
                 .select("*", { count: "exact", head: true })
                 .eq("author", actualUsername),
-            supabase
+            supabaseAdmin
                 .from("users")
                 .select("*", { count: "exact", head: true }),
             getUserProgressSnapshot(actualUsername),

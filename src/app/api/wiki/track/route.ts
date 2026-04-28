@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
 import { getSession } from "@/lib/auth";
+import { supabaseAdmin } from "@/lib/supabase-admin";
 
-// POST: Track read article
 export async function POST(req: Request) {
     const session = await getSession();
     if (!session) {
@@ -10,33 +9,42 @@ export async function POST(req: Request) {
     }
 
     try {
-        const { post_slug, post_title } = await req.json();
+        const { post_slug } = await req.json();
+        const normalizedSlug = typeof post_slug === "string" ? post_slug.trim() : "";
 
-        if (!post_slug || !post_title) {
+        if (!normalizedSlug) {
             return NextResponse.json({ success: false, error: "Missing fields" }, { status: 400 });
         }
 
-        // Upsert to keep only the latest view of the same article by the same user
-        const { error } = await supabase
+        const { data: post, error: postError } = await supabaseAdmin
+            .from("wiki_posts")
+            .select("slug, title")
+            .eq("slug", normalizedSlug)
+            .maybeSingle();
+
+        if (postError || !post) {
+            return NextResponse.json({ success: false, error: "Article not found" }, { status: 404 });
+        }
+
+        const { error } = await supabaseAdmin
             .from("user_wiki_history")
             .upsert({
                 username: session.username,
-                post_slug,
-                post_title,
-                viewed_at: new Date().toISOString()
-            }, { onConflict: 'username,post_slug' });
+                post_slug: post.slug,
+                post_title: post.title,
+                viewed_at: new Date().toISOString(),
+            }, { onConflict: "username,post_slug" });
 
         if (error) {
             return NextResponse.json({ success: false, error: error.message }, { status: 500 });
         }
 
         return NextResponse.json({ success: true });
-    } catch (error) {
+    } catch {
         return NextResponse.json({ success: false, error: "Internal Server Error" }, { status: 500 });
     }
 }
 
-// GET: Fetch read articles history
 export async function GET() {
     const session = await getSession();
     if (!session) {
@@ -44,7 +52,7 @@ export async function GET() {
     }
 
     try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseAdmin
             .from("user_wiki_history")
             .select("*")
             .eq("username", session.username)
@@ -56,7 +64,7 @@ export async function GET() {
         }
 
         return NextResponse.json({ success: true, history: data });
-    } catch (error) {
+    } catch {
         return NextResponse.json({ success: false, error: "Internal Server Error" }, { status: 500 });
     }
 }

@@ -50,7 +50,7 @@ const MarkdownMermaidComponent = ({ code, className }: MarkdownMermaidProps) => 
                 mermaid.initialize({
                     startOnLoad: false,
                     theme: "base",
-                    securityLevel: "loose",
+                    securityLevel: "strict",
                     fontFamily: "inherit",
                     themeVariables: {
                         darkMode: true,

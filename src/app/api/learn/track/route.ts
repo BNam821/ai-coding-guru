@@ -2,21 +2,55 @@ import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { getSession } from "@/lib/auth";
 
+function normalizeProgressPercent(value: unknown) {
+    if (typeof value !== "number" || !Number.isFinite(value)) {
+        return null;
+    }
+
+    return Math.max(0, Math.min(100, Math.round(value)));
+}
+
 // POST: Track lesson (Hybrid: DB for user, local is handled by client)
 export async function POST(req: Request) {
     const session = await getSession();
 
     try {
         const { lesson_id, course_slug, lesson_slug, lesson_title, progress_percent } = await req.json();
+        const normalizedProgress = normalizeProgressPercent(progress_percent);
 
         if (!lesson_id || !course_slug || !lesson_slug || !lesson_title) {
             return NextResponse.json({ success: false, error: "Missing required fields" }, { status: 400 });
         }
 
         if (session) {
+            const { data: lesson, error: lessonError } = await supabaseAdmin
+                .from("lessons")
+                .select("id, title, slug, chapters!inner(course_id)")
+                .eq("id", lesson_id)
+                .eq("slug", lesson_slug)
+                .single();
+
+            if (lessonError || !lesson) {
+                return NextResponse.json({ success: false, error: "Lesson not found" }, { status: 404 });
+            }
+
+            const chapterCourseId = Array.isArray(lesson.chapters)
+                ? lesson.chapters[0]?.course_id
+                : lesson.chapters?.course_id;
+
+            const { data: course } = await supabaseAdmin
+                .from("courses")
+                .select("slug")
+                .eq("id", chapterCourseId)
+                .maybeSingle();
+
+            if (!course || course.slug !== course_slug) {
+                return NextResponse.json({ success: false, error: "Course/lesson mismatch" }, { status: 400 });
+            }
+
             // Fetch existing to handle max progress keep
-            let finalProgress = progress_percent || 0;
-            if (progress_percent !== undefined) {
+            let finalProgress = normalizedProgress ?? 0;
+            if (normalizedProgress !== null) {
                 const existing = await supabaseAdmin
                     .from("user_learning_history")
                     .select("progress_percent")
@@ -25,7 +59,7 @@ export async function POST(req: Request) {
                     .single();
                 
                 if (existing.data?.progress_percent) {
-                    finalProgress = Math.max(existing.data.progress_percent, progress_percent);
+                    finalProgress = Math.max(existing.data.progress_percent, normalizedProgress);
                 }
             }
 
@@ -36,11 +70,11 @@ export async function POST(req: Request) {
                 .upsert({
                     username: session.username,
                     lesson_id,
-                    course_slug,
-                    lesson_slug,
-                    lesson_title,
+                    course_slug: course.slug,
+                    lesson_slug: lesson.slug,
+                    lesson_title: lesson.title,
                     updated_at: new Date().toISOString(),
-                    ...(progress_percent !== undefined ? { progress_percent: finalProgress } : {})
+                    ...(normalizedProgress !== null ? { progress_percent: finalProgress } : {})
                 }, { onConflict: 'username,lesson_id' });
 
             if (error) {

@@ -19,7 +19,7 @@ import { DashboardOverviewTabs, type DashboardTabKey } from "@/components/dashbo
 import { WikiManagePage } from "@/components/wiki/wiki-manage-page";
 import { getSession } from "@/lib/auth";
 import { getDashboardAiEvaluation, type DashboardAiEvaluation } from "@/lib/dashboard-ai-evaluation";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabase-admin";
 import {
     getDashboardChartsData,
     getDashboardLearningDetails,
@@ -361,11 +361,11 @@ export default async function DashboardPage({
 
     try {
         const [postsRes, currentUserRes, progressSnapshot, fetchedChartsData, fetchedLeaderboard, learningDetails, fetchedRecentProblems, fetchedAiEvaluation] = await Promise.all([
-            supabase
+            supabaseAdmin
                 .from("wiki_posts")
                 .select("*", { count: "exact", head: true })
                 .eq("author", session.username),
-            supabase
+            supabaseAdmin
                 .from("users")
                 .select("display_name")
                 .eq("username", session.username)

@@ -6,7 +6,7 @@ import Image from "next/image";
 import "highlight.js/styles/atom-one-dark.css";
 import { WikiImage } from "@/components/wiki/wiki-image";
 import { WikiArticleMeta } from "@/components/wiki/wiki-article-meta";
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabase-admin";
 import { getSession, isUserAuthenticated } from "@/lib/auth";
 import { HistoryTracker } from "@/components/history/history-tracker";
 import { MarkdownRenderer } from "@/components/markdown/markdown-renderer";
@@ -35,7 +35,7 @@ export default async function WikiDetailPage({ params }: { params: { slug: strin
     const session = await getSession();
 
     try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseAdmin
             .from("wiki_posts")
             .select("*, author_details:users(display_name, avatar_url)")
             .eq("slug", slug)
@@ -44,13 +44,13 @@ export default async function WikiDetailPage({ params }: { params: { slug: strin
         if (error) {
             console.error("Error fetching wiki detail:", error);
             // Fallback: Query cơ bản không join nếu lỗi quan hệ
-            const fallback = await supabase.from("wiki_posts").select("*").eq("slug", slug).single();
+            const fallback = await supabaseAdmin.from("wiki_posts").select("*").eq("slug", slug).single();
             post = fallback.data;
         } else {
             post = data;
         }
 
-        const { data: historyData, error: historyError } = await supabase
+        const { data: historyData, error: historyError } = await supabaseAdmin
             .from("wiki_post_edit_history")
             .select("edited_at, editor_username, editor_display_name, edit_reason")
             .eq("post_slug", slug)
@@ -64,7 +64,7 @@ export default async function WikiDetailPage({ params }: { params: { slug: strin
 
         // Fetch related posts (same category, different slug)
         if (post) {
-            const { data: relatedData } = await supabase
+            const { data: relatedData } = await supabaseAdmin
                 .from("wiki_posts")
                 .select("slug, title, category")
                 .eq("category", post.category)
